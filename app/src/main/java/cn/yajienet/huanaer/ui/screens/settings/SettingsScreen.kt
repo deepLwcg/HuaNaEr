@@ -696,7 +696,7 @@ private fun AboutCard(modifier: Modifier = Modifier) {
             modifier = Modifier.padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "花哪儿", style = MaterialTheme.typography.headlineSmall)
+            Text(text = "花哪儿了", style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(4.dp))
             Text(text = "版本 1.0.0", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(8.dp))

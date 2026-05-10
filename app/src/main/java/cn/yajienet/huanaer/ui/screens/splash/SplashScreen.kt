@@ -122,7 +122,7 @@ fun SplashScreen(
                 )
             ) {
                 Text(
-                    text = "花哪儿",
+                    text = "花哪儿了",
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White

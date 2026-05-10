@@ -110,7 +110,7 @@ fun HuaNaErNavigation(
 
     val bottomNavItems = remember {
         listOf(
-            BottomNavItem(Screen.Home, Icons.Filled.Home, "首页", "花哪儿"),
+            BottomNavItem(Screen.Home, Icons.Filled.Home, "首页", "花哪儿了"),
             BottomNavItem(Screen.Statistics, Icons.Filled.BarChart, "统计", "统计分析"),
             BottomNavItem(Screen.BudgetList, Icons.Filled.AccountBalanceWallet, "预算", "预算管理"),
             BottomNavItem(Screen.Settings, Icons.Filled.Settings, "设置", "设置")

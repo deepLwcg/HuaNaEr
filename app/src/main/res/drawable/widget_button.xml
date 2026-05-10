@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- 圆角方形背景 -->
+    <path
+        android:pathData="M16,0h16q16,0 16,16v16q0,16 -16,16h-16q-16,0 -16,-16v-16q0,-16 16,-16z"
+        android:fillColor="#667EEA" />
+    <!-- 白色圆圈 -->
+    <path
+        android:pathData="M24,24m-18,0a18,18 0,1 1 36,0a18,18 0,1 1 -36,0"
+        android:fillColor="#FFFFFF" />
+    <!-- ¥ 符号（缩小、修正） -->
+    <group android:translateX="24" android:translateY="24">
+        <!-- Y形上半部分 -->
+        <path
+            android:pathData="M-8,-9L0,2"
+            android:strokeWidth="2.5"
+            android:strokeColor="#667EEA"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M8,-9L0,2"
+            android:strokeWidth="2.5"
+            android:strokeColor="#667EEA"
+            android:strokeLineCap="round" />
+        <!-- 竖线下半部分 -->
+        <path
+            android:pathData="M0,2L0,9"
+            android:strokeWidth="2.5"
+            android:strokeColor="#667EEA"
+            android:strokeLineCap="round" />
+        <!-- 上横线 -->
+        <path
+            android:pathData="M-6,-3L6,-3"
+            android:strokeWidth="2.5"
+            android:strokeColor="#667EEA"
+            android:strokeLineCap="round" />
+        <!-- 下横线 -->
+        <path
+            android:pathData="M-6,2L6,2"
+            android:strokeWidth="2.5"
+            android:strokeColor="#667EEA"
+            android:strokeLineCap="round" />
+    </group>
+</vector>
