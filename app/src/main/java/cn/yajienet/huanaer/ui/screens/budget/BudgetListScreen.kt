@@ -1,8 +1,12 @@
 package cn.yajienet.huanaer.ui.screens.budget
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -27,7 +31,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -39,6 +42,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -160,12 +167,28 @@ fun BudgetCard(
     modifier: Modifier = Modifier
 ) {
     val colors = extendedColorScheme()
-    val progress = (budget.spent / budget.amount).toFloat().coerceIn(0f, 1f)
+    val rawProgress = (budget.spent / budget.amount).toFloat()
+    val progress = rawProgress.coerceIn(0f, 1f)
     val isOverBudget = budget.spent > budget.amount
+
+    // 进度动画
+    val animatedProgress by animateFloatAsState(
+        targetValue = progress,
+        animationSpec = tween(600),
+        label = "progress"
+    )
+
     val progressColor = when {
-        progress >= 1f -> colors.budgetDanger
-        progress >= 0.8f -> colors.budgetWarning
+        rawProgress >= 1f -> colors.budgetDanger
+        rawProgress >= 0.8f -> colors.budgetWarning
         else -> colors.income
+    }
+
+    // 进度条轨道颜色根据状态变化
+    val trackColor = when {
+        rawProgress >= 1f -> colors.budgetDanger.copy(alpha = 0.2f)
+        rawProgress >= 0.8f -> colors.budgetWarning.copy(alpha = 0.15f)
+        else -> MaterialTheme.colorScheme.surfaceVariant
     }
 
     Card(
@@ -225,19 +248,29 @@ fun BudgetCard(
                 )
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(10.dp))
 
-            LinearProgressIndicator(
-                progress = { progress },
+            // 进度条 - 使用 drawBehind 绘制，确保一体感
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(RoundedCornerShape(4.dp)),
-                color = progressColor,
-                trackColor = MaterialTheme.colorScheme.surfaceVariant
+                    .height(12.dp)
+                    .clip(RoundedCornerShape(6.dp))
+                    .drawBehind {
+                        // 绘制轨道背景
+                        drawRect(trackColor)
+                        // 绘制进度前景（从左边开始）
+                        if (animatedProgress > 0f) {
+                            drawRect(
+                                color = progressColor,
+                                topLeft = Offset.Zero,
+                                size = Size(size.width * animatedProgress, size.height)
+                            )
+                        }
+                    }
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(10.dp))
 
             if (isOverBudget) {
                 Text(
