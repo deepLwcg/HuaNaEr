@@ -88,7 +88,7 @@ fun StatisticsScreen(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer
                         )
                     ) {
                         Row(
@@ -142,7 +142,7 @@ fun StatisticsScreen(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer
                             )
                         ) {
                             Box(
@@ -165,7 +165,7 @@ fun StatisticsScreen(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer
                             )
                         ) {
                             Column(modifier = Modifier.padding(12.dp)) {
@@ -194,7 +194,7 @@ fun StatisticsScreen(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer
                             )
                         ) {
                             Column(modifier = Modifier.padding(12.dp)) {
