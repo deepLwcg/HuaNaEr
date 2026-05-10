@@ -22,7 +22,9 @@
       "Bash(gradlew.bat assembleDebug)",
       "Bash(cmd //c \"gradlew.bat assembleDebug\")",
       "Bash(./gradlew.bat assembleDebug)",
-      "Bash(./gradlew.bat installDebug)"
+      "Bash(./gradlew.bat installDebug)",
+      "PowerShell(.\\\\gradlew.bat build)",
+      "PowerShell(.\\\\gradlew.bat installDebug)"
     ]
   }
 }

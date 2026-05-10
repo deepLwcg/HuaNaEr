@@ -56,6 +56,7 @@ import cn.yajienet.huanaer.ui.screens.category.CategoryManageScreen
 import cn.yajienet.huanaer.ui.screens.budget.BudgetListScreen
 import cn.yajienet.huanaer.ui.screens.budget.BudgetDetailScreen
 import cn.yajienet.huanaer.ui.screens.transaction.AddTransactionScreen
+import cn.yajienet.huanaer.ui.screens.transactionlist.TransactionListScreen
 import cn.yajienet.huanaer.ui.screens.transaction.TransactionDetailScreen
 import cn.yajienet.huanaer.ui.screens.settings.SettingsScreen
 import kotlinx.coroutines.launch
@@ -189,6 +190,9 @@ fun HuaNaErNavigation(
                             onAddTransactionClick = { navController.navigate(Screen.AddTransaction.route) },
                             onTransactionClick = { transactionId ->
                                 navController.navigate(Screen.TransactionDetail.createRoute(transactionId))
+                            },
+                            onNavigateToTransactionList = {
+                                navController.navigate(Screen.TransactionList.route)
                             }
                         )
                         1 -> StatisticsScreen(contentPadding = innerPadding)
@@ -210,6 +214,15 @@ fun HuaNaErNavigation(
             // 子屏幕
             composable(Screen.AddTransaction.route) {
                 AddTransactionScreen(onNavigateBack = { navController.popBackStack() })
+            }
+            composable(Screen.TransactionList.route) {
+                TransactionListScreen(
+                    contentPadding = PaddingValues(0.dp),
+                    onTransactionClick = { transactionId ->
+                        navController.navigate(Screen.TransactionDetail.createRoute(transactionId))
+                    },
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
             composable(Screen.TransactionDetail.route) { backStackEntry ->
                 val transactionId = backStackEntry.arguments?.getString("transactionId")?.toLongOrNull()
