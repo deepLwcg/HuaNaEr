@@ -27,7 +27,8 @@
       "PowerShell(.\\\\gradlew.bat installDebug)",
       "Bash(.\\\\gradlew.bat build *)",
       "Bash(Get-ChildItem -Path \"D:\\\\develop\\\\project\\\\app\\\\HuaNaEr\" -Recurse -Directory)",
-      "Bash(Select-Object -First 30 FullName)"
+      "Bash(Select-Object -First 30 FullName)",
+      "PowerShell(adb uninstall *)"
     ]
   }
 }

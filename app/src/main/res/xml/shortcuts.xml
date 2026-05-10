@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="add_transaction"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_add"
+        android:shortcutShortLabel="@string/shortcut_add_transaction"
+        android:shortcutLongLabel="@string/shortcut_add_transaction">
+        <intent
+            android:action="cn.yajienet.huanaer.ADD_TRANSACTION"
+            android:targetPackage="cn.yajienet.huanaer"
+            android:targetClass="cn.yajienet.huanaer.MainActivity" />
+    </shortcut>
+</shortcuts>

@@ -85,11 +85,19 @@ data class BottomNavItem(
 @OptIn(ExperimentalFoundationApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun HuaNaErNavigation(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    initialRoute: String? = null
 ) {
     val navController = rememberNavController()
     var addBudgetTrigger by remember { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
+
+    // 处理快捷方式的初始路由
+    LaunchedEffect(initialRoute) {
+        if (initialRoute != null) {
+            navController.navigate(initialRoute)
+        }
+    }
 
     // 统计页面的ViewModel，在TopAppBar中共享
     val context = LocalContext.current
