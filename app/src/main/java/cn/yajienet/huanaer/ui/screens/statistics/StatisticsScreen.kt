@@ -1,9 +1,13 @@
 package cn.yajienet.huanaer.ui.screens.statistics
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,12 +29,17 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -143,11 +152,11 @@ fun StatisticsScreen(
                                 PieChart(
                                     data = uiState.expenseByCategory,
                                     modifier = Modifier
-                                        .size(140.dp)
+                                        .size(180.dp)
                                         .align(Alignment.CenterHorizontally)
                                 )
 
-                                Spacer(modifier = Modifier.height(12.dp))
+                                Spacer(modifier = Modifier.height(16.dp))
 
                                 LazyColumn(
                                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -213,24 +222,59 @@ fun PieChart(
 ) {
     if (data.isEmpty()) return
 
+    val animationProgress = remember { Animatable(0f) }
+
+    LaunchedEffect(data) {
+        animationProgress.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(800, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+        )
+    }
+
+    val totalPercentage = data.fold(0f) { acc, stat -> acc + stat.percentage }
+
     Canvas(modifier = modifier) {
-        var startAngle = 0f
+        val centerX = size.width / 2f
+        val centerY = size.height / 2f
+        val radius = minOf(centerX, centerY) * 0.85f
+
+        var startAngle = -90f // Start from top
 
         data.forEach { stat ->
-            val sweepAngle = stat.percentage * 360f
+            val sweepAngle = (stat.percentage / totalPercentage) * 360f * animationProgress.value
             val color = Color(android.graphics.Color.parseColor(stat.categoryColor))
 
+            // Draw filled pie slice
             drawArc(
                 color = color,
                 startAngle = startAngle,
                 sweepAngle = sweepAngle,
                 useCenter = true,
-                style = Stroke(width = 28.dp.toPx()),
-                size = size
+                style = Fill,
+                topLeft = Offset(centerX - radius, centerY - radius),
+                size = Size(radius * 2, radius * 2)
+            )
+
+            // Draw slice border for visual separation
+            drawArc(
+                color = Color.White,
+                startAngle = startAngle,
+                sweepAngle = sweepAngle,
+                useCenter = true,
+                style = Stroke(width = 2.dp.toPx()),
+                topLeft = Offset(centerX - radius, centerY - radius),
+                size = Size(radius * 2, radius * 2)
             )
 
             startAngle += sweepAngle
         }
+
+        // Draw center circle for donut effect (optional, makes it look cleaner)
+        drawCircle(
+            color = Color.White,
+            radius = radius * 0.35f,
+            center = Offset(centerX, centerY)
+        )
     }
 }
 
