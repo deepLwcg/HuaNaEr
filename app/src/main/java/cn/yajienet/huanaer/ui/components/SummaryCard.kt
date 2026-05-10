@@ -37,13 +37,13 @@ fun SummaryCard(
     modifier: Modifier = Modifier
 ) {
     val colors = extendedColorScheme()
-    val borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+    val borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
 
     Column(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .background(MaterialTheme.colorScheme.primaryContainer)
             .border(
                 width = 1.dp,
                 color = borderColor,
@@ -60,12 +60,12 @@ fun SummaryCard(
             Text(
                 text = "本月概览",
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onPrimaryContainer
             )
             Text(
                 text = if (balance >= 0) "结余" else "亏损",
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
             )
         }
 
@@ -149,7 +149,7 @@ private fun SummaryItemCard(
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
             )
             Text(
                 text = CurrencyFormat.format(value),
