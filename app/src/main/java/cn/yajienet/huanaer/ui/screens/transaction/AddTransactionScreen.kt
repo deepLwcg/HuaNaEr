@@ -1,5 +1,6 @@
 package cn.yajienet.huanaer.ui.screens.transaction
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -10,7 +11,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -20,11 +24,15 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
@@ -46,6 +54,11 @@ fun AddTransactionScreen(
     )
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.CHINA)
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = uiState.date
+    )
 
     if (uiState.saved) {
         onNavigateBack()
@@ -124,14 +137,18 @@ fun AddTransactionScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Date display (simplified - just show current date)
-            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.CHINA)
+            // Date picker field
             OutlinedTextField(
                 value = dateFormat.format(uiState.date),
                 onValueChange = {},
                 label = { Text("日期") },
                 readOnly = true,
-                modifier = Modifier.fillMaxWidth()
+                trailingIcon = {
+                    Icon(Icons.Default.DateRange, "选择日期")
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showDatePicker = true }
             )
 
             // Save button
@@ -154,6 +171,32 @@ fun AddTransactionScreen(
                     color = androidx.compose.material3.MaterialTheme.colorScheme.error
                 )
             }
+        }
+    }
+
+    // Date picker dialog
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { date ->
+                            viewModel.setDate(date)
+                        }
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("确定")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("取消")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
         }
     }
 }

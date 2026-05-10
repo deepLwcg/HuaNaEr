@@ -1,6 +1,7 @@
 package cn.yajienet.huanaer.ui.screens.transaction
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
@@ -26,6 +28,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
@@ -37,6 +41,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -73,6 +78,10 @@ fun TransactionDetailScreen(
     val currencyFormat = NumberFormat.getCurrencyInstance(Locale.CHINA)
     val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.CHINA)
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = uiState.date
+    )
 
     // Navigate back when saved or deleted
     if (uiState.saved || uiState.deleted) {
@@ -189,13 +198,18 @@ fun TransactionDetailScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Date display
+                // Date picker field
                 OutlinedTextField(
                     value = dateFormat.format(uiState.date),
                     onValueChange = {},
                     label = { Text("日期") },
                     readOnly = true,
-                    modifier = Modifier.fillMaxWidth()
+                    trailingIcon = {
+                        Icon(Icons.Default.DateRange, "选择日期")
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showDatePicker = true }
                 )
 
                 // Save button
@@ -368,6 +382,32 @@ fun TransactionDetailScreen(
                 }
             }
         )
+    }
+
+    // Date picker dialog
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { date ->
+                            viewModel.setDate(date)
+                        }
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("确定")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("取消")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
     }
 }
 
