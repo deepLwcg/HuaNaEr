@@ -1,18 +1,18 @@
 package cn.yajienet.huanaer.data.repository
 
 import cn.yajienet.huanaer.data.local.dao.BudgetDao
-import cn.yajienet.huanaer.data.local.dao.CategoryDao
-import cn.yajienet.huanaer.data.local.dao.TransactionDao
+import cn.yajienet.huanaer.data.local.dao.BudgetWithCategory
+import cn.yajienet.huanaer.data.local.dao.CategorySpent
 import cn.yajienet.huanaer.data.local.entity.BudgetEntity
 import cn.yajienet.huanaer.data.model.Budget
 import cn.yajienet.huanaer.data.model.TransactionType
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
+import cn.yajienet.huanaer.data.local.dao.TransactionDao
 
 class BudgetRepository(
     private val budgetDao: BudgetDao,
-    private val categoryDao: CategoryDao,
     private val transactionDao: TransactionDao
 ) {
 
@@ -29,39 +29,65 @@ class BudgetRepository(
     }
 
     suspend fun getById(id: Long): Budget? {
-        return budgetDao.getById(id)?.toBudget()
+        val result = budgetDao.getByIdWithCategory(id)
+        if (result == null) return null
+
+        val spent = getSpentAmount(result.budget.categoryId, result.budget.month, result.budget.year)
+        return result.toBudget(spent)
     }
 
     fun getByMonthYear(month: Int, year: Int): Flow<List<Budget>> {
-        return budgetDao.getByMonthYear(month, year).map { entities ->
-            entities.map { it.toBudget() }
+        return budgetDao.getByMonthYearWithCategory(month, year).map { entities ->
+            // 批量获取支出金额（同一月份，可以批量查询）
+            val categoryIds = entities.map { it.budget.categoryId }.distinct()
+            val startTime = getMonthStartTime(month, year)
+            val endTime = getMonthEndTime(month, year)
+
+            if (categoryIds.isEmpty()) {
+                emptyList()
+            } else {
+                // 需要在 Flow.map 中进行 suspend 操作，改用 first 获取
+                val spents = getCategorySpentsBatch(categoryIds, startTime, endTime)
+                entities.map { entity ->
+                    val spent = spents[entity.budget.categoryId] ?: 0.0
+                    entity.toBudget(spent)
+                }
+            }
         }
     }
 
     suspend fun getByCategoryAndMonthYear(categoryId: Long, month: Int, year: Int): Budget? {
-        return budgetDao.getByCategoryAndMonthYear(categoryId, month, year)?.toBudget()
+        val budgets = budgetDao.getByMonthYearWithCategory(month, year).first()
+        val entity = budgets.find { it.budget.categoryId == categoryId }
+        if (entity == null) return null
+
+        val spent = getSpentAmount(categoryId, month, year)
+        return entity.toBudget(spent)
     }
 
     fun getAll(): Flow<List<Budget>> {
-        return budgetDao.getAll().map { entities ->
-            entities.map { it.toBudget() }
-        }
-    }
+        return budgetDao.getAllWithCategory().map { entities ->
+            // 按月份分组，批量计算支出
+            val groupedByMonth = entities.groupBy { Pair(it.budget.month, it.budget.year) }
 
-    private suspend fun BudgetEntity.toBudget(): Budget {
-        val category = categoryDao.getById(categoryId)
-        val spent = getSpentAmount(categoryId, month, year)
-        return Budget(
-            id = id,
-            categoryId = categoryId,
-            categoryName = category?.name ?: "总预算",
-            categoryColor = category?.color ?: "#808080",
-            amount = amount,
-            month = month,
-            year = year,
-            spent = spent,
-            createdAt = createdAt
-        )
+            groupedByMonth.flatMap { (monthYear, monthEntities) ->
+                val (month, year) = monthYear
+                val categoryIds = monthEntities.map { it.budget.categoryId }.distinct()
+                val startTime = getMonthStartTime(month, year)
+                val endTime = getMonthEndTime(month, year)
+
+                val spents = if (categoryIds.isEmpty()) {
+                    emptyMap()
+                } else {
+                    getCategorySpentsBatch(categoryIds, startTime, endTime)
+                }
+
+                monthEntities.map { entity ->
+                    val spent = spents[entity.budget.categoryId] ?: 0.0
+                    entity.toBudget(spent)
+                }
+            }
+        }
     }
 
     private suspend fun getSpentAmount(categoryId: Long, month: Int, year: Int): Double {
@@ -74,6 +100,29 @@ class BudgetRepository(
             endTime
         )
         return totalFlow.map { it ?: 0.0 }.first()
+    }
+
+    private suspend fun getCategorySpentsBatch(
+        categoryIds: List<Long>,
+        startTime: Long,
+        endTime: Long
+    ): Map<Long, Double> {
+        val spents = budgetDao.getCategorySpents(categoryIds, startTime, endTime)
+        return spents.associate { it.categoryId to it.spent }
+    }
+
+    private fun BudgetWithCategory.toBudget(spent: Double): Budget {
+        return Budget(
+            id = budget.id,
+            categoryId = budget.categoryId,
+            categoryName = categoryName ?: "总预算",
+            categoryColor = categoryColor ?: "#808080",
+            amount = budget.amount,
+            month = budget.month,
+            year = budget.year,
+            spent = spent,
+            createdAt = budget.createdAt
+        )
     }
 
     private fun getMonthStartTime(month: Int, year: Int): Long {

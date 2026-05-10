@@ -281,7 +281,10 @@ fun TransactionListScreen(
                         contentPadding = PaddingValues(vertical = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(uiState.transactions) { transaction ->
+                        items(
+                        items = uiState.transactions,
+                        key = { it.id }
+                    ) { transaction ->
                             TransactionListItem(
                                 transaction = transaction,
                                 onClick = { onTransactionClick(transaction.id) },

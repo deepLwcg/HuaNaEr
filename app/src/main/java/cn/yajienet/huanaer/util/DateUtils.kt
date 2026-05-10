@@ -1,61 +1,64 @@
 package cn.yajienet.huanaer.util
 
-import java.text.SimpleDateFormat
-import java.util.Calendar
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 object DateUtils {
-    private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.CHINA)
-    private val dateTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.CHINA)
-    private val monthYearFormat = SimpleDateFormat("yyyy年MM月", Locale.CHINA)
+    // DateTimeFormatter 是线程安全的，可以作为静态变量使用
+    private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.CHINA)
+    private val dateTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.CHINA)
+    private val zoneId = ZoneId.systemDefault()
 
     /**
      * Get the start time (first day at 00:00:00) of a given month and year
      */
     fun getMonthStartTime(month: Int, year: Int): Long {
-        val calendar = Calendar.getInstance()
-        calendar.set(year, month - 1, 1, 0, 0, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        return calendar.timeInMillis
+        val firstDay = LocalDate.of(year, month, 1)
+        return firstDay.atStartOfDay(zoneId).toInstant().toEpochMilli()
     }
 
     /**
      * Get the end time (last day at 23:59:59) of a given month and year
      */
     fun getMonthEndTime(month: Int, year: Int): Long {
-        val calendar = Calendar.getInstance()
-        calendar.set(year, month - 1, 1, 0, 0, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        calendar.add(Calendar.MONTH, 1)
-        return calendar.timeInMillis
+        val firstDayOfNextMonth = LocalDate.of(year, month, 1).plusMonths(1)
+        return firstDayOfNextMonth.atStartOfDay(zoneId).toInstant().toEpochMilli()
     }
 
     /**
      * Get the current month (1-12)
      */
     fun getCurrentMonth(): Int {
-        return Calendar.getInstance().get(Calendar.MONTH) + 1
+        return LocalDate.now().monthValue
     }
 
     /**
      * Get the current year
      */
     fun getCurrentYear(): Int {
-        return Calendar.getInstance().get(Calendar.YEAR)
+        return LocalDate.now().year
     }
 
     /**
      * Format a timestamp to date string (yyyy-MM-dd)
      */
     fun formatDate(timestamp: Long): String {
-        return dateFormat.format(timestamp)
+        val instant = Instant.ofEpochMilli(timestamp)
+        val localDate = instant.atZone(zoneId).toLocalDate()
+        return localDate.format(dateFormat)
     }
 
     /**
      * Format a timestamp to date and time string (yyyy-MM-dd HH:mm)
      */
     fun formatDateTime(timestamp: Long): String {
-        return dateTimeFormat.format(timestamp)
+        val instant = Instant.ofEpochMilli(timestamp)
+        val localDateTime = instant.atZone(zoneId).toLocalDateTime()
+        return localDateTime.format(dateTimeFormat)
     }
 
     /**

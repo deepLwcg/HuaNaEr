@@ -249,6 +249,24 @@ fun PieChart(
         data.map { stat -> Color(android.graphics.Color.parseColor(stat.categoryColor)) }
     }
 
+    // 缓存 Paint 对象，避免每次重组都创建新对象
+    val linePaint = remember(lineColor) {
+        android.graphics.Paint().apply {
+            color = lineColor.toArgb()
+            strokeWidth = 2f
+            isAntiAlias = true
+        }
+    }
+    val textPaint = remember(textColor) {
+        android.graphics.Paint().apply {
+            color = textColor.toArgb()
+            textSize = 40f
+            textAlign = android.graphics.Paint.Align.LEFT
+            isAntiAlias = true
+            setTypeface(android.graphics.Typeface.DEFAULT_BOLD)
+        }
+    }
+
     // 只在数据变化时触发动画，避免每次重组都重新动画
     LaunchedEffect(data) {
         animationProgress.snapTo(0f)
@@ -307,23 +325,8 @@ fun PieChart(
                 // Draw connecting line and text using native canvas
                 val nativeCanvas = drawContext.canvas.nativeCanvas
 
-                // Line paint
-                val linePaint = android.graphics.Paint().apply {
-                    this.color = lineColor.toArgb()
-                    strokeWidth = 2f
-                    isAntiAlias = true
-                }
                 nativeCanvas.drawLine(pieEdgeX, pieEdgeY, labelX, labelY, linePaint)
                 nativeCanvas.drawCircle(pieEdgeX, pieEdgeY, 6f, linePaint)
-
-                // Text paint
-                val textPaint = android.graphics.Paint().apply {
-                    this.color = textColor.toArgb()
-                    textSize = 40f
-                    textAlign = android.graphics.Paint.Align.LEFT
-                    isAntiAlias = true
-                    setTypeface(android.graphics.Typeface.DEFAULT_BOLD)
-                }
 
                 // Draw label text
                 val percentageText = "${(stat.percentage * 100).toInt()}%"

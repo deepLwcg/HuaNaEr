@@ -80,7 +80,7 @@ class TransactionListViewModel(
             selectionState
         ) { transactions, income, expense, state ->
             TransactionListUiState(
-                transactions = transactions.sortedByDescending { it.date },
+                transactions = transactions,
                 totalIncome = income,
                 totalExpense = expense,
                 balance = income - expense,

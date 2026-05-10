@@ -1,5 +1,8 @@
 package cn.yajienet.huanaer.data.model
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 data class Transaction(
     val id: Long = 0,
     val amount: Double,

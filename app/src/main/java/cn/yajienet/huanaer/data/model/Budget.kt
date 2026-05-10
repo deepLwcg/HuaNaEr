@@ -1,5 +1,8 @@
 package cn.yajienet.huanaer.data.model
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 data class Budget(
     val id: Long = 0,
     val categoryId: Long,

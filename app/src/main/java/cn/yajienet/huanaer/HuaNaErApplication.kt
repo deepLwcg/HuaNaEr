@@ -31,10 +31,7 @@ class HuaNaErApplication : Application() {
     }
 
     val transactionRepository: TransactionRepository by lazy {
-        TransactionRepository(
-            transactionDao = database.transactionDao(),
-            categoryDao = database.categoryDao()
-        )
+        TransactionRepository(transactionDao = database.transactionDao())
     }
 
     val categoryRepository: CategoryRepository by lazy {
@@ -44,7 +41,6 @@ class HuaNaErApplication : Application() {
     val budgetRepository: BudgetRepository by lazy {
         BudgetRepository(
             budgetDao = database.budgetDao(),
-            categoryDao = database.categoryDao(),
             transactionDao = database.transactionDao()
         )
     }

@@ -97,7 +97,10 @@ fun BudgetListScreen(
                     contentPadding = PaddingValues(top = 8.dp, bottom = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(uiState.budgets) { budget ->
+                    items(
+                        items = uiState.budgets,
+                        key = { it.id }
+                    ) { budget ->
                         BudgetCard(
                             budget = budget,
                             onDelete = { viewModel.deleteBudget(budget) },

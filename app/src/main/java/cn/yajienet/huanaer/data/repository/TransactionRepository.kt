@@ -1,7 +1,7 @@
 package cn.yajienet.huanaer.data.repository
 
 import cn.yajienet.huanaer.data.local.dao.TransactionDao
-import cn.yajienet.huanaer.data.local.dao.CategoryDao
+import cn.yajienet.huanaer.data.local.dao.TransactionWithCategory
 import cn.yajienet.huanaer.data.local.entity.TransactionEntity
 import cn.yajienet.huanaer.data.model.Transaction
 import cn.yajienet.huanaer.data.model.TransactionType
@@ -9,8 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class TransactionRepository(
-    private val transactionDao: TransactionDao,
-    private val categoryDao: CategoryDao
+    private val transactionDao: TransactionDao
 ) {
     suspend fun insert(transaction: TransactionEntity): Long {
         return transactionDao.insert(transaction)
@@ -39,24 +38,24 @@ class TransactionRepository(
     }
 
     suspend fun getById(id: Long): Transaction? {
-        val entity = transactionDao.getById(id)
-        return entity?.toTransaction()
+        val result = transactionDao.getByIdWithCategory(id)
+        return result?.toTransaction()
     }
 
     fun getAll(): Flow<List<Transaction>> {
-        return transactionDao.getAll().map { entities ->
+        return transactionDao.getAllWithCategory().map { entities ->
             entities.map { it.toTransaction() }
         }
     }
 
     fun getByDateRange(startTime: Long, endTime: Long): Flow<List<Transaction>> {
-        return transactionDao.getByDateRange(startTime, endTime).map { entities ->
+        return transactionDao.getByDateRangeWithCategory(startTime, endTime).map { entities ->
             entities.map { it.toTransaction() }
         }
     }
 
     fun getByCategory(categoryId: Long): Flow<List<Transaction>> {
-        return transactionDao.getByCategory(categoryId).map { entities ->
+        return transactionDao.getByCategoryWithCategory(categoryId).map { entities ->
             entities.map { it.toTransaction() }
         }
     }
@@ -87,25 +86,25 @@ class TransactionRepository(
     }
 
     fun getRecentTransactions(limit: Int): Flow<List<Transaction>> {
-        return transactionDao.getRecentTransactions(limit).map { entities ->
+        return transactionDao.getRecentTransactionsWithCategory(limit).map { entities ->
             entities.map { it.toTransaction() }
         }
     }
 
-    private suspend fun TransactionEntity.toTransaction(): Transaction {
-        val category = categoryDao.getById(categoryId)
+    // 从JOIN查询结果转换为Transaction模型（无需额外查询）
+    private fun TransactionWithCategory.toTransaction(): Transaction {
         return Transaction(
-            id = id,
-            amount = amount,
-            type = type,
-            categoryId = categoryId,
-            categoryName = category?.name ?: "",
-            categoryIcon = category?.icon ?: "",
-            categoryColor = category?.color ?: "#808080",
-            date = date,
-            note = note,
-            createdAt = createdAt,
-            updatedAt = updatedAt
+            id = transaction.id,
+            amount = transaction.amount,
+            type = transaction.type,
+            categoryId = transaction.categoryId,
+            categoryName = categoryName,
+            categoryIcon = categoryIcon,
+            categoryColor = categoryColor,
+            date = transaction.date,
+            note = transaction.note,
+            createdAt = transaction.createdAt,
+            updatedAt = transaction.updatedAt
         )
     }
 }

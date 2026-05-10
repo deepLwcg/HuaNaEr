@@ -122,7 +122,10 @@ fun HomeScreen(
                     contentPadding = PaddingValues(vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(uiState.recentTransactions) { transaction ->
+                    items(
+                        items = uiState.recentTransactions,
+                        key = { it.id }
+                    ) { transaction ->
                         TransactionListItem(
                             transaction = transaction,
                             onClick = { onTransactionClick(transaction.id) },
