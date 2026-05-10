@@ -54,7 +54,6 @@ import cn.yajienet.huanaer.ui.components.EmptyState
 import cn.yajienet.huanaer.ui.components.LoadingState
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import cn.yajienet.huanaer.util.CurrencyFormat
-import cn.yajienet.huanaer.util.DateUtils
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -82,19 +81,12 @@ fun BudgetListScreen(
             .padding(contentPadding)
             .padding(16.dp)
     ) {
-        Text(
-            text = DateUtils.formatMonthYear(uiState.currentMonth, uiState.currentYear),
-            style = MaterialTheme.typography.titleMedium
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
         if (uiState.isLoading) {
             LoadingState()
         } else if (uiState.budgets.isEmpty()) {
             EmptyState(
                 title = "暂无预算设置",
-                subtitle = "点击右下角按钮添加预算",
+                subtitle = "点击右上角按钮添加预算",
                 modifier = Modifier.fillMaxSize()
             )
         } else {
