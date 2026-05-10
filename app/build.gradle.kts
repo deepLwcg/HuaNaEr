@@ -75,6 +75,9 @@ dependencies {
     // Material Icons Extended
     implementation(libs.androidx.compose.material.icons.extended)
 
+    // Foundation Pager for swipe navigation
+    implementation(libs.androidx.compose.foundation)
+
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

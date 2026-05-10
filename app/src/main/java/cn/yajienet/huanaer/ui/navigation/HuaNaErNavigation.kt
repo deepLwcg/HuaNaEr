@@ -2,9 +2,11 @@ package cn.yajienet.huanaer.ui.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,32 +15,31 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.AccountBalanceWallet
-import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.material3.Surface
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,6 +58,7 @@ import cn.yajienet.huanaer.ui.screens.budget.BudgetListScreen
 import cn.yajienet.huanaer.ui.screens.budget.BudgetDetailScreen
 import cn.yajienet.huanaer.ui.screens.transaction.AddTransactionScreen
 import cn.yajienet.huanaer.ui.screens.transaction.TransactionDetailScreen
+import kotlinx.coroutines.launch
 
 data class BottomNavItem(
     val screen: Screen,
@@ -65,7 +67,7 @@ data class BottomNavItem(
     val title: String
 )
 
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun HuaNaErNavigation(
     modifier: Modifier = Modifier
@@ -74,6 +76,7 @@ fun HuaNaErNavigation(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
     var addBudgetTrigger by remember { mutableIntStateOf(0) }
+    val scope = rememberCoroutineScope()
 
     val bottomNavItems = listOf(
         BottomNavItem(Screen.Home, Icons.Filled.Home, "首页", "花哪儿"),
@@ -82,25 +85,47 @@ fun HuaNaErNavigation(
         BottomNavItem(Screen.CategoryManage, Icons.Filled.Category, "分类", "分类管理")
     )
 
-    val showBottomBar = currentDestination?.route in bottomNavItems.map { it.screen.route }
-    val currentNavItem = bottomNavItems.find { it.screen.route == currentDestination?.route }
+    val mainRoutes = bottomNavItems.map { it.screen.route }
+
+    // Default to Home screen if no destination
+    val currentRoute = currentDestination?.route ?: Screen.Home.route
+    val isMainScreen = currentRoute in mainRoutes
+    val currentMainPageIndex = bottomNavItems.indexOfFirst { it.screen.route == currentRoute }
+
+    // Pager state - only controls main screens
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { bottomNavItems.size })
+
+    // Determine if we should show pager or nav host content
+    val showPagerContent = isMainScreen
+
+    // Track if we're in a sub-screen (AddTransaction, Detail, etc.)
+    val inSubScreen = currentDestination?.route != null && !isMainScreen
+
+    // Sync pager position with navigation when navigating to main screen from sub-screen
+    LaunchedEffect(currentMainPageIndex, isMainScreen) {
+        if (isMainScreen && currentMainPageIndex >= 0 && pagerState.currentPage != currentMainPageIndex) {
+            pagerState.scrollToPage(currentMainPageIndex)
+        }
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
-            if (showBottomBar && currentNavItem != null) {
+            if (isMainScreen && currentMainPageIndex >= 0) {
                 TopAppBar(
-                    title = { Text(currentNavItem.title) },
+                    title = { Text(bottomNavItems[pagerState.currentPage].title) },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surface,
                         titleContentColor = MaterialTheme.colorScheme.onSurface
                     )
                 )
+            } else if (inSubScreen) {
+                // Sub-screens have their own top bar handling
             }
         },
         bottomBar = {
-            if (showBottomBar) {
+            if (isMainScreen) {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     color = MaterialTheme.colorScheme.surface,
@@ -113,22 +138,25 @@ fun HuaNaErNavigation(
                             .selectableGroup(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        bottomNavItems.forEach { item ->
-                            val selected = currentDestination?.hierarchy?.any { it.route == item.screen.route } == true
-                            val interactionSource = remember { MutableInteractionSource() }
+                        bottomNavItems.forEachIndexed { index, item ->
+                            val selected = pagerState.currentPage == index
                             Column(
                                 modifier = Modifier
                                     .padding(horizontal = 12.dp)
                                     .clickable(
-                                        interactionSource = interactionSource,
+                                        interactionSource = remember { MutableInteractionSource() },
                                         indication = null
                                     ) {
-                                        navController.navigate(item.screen.route) {
-                                            popUpTo(navController.graph.findStartDestination().id) {
-                                                saveState = true
+                                        scope.launch {
+                                            pagerState.scrollToPage(index)
+                                            // Also update navigation
+                                            navController.navigate(item.screen.route) {
+                                                popUpTo(navController.graph.findStartDestination().id) {
+                                                    saveState = true
+                                                }
+                                                launchSingleTop = true
+                                                restoreState = true
                                             }
-                                            launchSingleTop = true
-                                            restoreState = true
                                         }
                                     },
                                 horizontalAlignment = Alignment.CenterHorizontally
@@ -164,112 +192,135 @@ fun HuaNaErNavigation(
             }
         },
         floatingActionButton = {
-            when (currentDestination?.route) {
-                Screen.Home.route -> {
-                    FloatingActionButton(
-                        onClick = { navController.navigate(Screen.AddTransaction.route) },
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    ) {
-                        Icon(Icons.Filled.Add, contentDescription = "添加交易")
+            if (isMainScreen) {
+                when (pagerState.currentPage) {
+                    0 -> { // Home
+                        FloatingActionButton(
+                            onClick = { navController.navigate(Screen.AddTransaction.route) },
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ) {
+                            Icon(Icons.Filled.Add, contentDescription = "添加交易")
+                        }
                     }
-                }
-                Screen.BudgetList.route -> {
-                    FloatingActionButton(
-                        onClick = { addBudgetTrigger++ },
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    ) {
-                        Icon(Icons.Filled.Add, contentDescription = "添加预算")
+                    2 -> { // BudgetList
+                        FloatingActionButton(
+                            onClick = { addBudgetTrigger++ },
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ) {
+                            Icon(Icons.Filled.Add, contentDescription = "添加预算")
+                        }
                     }
                 }
             }
         }
     ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Home.route,
-            modifier = Modifier.fillMaxSize(),
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Start,
-                    animationSpec = tween(300)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Start,
-                    animationSpec = tween(300)
-                )
-            },
-            popEnterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.End,
-                    animationSpec = tween(300)
-                )
-            },
-            popExitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.End,
-                    animationSpec = tween(300)
-                )
-            }
-        ) {
-            composable(Screen.Home.route) {
-                HomeScreen(
-                    contentPadding = innerPadding,
-                    onAddTransactionClick = {
-                        navController.navigate(Screen.AddTransaction.route)
-                    },
-                    onTransactionClick = { transactionId ->
-                        navController.navigate(Screen.TransactionDetail.createRoute(transactionId))
+        if (showPagerContent) {
+            // Main screens use HorizontalPager for smooth swipe
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize(),
+                beyondViewportPageCount = 1,
+                pageSpacing = 0.dp
+            ) { page ->
+                when (page) {
+                    0 -> {
+                        HomeScreen(
+                            contentPadding = innerPadding,
+                            onAddTransactionClick = {
+                                navController.navigate(Screen.AddTransaction.route)
+                            },
+                            onTransactionClick = { transactionId ->
+                                navController.navigate(Screen.TransactionDetail.createRoute(transactionId))
+                            }
+                        )
                     }
-                )
-            }
-            composable(Screen.Statistics.route) {
-                StatisticsScreen(
-                    contentPadding = innerPadding
-                )
-            }
-            composable(Screen.CategoryManage.route) {
-                CategoryManageScreen(
-                    contentPadding = innerPadding
-                )
-            }
-            composable(Screen.BudgetList.route) {
-                BudgetListScreen(
-                    contentPadding = innerPadding,
-                    onBudgetClick = { budgetId ->
-                        navController.navigate(Screen.BudgetDetail.createRoute(budgetId))
-                    },
-                    addBudgetTrigger = addBudgetTrigger
-                )
-            }
-            composable(Screen.AddTransaction.route) {
-                AddTransactionScreen(
-                    onNavigateBack = { navController.popBackStack() }
-                )
-            }
-            composable(Screen.TransactionDetail.route) { backStackEntry ->
-                val transactionId = backStackEntry.arguments?.getString("transactionId")?.toLongOrNull()
-                if (transactionId != null) {
-                    TransactionDetailScreen(
-                        transactionId = transactionId,
-                        onNavigateBack = { navController.popBackStack() }
-                    )
-                } else {
-                    Text("无效的交易ID")
+                    1 -> {
+                        StatisticsScreen(
+                            contentPadding = innerPadding
+                        )
+                    }
+                    2 -> {
+                        BudgetListScreen(
+                            contentPadding = innerPadding,
+                            onBudgetClick = { budgetId ->
+                                navController.navigate(Screen.BudgetDetail.createRoute(budgetId))
+                            },
+                            addBudgetTrigger = addBudgetTrigger
+                        )
+                    }
+                    3 -> {
+                        CategoryManageScreen(
+                            contentPadding = innerPadding
+                        )
+                    }
                 }
             }
-            composable(Screen.BudgetDetail.route) { backStackEntry ->
-                val budgetId = backStackEntry.arguments?.getString("budgetId")?.toLongOrNull()
-                if (budgetId != null) {
-                    BudgetDetailScreen(
-                        budgetId = budgetId,
+        } else if (inSubScreen) {
+            // Sub-screens use NavHost with animations
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Home.route,
+                modifier = Modifier.fillMaxSize(),
+                enterTransition = {
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Start,
+                        animationSpec = tween(300)
+                    )
+                },
+                exitTransition = {
+                    slideOutOfContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Start,
+                        animationSpec = tween(300)
+                    )
+                },
+                popEnterTransition = {
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.End,
+                        animationSpec = tween(300)
+                    )
+                },
+                popExitTransition = {
+                    slideOutOfContainer(
+                        AnimatedContentTransitionScope.SlideDirection.End,
+                        animationSpec = tween(300)
+                    )
+                }
+            ) {
+                // Dummy routes for main screens - actual content is in Pager
+                composable(Screen.Home.route) { Box(Modifier.fillMaxSize()) }
+                composable(Screen.Statistics.route) { Box(Modifier.fillMaxSize()) }
+                composable(Screen.BudgetList.route) { Box(Modifier.fillMaxSize()) }
+                composable(Screen.CategoryManage.route) { Box(Modifier.fillMaxSize()) }
+
+                // Real routes for sub-screens
+                composable(Screen.AddTransaction.route) {
+                    AddTransactionScreen(
                         onNavigateBack = { navController.popBackStack() }
                     )
-                } else {
-                    Text("无效的预算ID")
+                }
+                composable(Screen.TransactionDetail.route) { backStackEntry ->
+                    val transactionId = backStackEntry.arguments?.getString("transactionId")?.toLongOrNull()
+                    if (transactionId != null) {
+                        TransactionDetailScreen(
+                            transactionId = transactionId,
+                            onNavigateBack = { navController.popBackStack() }
+                        )
+                    } else {
+                        Text("无效的交易ID")
+                    }
+                }
+                composable(Screen.BudgetDetail.route) { backStackEntry ->
+                    val budgetId = backStackEntry.arguments?.getString("budgetId")?.toLongOrNull()
+                    if (budgetId != null) {
+                        BudgetDetailScreen(
+                            budgetId = budgetId,
+                            onNavigateBack = { navController.popBackStack() }
+                        )
+                    } else {
+                        Text("无效的预算ID")
+                    }
                 }
             }
         }
