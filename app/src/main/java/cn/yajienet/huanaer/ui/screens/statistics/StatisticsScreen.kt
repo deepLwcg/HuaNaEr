@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -74,6 +75,7 @@ fun StatisticsScreen(
                 month = uiState.selectedMonth,
                 onPrevious = { viewModel.previousMonth() },
                 onNext = { viewModel.nextMonth() },
+                onDateSelected = { year, month -> viewModel.setDate(year, month) },
                 modifier = Modifier.padding(vertical = 8.dp)
             )
 
@@ -135,26 +137,32 @@ fun StatisticsScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     if (uiState.expenseByCategory.isNotEmpty()) {
-                        Text(
-                            text = "支出分布",
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
+                        // 支出分布饼图
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                PieChart(
+                                    data = uiState.expenseByCategory,
+                                    modifier = Modifier.size(220.dp)
+                                )
+                            }
+                        }
 
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // 支出统计详情
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp)
                         ) {
                             Column(modifier = Modifier.padding(12.dp)) {
-                                PieChart(
-                                    data = uiState.expenseByCategory,
-                                    modifier = Modifier
-                                        .size(220.dp)  // 减小饼图尺寸，提升绘制性能
-                                        .align(Alignment.CenterHorizontally)
-                                )
-
-                                Spacer(modifier = Modifier.height(16.dp))
-
                                 uiState.expenseByCategory.forEach { stat ->
                                     CategoryStatRow(
                                         stat = stat,
@@ -215,28 +223,14 @@ fun PieChart(
 
     val animationProgress = remember { Animatable(0f) }
 
-    // 使用 remember 缓存 Paint 对象，避免每次绘制时重新创建
-    val textPaint = remember {
-        android.graphics.Paint().apply {
-            color = android.graphics.Color.BLACK
-            textSize = 40f
-            textAlign = android.graphics.Paint.Align.LEFT
-            isAntiAlias = true
-            setTypeface(android.graphics.Typeface.DEFAULT_BOLD)
-        }
-    }
-
-    val linePaint = remember {
-        android.graphics.Paint().apply {
-            color = android.graphics.Color.parseColor("#666666")
-            strokeWidth = 2f
-            isAntiAlias = true
-        }
-    }
+    // 使用主题颜色，支持深色/浅色模式切换
+    val textColor = MaterialTheme.colorScheme.onSurface
+    val lineColor = MaterialTheme.colorScheme.outlineVariant
+    val surfaceColor = MaterialTheme.colorScheme.surface
 
     // 预计算总百分比和颜色，避免在 Canvas 中重复计算
     val totalPercentage = remember(data) { data.fold(0f) { acc, stat -> acc + stat.percentage } }
-    val colors = remember(data) {
+    val pieColors = remember(data) {
         data.map { stat -> Color(android.graphics.Color.parseColor(stat.categoryColor)) }
     }
 
@@ -260,7 +254,7 @@ fun PieChart(
 
         data.forEachIndexed { index, stat ->
             val sweepAngle = (stat.percentage / totalPercentage) * 360f * animationProgress.value
-            val color = colors[index]
+            val color = pieColors[index]
 
             drawArc(
                 color = color,
@@ -273,7 +267,7 @@ fun PieChart(
             )
 
             drawArc(
-                color = Color.White,
+                color = surfaceColor,
                 startAngle = startAngle,
                 sweepAngle = sweepAngle,
                 useCenter = true,
@@ -295,18 +289,26 @@ fun PieChart(
                 val labelX = centerX + outerLabelRadius * kotlin.math.cos(radians)
                 val labelY = centerY + outerLabelRadius * kotlin.math.sin(radians)
 
-                // Draw connecting line
+                // Draw connecting line and text using native canvas
                 val nativeCanvas = drawContext.canvas.nativeCanvas
-                nativeCanvas.drawLine(
-                    pieEdgeX,
-                    pieEdgeY,
-                    labelX,
-                    labelY,
-                    linePaint
-                )
 
-                // Draw small circle at connection point
+                // Line paint
+                val linePaint = android.graphics.Paint().apply {
+                    this.color = lineColor.toArgb()
+                    strokeWidth = 2f
+                    isAntiAlias = true
+                }
+                nativeCanvas.drawLine(pieEdgeX, pieEdgeY, labelX, labelY, linePaint)
                 nativeCanvas.drawCircle(pieEdgeX, pieEdgeY, 6f, linePaint)
+
+                // Text paint
+                val textPaint = android.graphics.Paint().apply {
+                    this.color = textColor.toArgb()
+                    textSize = 40f
+                    textAlign = android.graphics.Paint.Align.LEFT
+                    isAntiAlias = true
+                    setTypeface(android.graphics.Typeface.DEFAULT_BOLD)
+                }
 
                 // Draw label text
                 val percentageText = "${(stat.percentage * 100).toInt()}%"
@@ -316,19 +318,14 @@ fun PieChart(
                 val textX = if (kotlin.math.cos(radians) >= 0) labelX + 8f else labelX - textPaint.measureText(labelText) - 8f
                 val textY = labelY + textPaint.textSize / 3f
 
-                nativeCanvas.drawText(
-                    labelText,
-                    textX,
-                    textY,
-                    textPaint
-                )
+                nativeCanvas.drawText(labelText, textX, textY, textPaint)
             }
 
             startAngle += sweepAngle
         }
 
         drawCircle(
-            color = Color.White,
+            color = surfaceColor,
             radius = innerRadius,
             center = Offset(centerX, centerY)
         )

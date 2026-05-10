@@ -103,6 +103,11 @@ class StatisticsViewModel(
         _selectedMonth.value = if (currentMonth == 12) 1 else currentMonth + 1
         _selectedYear.value = if (currentMonth == 12) currentYear + 1 else currentYear
     }
+
+    fun setDate(year: Int, month: Int) {
+        _selectedYear.value = year
+        _selectedMonth.value = month
+    }
 }
 
 class StatisticsViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
