@@ -4,10 +4,12 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -19,6 +21,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
@@ -51,6 +56,7 @@ fun HuaNaErNavigation(
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+    var addBudgetTrigger by remember { mutableIntStateOf(0) }
 
     val bottomNavItems = listOf(
         BottomNavItem(Screen.Home, Icons.Filled.Home, "首页", "花哪儿"),
@@ -104,6 +110,28 @@ fun HuaNaErNavigation(
                                 indicatorColor = MaterialTheme.colorScheme.primaryContainer
                             )
                         )
+                    }
+                }
+            }
+        },
+        floatingActionButton = {
+            when (currentDestination?.route) {
+                Screen.Home.route -> {
+                    FloatingActionButton(
+                        onClick = { navController.navigate(Screen.AddTransaction.route) },
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ) {
+                        Icon(Icons.Filled.Add, contentDescription = "添加交易")
+                    }
+                }
+                Screen.BudgetList.route -> {
+                    FloatingActionButton(
+                        onClick = { addBudgetTrigger++ },
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ) {
+                        Icon(Icons.Filled.Add, contentDescription = "添加预算")
                     }
                 }
             }
@@ -164,7 +192,8 @@ fun HuaNaErNavigation(
                     contentPadding = innerPadding,
                     onBudgetClick = { budgetId ->
                         navController.navigate(Screen.BudgetDetail.createRoute(budgetId))
-                    }
+                    },
+                    addBudgetTrigger = addBudgetTrigger
                 )
             }
             composable(Screen.AddTransaction.route) {

@@ -9,7 +9,9 @@
       "Bash(./gradlew :app:kspDebugKotlin --info --no-daemon)",
       "Bash(./gradlew clean *)",
       "Bash(git commit *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(./gradlew assembleDebug)",
+      "Bash(./gradlew installDebug)"
     ]
   }
 }

@@ -21,7 +21,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -62,7 +61,7 @@ fun StatisticsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = 16.dp)
         ) {
             MonthYearSelector(
                 year = uiState.selectedYear,
@@ -79,7 +78,7 @@ fun StatisticsScreen(
                 Column {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(24.dp),
+                        shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                         )
@@ -87,7 +86,7 @@ fun StatisticsScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(24.dp),
+                                .padding(16.dp),
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -106,7 +105,7 @@ fun StatisticsScreen(
 
                             Box(
                                 modifier = Modifier
-                                    .height(40.dp)
+                                    .height(32.dp)
                                     .width(1.dp)
                                     .background(MaterialTheme.colorScheme.outlineVariant)
                             )
@@ -127,28 +126,28 @@ fun StatisticsScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     if (uiState.expenseByCategory.isNotEmpty()) {
                         Text(
                             text = "支出分布",
                             style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(bottom = 12.dp)
+                            modifier = Modifier.padding(bottom = 8.dp)
                         )
 
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp)
                         ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
+                            Column(modifier = Modifier.padding(12.dp)) {
                                 PieChart(
                                     data = uiState.expenseByCategory,
                                     modifier = Modifier
-                                        .size(160.dp)
+                                        .size(140.dp)
                                         .align(Alignment.CenterHorizontally)
                                 )
 
-                                Spacer(modifier = Modifier.height(16.dp))
+                                Spacer(modifier = Modifier.height(12.dp))
 
                                 LazyColumn(
                                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -164,21 +163,21 @@ fun StatisticsScreen(
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
 
                     if (uiState.incomeByCategory.isNotEmpty()) {
                         Text(
                             text = "收入分布",
                             style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(bottom = 12.dp)
+                            modifier = Modifier.padding(bottom = 8.dp)
                         )
 
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp)
                         ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
+                            Column(modifier = Modifier.padding(12.dp)) {
                                 LazyColumn(
                                     verticalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
@@ -226,7 +225,7 @@ fun PieChart(
                 startAngle = startAngle,
                 sweepAngle = sweepAngle,
                 useCenter = true,
-                style = Stroke(width = 32.dp.toPx()),
+                style = Stroke(width = 28.dp.toPx()),
                 size = size
             )
 
@@ -252,11 +251,11 @@ fun CategoryStatRow(
         CategoryCircleIcon(
             name = stat.categoryName,
             color = stat.categoryColor,
-            size = 32.dp,
+            size = 28.dp,
             textStyle = MaterialTheme.typography.labelSmall
         )
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(8.dp))
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -275,7 +274,7 @@ fun CategoryStatRow(
             )
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(8.dp))
 
         Text(
             text = CurrencyFormat.format(stat.amount),

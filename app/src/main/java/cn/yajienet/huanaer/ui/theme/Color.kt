@@ -82,7 +82,9 @@ val LightExpenseContainer = Color(0xFFFFCDD2)
 val LightOnExpenseContainer = Color(0xFFB71C1C)
 
 val LightBudgetWarning = Color(0xFFEF6C00)
+val LightBudgetWarningContainer = Color(0xFFFFE0B2)
 val LightBudgetDanger = Color(0xFFD32F2F)
+val LightBudgetDangerContainer = Color(0xFFFFCDD2)
 
 // Financial Colors - Dark Theme
 val DarkIncome = Color(0xFF81C784)
@@ -94,7 +96,9 @@ val DarkExpenseContainer = Color(0xFFC62828)
 val DarkOnExpenseContainer = Color(0xFFFFCDD2)
 
 val DarkBudgetWarning = Color(0xFFFFB74D)
+val DarkBudgetWarningContainer = Color(0xFFE65100)
 val DarkBudgetDanger = Color(0xFFEF5350)
+val DarkBudgetDangerContainer = Color(0xFFC62828)
 
 // Legacy color references (for backward compatibility)
 val Purple80 = LightPrimary

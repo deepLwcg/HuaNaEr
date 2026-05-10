@@ -24,7 +24,9 @@ data class ExtendedColorScheme(
     val expenseContainer: Color,
     val onExpenseContainer: Color,
     val budgetWarning: Color,
-    val budgetDanger: Color
+    val budgetWarningContainer: Color,
+    val budgetDanger: Color,
+    val budgetDangerContainer: Color
 )
 
 // Light extended color scheme
@@ -36,7 +38,9 @@ private val LightExtendedColorScheme = ExtendedColorScheme(
     expenseContainer = LightExpenseContainer,
     onExpenseContainer = LightOnExpenseContainer,
     budgetWarning = LightBudgetWarning,
-    budgetDanger = LightBudgetDanger
+    budgetWarningContainer = LightBudgetWarningContainer,
+    budgetDanger = LightBudgetDanger,
+    budgetDangerContainer = LightBudgetDangerContainer
 )
 
 // Dark extended color scheme
@@ -48,7 +52,9 @@ private val DarkExtendedColorScheme = ExtendedColorScheme(
     expenseContainer = DarkExpenseContainer,
     onExpenseContainer = DarkOnExpenseContainer,
     budgetWarning = DarkBudgetWarning,
-    budgetDanger = DarkBudgetDanger
+    budgetWarningContainer = DarkBudgetWarningContainer,
+    budgetDanger = DarkBudgetDanger,
+    budgetDangerContainer = DarkBudgetDangerContainer
 )
 
 // CompositionLocal for extended colors

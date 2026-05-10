@@ -1,9 +1,7 @@
 package cn.yajienet.huanaer.ui.screens.transaction
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -15,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -51,17 +48,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cn.yajienet.huanaer.data.model.TransactionType
-import cn.yajienet.huanaer.ui.theme.ExpenseRed
-import cn.yajienet.huanaer.ui.theme.IncomeGreen
-import java.text.NumberFormat
-import java.text.SimpleDateFormat
-import java.util.Locale
+import cn.yajienet.huanaer.ui.theme.extendedColorScheme
+import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
+import cn.yajienet.huanaer.util.CurrencyFormat
+import cn.yajienet.huanaer.util.DateUtils
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -75,8 +70,7 @@ fun TransactionDetailScreen(
         factory = TransactionDetailViewModelFactory(application, transactionId)
     )
     val uiState by viewModel.uiState.collectAsState()
-    val currencyFormat = NumberFormat.getCurrencyInstance(Locale.CHINA)
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.CHINA)
+    val colors = extendedColorScheme()
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
@@ -200,7 +194,7 @@ fun TransactionDetailScreen(
 
                 // Date picker field
                 OutlinedTextField(
-                    value = dateFormat.format(uiState.date),
+                    value = DateUtils.formatDate(uiState.date),
                     onValueChange = {},
                     label = { Text("日期") },
                     readOnly = true,
@@ -250,14 +244,18 @@ fun TransactionDetailScreen(
                 val transaction = uiState.transaction!!
 
                 // Amount card
+                val amountColor = when (transaction.type) {
+                    TransactionType.EXPENSE -> colors.expense
+                    TransactionType.INCOME -> colors.income
+                }
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (transaction.type == TransactionType.EXPENSE)
-                            ExpenseRed.copy(alpha = 0.1f)
-                        else
-                            IncomeGreen.copy(alpha = 0.1f)
+                        containerColor = when (transaction.type) {
+                            TransactionType.EXPENSE -> colors.expenseContainer.copy(alpha = 0.3f)
+                            TransactionType.INCOME -> colors.incomeContainer.copy(alpha = 0.3f)
+                        }
                     )
                 ) {
                     Column(
@@ -269,19 +267,13 @@ fun TransactionDetailScreen(
                         Text(
                             text = if (transaction.type == TransactionType.EXPENSE) "支出" else "收入",
                             style = MaterialTheme.typography.labelLarge,
-                            color = if (transaction.type == TransactionType.EXPENSE)
-                                ExpenseRed
-                            else
-                                IncomeGreen
+                            color = amountColor
                         )
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            text = currencyFormat.format(transaction.amount),
+                            text = CurrencyFormat.format(transaction.amount),
                             style = MaterialTheme.typography.headlineMedium,
-                            color = if (transaction.type == TransactionType.EXPENSE)
-                                ExpenseRed
-                            else
-                                IncomeGreen
+                            color = amountColor
                         )
                     }
                 }
@@ -301,19 +293,12 @@ fun TransactionDetailScreen(
                             label = "分类",
                             value = transaction.categoryName,
                             leadingIcon = {
-                                Box(
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .clip(CircleShape)
-                                        .background(Color(android.graphics.Color.parseColor(transaction.categoryColor))),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = transaction.categoryName.take(2),
-                                        color = Color.White,
-                                        style = MaterialTheme.typography.labelMedium
-                                    )
-                                }
+                                CategoryCircleIcon(
+                                    name = transaction.categoryName,
+                                    color = transaction.categoryColor,
+                                    size = 32.dp,
+                                    textStyle = MaterialTheme.typography.labelMedium
+                                )
                             }
                         )
 
@@ -322,7 +307,7 @@ fun TransactionDetailScreen(
                         // Date
                         DetailRow(
                             label = "日期",
-                            value = dateFormat.format(transaction.date)
+                            value = DateUtils.formatDate(transaction.date)
                         )
 
                         // Note (if exists)
@@ -339,7 +324,7 @@ fun TransactionDetailScreen(
                         // Created time
                         DetailRow(
                             label = "创建时间",
-                            value = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.CHINA).format(transaction.createdAt)
+                            value = DateUtils.formatDateTime(transaction.createdAt)
                         )
                     }
                 }

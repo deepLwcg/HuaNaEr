@@ -144,7 +144,9 @@ fun AddTransactionScreen(
                 label = { Text("日期") },
                 readOnly = true,
                 trailingIcon = {
-                    Icon(Icons.Default.DateRange, "选择日期")
+                    IconButton(onClick = { showDatePicker = true }) {
+                        Icon(Icons.Default.DateRange, "选择日期")
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()

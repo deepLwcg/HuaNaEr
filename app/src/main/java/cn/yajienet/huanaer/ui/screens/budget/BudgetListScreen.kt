@@ -18,24 +18,22 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -55,7 +53,8 @@ import cn.yajienet.huanaer.util.DateUtils
 @Composable
 fun BudgetListScreen(
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    onBudgetClick: (Long) -> Unit = {}
+    onBudgetClick: (Long) -> Unit = {},
+    addBudgetTrigger: Int = 0
 ) {
     val context = LocalContext.current
     val application = context.applicationContext as cn.yajienet.huanaer.HuaNaErApplication
@@ -65,53 +64,45 @@ fun BudgetListScreen(
     val uiState by viewModel.uiState.collectAsState()
     val colors = extendedColorScheme()
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.surface,
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { viewModel.showAddDialog() },
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Icon(Icons.Filled.Add, "添加预算")
-            }
+    // Handle add budget trigger from FAB
+    LaunchedEffect(addBudgetTrigger) {
+        if (addBudgetTrigger > 0) {
+            viewModel.showAddDialog()
         }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(contentPadding)
-                .padding(innerPadding)
-                .padding(16.dp)
-        ) {
-            Text(
-                text = DateUtils.formatMonthYear(uiState.currentMonth, uiState.currentYear),
-                style = MaterialTheme.typography.titleMedium
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(contentPadding)
+            .padding(16.dp)
+    ) {
+        Text(
+            text = DateUtils.formatMonthYear(uiState.currentMonth, uiState.currentYear),
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        if (uiState.isLoading) {
+            LoadingState()
+        } else if (uiState.budgets.isEmpty()) {
+            EmptyState(
+                title = "暂无预算设置",
+                subtitle = "点击右下角按钮添加预算",
+                modifier = Modifier.fillMaxSize()
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (uiState.isLoading) {
-                LoadingState()
-            } else if (uiState.budgets.isEmpty()) {
-                EmptyState(
-                    title = "暂无预算设置",
-                    subtitle = "点击下方按钮添加预算",
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
-                AnimatedVisibility(visible = true, enter = fadeIn()) {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(uiState.budgets) { budget ->
-                            BudgetCard(
-                                budget = budget,
-                                onDelete = { viewModel.deleteBudget(budget) },
-                                onClick = { onBudgetClick(budget.id) }
-                            )
-                        }
+        } else {
+            AnimatedVisibility(visible = true, enter = fadeIn()) {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(uiState.budgets) { budget ->
+                        BudgetCard(
+                            budget = budget,
+                            onDelete = { viewModel.deleteBudget(budget) },
+                            onClick = { onBudgetClick(budget.id) }
+                        )
                     }
                 }
             }
@@ -191,7 +182,7 @@ fun BudgetCard(
                 MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         )
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -218,19 +209,17 @@ fun BudgetCard(
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column {
-                    Text(
-                        "已用: ${CurrencyFormat.format(budget.spent)}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = if (isOverBudget) colors.budgetDanger else MaterialTheme.colorScheme.onSurface
-                    )
-                }
+                Text(
+                    "已用: ${CurrencyFormat.format(budget.spent)}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (isOverBudget) colors.budgetDanger else MaterialTheme.colorScheme.onSurface
+                )
                 Text(
                     "预算: ${CurrencyFormat.format(budget.amount)}",
                     style = MaterialTheme.typography.bodyMedium,

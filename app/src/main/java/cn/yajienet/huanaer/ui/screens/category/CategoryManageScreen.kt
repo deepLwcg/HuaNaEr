@@ -8,14 +8,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -28,13 +26,10 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -52,7 +47,7 @@ import cn.yajienet.huanaer.data.model.TransactionType
 import cn.yajienet.huanaer.ui.components.LoadingState
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CategoryManageScreen(
     contentPadding: PaddingValues = PaddingValues(0.dp)
@@ -65,94 +60,79 @@ fun CategoryManageScreen(
     val uiState by viewModel.uiState.collectAsState()
     val colors = extendedColorScheme()
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.surface,
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { viewModel.showAddDialog(TransactionType.EXPENSE) },
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Icon(Icons.Filled.Add, "添加分类")
-            }
-        }
-    ) { innerPadding ->
-        if (uiState.isLoading) {
-            LoadingState()
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(contentPadding)
-                    .padding(innerPadding)
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = "支出分类",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
+    if (uiState.isLoading) {
+        LoadingState()
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(contentPadding)
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "支出分类",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
 
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = colors.expenseContainer.copy(alpha = 0.2f)
-                    )
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = colors.expenseContainer.copy(alpha = 0.2f)
+                )
+            ) {
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 80.dp),
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    LazyVerticalGrid(
-                        columns = GridCells.Adaptive(minSize = 80.dp),
-                        modifier = Modifier.padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(uiState.expenseCategories) { category ->
-                            CategoryItem(
-                                category = category,
-                                onDelete = { viewModel.deleteCategory(category) }
-                            )
-                        }
-                        item {
-                            AddCategoryButton(
-                                onClick = { viewModel.showAddDialog(TransactionType.EXPENSE) }
-                            )
-                        }
+                    items(uiState.expenseCategories) { category ->
+                        CategoryItem(
+                            category = category,
+                            onDelete = { viewModel.deleteCategory(category) }
+                        )
+                    }
+                    item {
+                        AddCategoryButton(
+                            onClick = { viewModel.showAddDialog(TransactionType.EXPENSE) }
+                        )
                     }
                 }
+            }
 
-                Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(16.dp))
 
-                Text(
-                    text = "收入分类",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(bottom = 12.dp)
+            Text(
+                text = "收入分类",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = colors.incomeContainer.copy(alpha = 0.2f)
                 )
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = colors.incomeContainer.copy(alpha = 0.2f)
-                    )
+            ) {
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 80.dp),
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    LazyVerticalGrid(
-                        columns = GridCells.Adaptive(minSize = 80.dp),
-                        modifier = Modifier.padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(uiState.incomeCategories) { category ->
-                            CategoryItem(
-                                category = category,
-                                onDelete = { viewModel.deleteCategory(category) }
-                            )
-                        }
-                        item {
-                            AddCategoryButton(
-                                onClick = { viewModel.showAddDialog(TransactionType.INCOME) }
-                            )
-                        }
+                    items(uiState.incomeCategories) { category ->
+                        CategoryItem(
+                            category = category,
+                            onDelete = { viewModel.deleteCategory(category) }
+                        )
+                    }
+                    item {
+                        AddCategoryButton(
+                            onClick = { viewModel.showAddDialog(TransactionType.INCOME) }
+                        )
                     }
                 }
             }
@@ -173,7 +153,7 @@ fun CategoryManageScreen(
                         label = { Text("分类名称") },
                         modifier = Modifier.fillMaxWidth()
                     )
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(12.dp))
                     Text(
                         text = "颜色",
                         style = MaterialTheme.typography.labelMedium
@@ -189,7 +169,7 @@ fun CategoryManageScreen(
                         colorOptions.forEach { colorHex ->
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
+                                    .size(32.dp)
                                     .clip(CircleShape)
                                     .background(Color(android.graphics.Color.parseColor(colorHex)))
                                     .clickable { viewModel.setDialogColor(colorHex) }
@@ -233,7 +213,7 @@ fun CategoryItem(
     ) {
         Box(
             modifier = Modifier
-                .size(56.dp)
+                .size(48.dp)
                 .clip(CircleShape)
                 .background(Color(android.graphics.Color.parseColor(category.color))),
             contentAlignment = Alignment.Center
@@ -241,7 +221,7 @@ fun CategoryItem(
             Text(
                 text = category.name.take(2),
                 color = Color.White,
-                style = MaterialTheme.typography.labelMedium
+                style = MaterialTheme.typography.labelSmall
             )
         }
         Spacer(Modifier.height(4.dp))
@@ -270,21 +250,27 @@ fun AddCategoryButton(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier.clickable(onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
             modifier = Modifier
-                .size(56.dp)
+                .size(48.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Filled.Add,
-                "添加",
+                "添加分类",
                 tint = MaterialTheme.colorScheme.primary
             )
         }
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = "添加",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.primary
+        )
     }
 }

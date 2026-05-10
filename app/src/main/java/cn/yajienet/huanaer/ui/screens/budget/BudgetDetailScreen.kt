@@ -1,8 +1,6 @@
 package cn.yajienet.huanaer.ui.screens.budget
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -43,15 +40,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import cn.yajienet.huanaer.ui.theme.BudgetDanger
-import cn.yajienet.huanaer.ui.theme.IncomeGreen
-import java.text.NumberFormat
-import java.util.Locale
+import cn.yajienet.huanaer.ui.theme.extendedColorScheme
+import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
+import cn.yajienet.huanaer.util.CurrencyFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,7 +60,7 @@ fun BudgetDetailScreen(
         factory = BudgetDetailViewModelFactory(application, budgetId)
     )
     val uiState by viewModel.uiState.collectAsState()
-    val currencyFormat = NumberFormat.getCurrencyInstance(Locale.CHINA)
+    val colors = extendedColorScheme()
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     // Navigate back when saved or deleted
@@ -141,19 +136,11 @@ fun BudgetDetailScreen(
                         modifier = Modifier.padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(Color(android.graphics.Color.parseColor(budget.categoryColor))),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = budget.categoryName.take(2),
-                                color = Color.White,
-                                style = MaterialTheme.typography.labelMedium
-                            )
-                        }
+                        CategoryCircleIcon(
+                            name = budget.categoryName,
+                            color = budget.categoryColor,
+                            size = 40.dp
+                        )
                         Spacer(Modifier.width(12.dp))
                         Column {
                             Text(
@@ -209,6 +196,11 @@ fun BudgetDetailScreen(
                 val progress = (budget.spent / budget.amount).toFloat().coerceIn(0f, 1f)
                 val isOverBudget = budget.spent > budget.amount
                 val remaining = budget.amount - budget.spent
+                val progressColor = when {
+                    progress >= 1f -> colors.budgetDanger
+                    progress >= 0.8f -> colors.budgetWarning
+                    else -> colors.income
+                }
 
                 // Category and amount header
                 Card(
@@ -216,9 +208,9 @@ fun BudgetDetailScreen(
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = if (isOverBudget)
-                            BudgetDanger.copy(alpha = 0.1f)
+                            colors.budgetDangerContainer.copy(alpha = 0.3f)
                         else
-                            IncomeGreen.copy(alpha = 0.1f)
+                            colors.incomeContainer.copy(alpha = 0.3f)
                     )
                 ) {
                     Column(
@@ -227,19 +219,12 @@ fun BudgetDetailScreen(
                             .padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(56.dp)
-                                .clip(CircleShape)
-                                .background(Color(android.graphics.Color.parseColor(budget.categoryColor))),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = budget.categoryName.take(2),
-                                color = Color.White,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                        }
+                        CategoryCircleIcon(
+                            name = budget.categoryName,
+                            color = budget.categoryColor,
+                            size = 56.dp,
+                            textStyle = MaterialTheme.typography.titleMedium
+                        )
                         Spacer(Modifier.height(12.dp))
                         Text(
                             text = budget.categoryName,
@@ -252,7 +237,7 @@ fun BudgetDetailScreen(
                         )
                         Spacer(Modifier.height(16.dp))
                         Text(
-                            text = "预算: ${currencyFormat.format(budget.amount)}",
+                            text = "预算: ${CurrencyFormat.format(budget.amount)}",
                             style = MaterialTheme.typography.headlineSmall
                         )
                     }
@@ -279,9 +264,9 @@ fun BudgetDetailScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
-                                    text = currencyFormat.format(budget.spent),
+                                    text = CurrencyFormat.format(budget.spent),
                                     style = MaterialTheme.typography.titleMedium,
-                                    color = if (isOverBudget) BudgetDanger else MaterialTheme.colorScheme.onSurface
+                                    color = if (isOverBudget) colors.budgetDanger else MaterialTheme.colorScheme.onSurface
                                 )
                             }
                             Column(horizontalAlignment = Alignment.End) {
@@ -291,9 +276,9 @@ fun BudgetDetailScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
-                                    text = currencyFormat.format(if (isOverBudget) budget.spent - budget.amount else remaining),
+                                    text = CurrencyFormat.format(if (isOverBudget) budget.spent - budget.amount else remaining),
                                     style = MaterialTheme.typography.titleMedium,
-                                    color = if (isOverBudget) BudgetDanger else IncomeGreen
+                                    color = if (isOverBudget) colors.budgetDanger else colors.income
                                 )
                             }
                         }
@@ -306,7 +291,7 @@ fun BudgetDetailScreen(
                                 .fillMaxWidth()
                                 .height(12.dp)
                                 .clip(RoundedCornerShape(6.dp)),
-                            color = if (isOverBudget) BudgetDanger else IncomeGreen,
+                            color = progressColor,
                             trackColor = MaterialTheme.colorScheme.surfaceVariant
                         )
 
@@ -328,7 +313,7 @@ fun BudgetDetailScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = if (isOverBudget)
-                            BudgetDanger.copy(alpha = 0.15f)
+                            colors.budgetDangerContainer.copy(alpha = 0.3f)
                         else
                             MaterialTheme.colorScheme.surfaceVariant
                     )
@@ -339,15 +324,15 @@ fun BudgetDetailScreen(
                     ) {
                         if (isOverBudget) {
                             Text(
-                                text = "⚠️ 预算已超出 ${currencyFormat.format(budget.spent - budget.amount)}",
+                                text = "⚠️ 预算已超出 ${CurrencyFormat.format(budget.spent - budget.amount)}",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = BudgetDanger
+                                color = colors.budgetDanger
                             )
                         } else {
                             Text(
-                                text = "✓ 预算正常，还有 ${currencyFormat.format(remaining)} 可用",
+                                text = "✓ 预算正常，还有 ${CurrencyFormat.format(remaining)} 可用",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = IncomeGreen
+                                color = colors.income
                             )
                         }
                     }
