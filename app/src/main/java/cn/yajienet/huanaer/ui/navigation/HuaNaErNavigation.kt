@@ -2,7 +2,7 @@ package cn.yajienet.huanaer.ui.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Category
@@ -15,6 +15,8 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -37,9 +39,11 @@ import cn.yajienet.huanaer.ui.screens.transaction.TransactionDetailScreen
 data class BottomNavItem(
     val screen: Screen,
     val icon: ImageVector,
-    val label: String
+    val label: String,
+    val title: String
 )
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun HuaNaErNavigation(
     modifier: Modifier = Modifier
@@ -49,17 +53,29 @@ fun HuaNaErNavigation(
     val currentDestination = navBackStackEntry?.destination
 
     val bottomNavItems = listOf(
-        BottomNavItem(Screen.Home, Icons.Filled.Home, "首页"),
-        BottomNavItem(Screen.Statistics, Icons.Filled.BarChart, "统计"),
-        BottomNavItem(Screen.BudgetList, Icons.Filled.AccountBalanceWallet, "预算"),
-        BottomNavItem(Screen.CategoryManage, Icons.Filled.Category, "分类")
+        BottomNavItem(Screen.Home, Icons.Filled.Home, "首页", "花哪儿"),
+        BottomNavItem(Screen.Statistics, Icons.Filled.BarChart, "统计", "统计分析"),
+        BottomNavItem(Screen.BudgetList, Icons.Filled.AccountBalanceWallet, "预算", "预算管理"),
+        BottomNavItem(Screen.CategoryManage, Icons.Filled.Category, "分类", "分类管理")
     )
 
     val showBottomBar = currentDestination?.route in bottomNavItems.map { it.screen.route }
+    val currentNavItem = bottomNavItems.find { it.screen.route == currentDestination?.route }
 
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface,
+        topBar = {
+            if (showBottomBar && currentNavItem != null) {
+                TopAppBar(
+                    title = { Text(currentNavItem.title) },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface
+                    )
+                )
+            }
+        },
         bottomBar = {
             if (showBottomBar) {
                 NavigationBar(
@@ -96,7 +112,7 @@ fun HuaNaErNavigation(
         NavHost(
             navController = navController,
             startDestination = Screen.Home.route,
-            modifier = Modifier.padding(innerPadding),
+            modifier = Modifier.fillMaxSize(),
             enterTransition = {
                 slideIntoContainer(
                     AnimatedContentTransitionScope.SlideDirection.Start,
@@ -124,6 +140,7 @@ fun HuaNaErNavigation(
         ) {
             composable(Screen.Home.route) {
                 HomeScreen(
+                    contentPadding = innerPadding,
                     onAddTransactionClick = {
                         navController.navigate(Screen.AddTransaction.route)
                     },
@@ -133,13 +150,18 @@ fun HuaNaErNavigation(
                 )
             }
             composable(Screen.Statistics.route) {
-                StatisticsScreen()
+                StatisticsScreen(
+                    contentPadding = innerPadding
+                )
             }
             composable(Screen.CategoryManage.route) {
-                CategoryManageScreen()
+                CategoryManageScreen(
+                    contentPadding = innerPadding
+                )
             }
             composable(Screen.BudgetList.route) {
                 BudgetListScreen(
+                    contentPadding = innerPadding,
                     onBudgetClick = { budgetId ->
                         navController.navigate(Screen.BudgetDetail.createRoute(budgetId))
                     }

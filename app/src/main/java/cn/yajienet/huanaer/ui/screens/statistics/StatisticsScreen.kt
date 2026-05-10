@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,10 +24,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -35,7 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -46,9 +43,10 @@ import cn.yajienet.huanaer.ui.components.MonthYearSelector
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import cn.yajienet.huanaer.util.CurrencyFormat
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StatisticsScreen() {
+fun StatisticsScreen(
+    contentPadding: PaddingValues = PaddingValues(0.dp)
+) {
     val context = LocalContext.current
     val application = context.applicationContext as cn.yajienet.huanaer.HuaNaErApplication
     val viewModel: StatisticsViewModel = viewModel(
@@ -56,177 +54,152 @@ fun StatisticsScreen() {
     )
     val uiState by viewModel.uiState.collectAsState()
     val colors = extendedColorScheme()
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
-    Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            TopAppBar(
-                title = { Text("统计分析") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                ),
-                scrollBehavior = scrollBehavior
+    if (uiState.isLoading) {
+        LoadingState()
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(contentPadding)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            MonthYearSelector(
+                year = uiState.selectedYear,
+                month = uiState.selectedMonth,
+                onPrevious = { viewModel.previousMonth() },
+                onNext = { viewModel.nextMonth() },
+                modifier = Modifier.padding(vertical = 8.dp)
             )
-        }
-    ) { innerPadding ->
-        if (uiState.isLoading) {
-            LoadingState(modifier = Modifier.padding(innerPadding))
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(horizontal = 16.dp)
-            ) {
-                // Month selector
-                MonthYearSelector(
-                    year = uiState.selectedYear,
-                    month = uiState.selectedMonth,
-                    onPrevious = { viewModel.previousMonth() },
-                    onNext = { viewModel.nextMonth() },
-                    modifier = Modifier.padding(vertical = 16.dp)
-                )
 
-                AnimatedVisibility(
-                    visible = !uiState.isLoading,
-                    enter = fadeIn()
-                ) {
-                    Column {
-                        // Summary card
+            AnimatedVisibility(
+                visible = !uiState.isLoading,
+                enter = fadeIn()
+            ) {
+                Column {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "收入",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = CurrencyFormat.format(uiState.totalIncome),
+                                    style = MaterialTheme.typography.titleLarge,
+                                    color = colors.income,
+                                    modifier = Modifier.padding(top = 4.dp)
+                                )
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .height(40.dp)
+                                    .width(1.dp)
+                                    .background(MaterialTheme.colorScheme.outlineVariant)
+                            )
+
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "支出",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = CurrencyFormat.format(uiState.totalExpense),
+                                    style = MaterialTheme.typography.titleLarge,
+                                    color = colors.expense,
+                                    modifier = Modifier.padding(top = 4.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    if (uiState.expenseByCategory.isNotEmpty()) {
+                        Text(
+                            text = "支出分布",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        )
+
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(24.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                            )
+                            shape = RoundedCornerShape(16.dp)
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(24.dp),
-                                horizontalArrangement = Arrangement.SpaceEvenly
-                            ) {
-                                // Income
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        text = "收入",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Text(
-                                        text = CurrencyFormat.format(uiState.totalIncome),
-                                        style = MaterialTheme.typography.titleLarge,
-                                        color = colors.income,
-                                        modifier = Modifier.padding(top = 4.dp)
-                                    )
-                                }
-
-                                // Divider
-                                Box(
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                PieChart(
+                                    data = uiState.expenseByCategory,
                                     modifier = Modifier
-                                        .height(40.dp)
-                                        .width(1.dp)
-                                        .background(MaterialTheme.colorScheme.outlineVariant)
+                                        .size(160.dp)
+                                        .align(Alignment.CenterHorizontally)
                                 )
 
-                                // Expense
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        text = "支出",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Text(
-                                        text = CurrencyFormat.format(uiState.totalExpense),
-                                        style = MaterialTheme.typography.titleLarge,
-                                        color = colors.expense,
-                                        modifier = Modifier.padding(top = 4.dp)
-                                    )
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                LazyColumn(
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    items(uiState.expenseByCategory) { stat ->
+                                        CategoryStatRow(
+                                            stat = stat,
+                                            total = uiState.totalExpense,
+                                            isExpense = true
+                                        )
+                                    }
                                 }
                             }
                         }
 
                         Spacer(modifier = Modifier.height(24.dp))
+                    }
 
-                        // Expense by category
-                        if (uiState.expenseByCategory.isNotEmpty()) {
-                            Text(
-                                text = "支出分布",
-                                style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.padding(bottom = 12.dp)
-                            )
+                    if (uiState.incomeByCategory.isNotEmpty()) {
+                        Text(
+                            text = "收入分布",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        )
 
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(16.dp)
-                            ) {
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    // Pie chart
-                                    PieChart(
-                                        data = uiState.expenseByCategory,
-                                        modifier = Modifier
-                                            .size(160.dp)
-                                            .align(Alignment.CenterHorizontally)
-                                    )
-
-                                    Spacer(modifier = Modifier.height(16.dp))
-
-                                    // Category list
-                                    LazyColumn(
-                                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        items(uiState.expenseByCategory) { stat ->
-                                            CategoryStatRow(
-                                                stat = stat,
-                                                total = uiState.totalExpense,
-                                                isExpense = true
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(24.dp))
-                        }
-
-                        // Income by category
-                        if (uiState.incomeByCategory.isNotEmpty()) {
-                            Text(
-                                text = "收入分布",
-                                style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.padding(bottom = 12.dp)
-                            )
-
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(16.dp)
-                            ) {
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    LazyColumn(
-                                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        items(uiState.incomeByCategory) { stat ->
-                                            CategoryStatRow(
-                                                stat = stat,
-                                                total = uiState.totalIncome,
-                                                isExpense = false
-                                            )
-                                        }
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                LazyColumn(
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    items(uiState.incomeByCategory) { stat ->
+                                        CategoryStatRow(
+                                            stat = stat,
+                                            total = uiState.totalIncome,
+                                            isExpense = false
+                                        )
                                     }
                                 }
                             }
                         }
+                    }
 
-                        // Empty state
-                        if (uiState.expenseByCategory.isEmpty() && uiState.incomeByCategory.isEmpty()) {
-                            EmptyState(
-                                title = "本月暂无数据",
-                                subtitle = "开始记账后可查看统计",
-                                modifier = Modifier.fillMaxSize().weight(1f)
-                            )
-                        }
+                    if (uiState.expenseByCategory.isEmpty() && uiState.incomeByCategory.isEmpty()) {
+                        EmptyState(
+                            title = "本月暂无数据",
+                            subtitle = "开始记账后可查看统计",
+                            modifier = Modifier.fillMaxSize().weight(1f)
+                        )
                     }
                 }
             }

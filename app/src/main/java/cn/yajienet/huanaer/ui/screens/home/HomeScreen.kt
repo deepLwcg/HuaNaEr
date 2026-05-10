@@ -18,20 +18,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -39,11 +35,11 @@ import cn.yajienet.huanaer.ui.components.EmptyState
 import cn.yajienet.huanaer.ui.components.LoadingState
 import cn.yajienet.huanaer.ui.components.SummaryCard
 import cn.yajienet.huanaer.ui.components.TransactionListItem
-import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    contentPadding: PaddingValues = PaddingValues(0.dp),
     onAddTransactionClick: () -> Unit = {},
     onTransactionClick: (Long) -> Unit = {},
     onNavigateToStatistics: () -> Unit = {},
@@ -55,26 +51,9 @@ fun HomeScreen(
         factory = HomeViewModelFactory(application)
     )
     val uiState by viewModel.uiState.collectAsState()
-    val colors = extendedColorScheme()
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "花哪儿",
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                ),
-                scrollBehavior = scrollBehavior
-            )
-        },
+        containerColor = MaterialTheme.colorScheme.surface,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddTransactionClick,
@@ -90,17 +69,15 @@ fun HomeScreen(
         }
     ) { innerPadding ->
         if (uiState.isLoading) {
-            LoadingState(
-                modifier = Modifier.padding(innerPadding)
-            )
+            LoadingState()
         } else {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(contentPadding)
                     .padding(innerPadding)
                     .background(MaterialTheme.colorScheme.surface)
             ) {
-                // Summary card with animation
                 AnimatedVisibility(
                     visible = !uiState.isLoading,
                     enter = fadeIn() + slideInVertically()
@@ -118,7 +95,6 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Recent transactions header
                 Text(
                     text = "最近交易",
                     style = MaterialTheme.typography.titleMedium,
@@ -137,7 +113,6 @@ fun HomeScreen(
                             .weight(1f)
                     )
                 } else {
-                    // Transaction list
                     Card(
                         modifier = Modifier
                             .fillMaxSize()

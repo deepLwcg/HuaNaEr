@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -36,8 +37,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -45,7 +44,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -56,7 +54,9 @@ import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun CategoryManageScreen() {
+fun CategoryManageScreen(
+    contentPadding: PaddingValues = PaddingValues(0.dp)
+) {
     val context = LocalContext.current
     val application = context.applicationContext as cn.yajienet.huanaer.HuaNaErApplication
     val viewModel: CategoryViewModel = viewModel(
@@ -64,20 +64,9 @@ fun CategoryManageScreen() {
     )
     val uiState by viewModel.uiState.collectAsState()
     val colors = extendedColorScheme()
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            TopAppBar(
-                title = { Text("分类管理") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                ),
-                scrollBehavior = scrollBehavior
-            )
-        },
+        containerColor = MaterialTheme.colorScheme.surface,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { viewModel.showAddDialog(TransactionType.EXPENSE) },
@@ -90,15 +79,15 @@ fun CategoryManageScreen() {
         }
     ) { innerPadding ->
         if (uiState.isLoading) {
-            LoadingState(modifier = Modifier.padding(innerPadding))
+            LoadingState()
         } else {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(contentPadding)
                     .padding(innerPadding)
                     .padding(16.dp)
             ) {
-                // Expense Categories
                 Text(
                     text = "支出分类",
                     style = MaterialTheme.typography.titleMedium,
@@ -134,7 +123,6 @@ fun CategoryManageScreen() {
 
                 Spacer(Modifier.height(24.dp))
 
-                // Income Categories
                 Text(
                     text = "收入分类",
                     style = MaterialTheme.typography.titleMedium,
@@ -171,7 +159,6 @@ fun CategoryManageScreen() {
         }
     }
 
-    // Add Dialog
     if (uiState.showAddDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.hideAddDialog() },
