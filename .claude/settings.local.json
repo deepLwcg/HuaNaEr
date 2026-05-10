@@ -11,7 +11,8 @@
       "Bash(git commit *)",
       "Bash(git add *)",
       "Bash(./gradlew assembleDebug)",
-      "Bash(./gradlew installDebug)"
+      "Bash(./gradlew installDebug)",
+      "Bash(adb logcat *)"
     ]
   }
 }
