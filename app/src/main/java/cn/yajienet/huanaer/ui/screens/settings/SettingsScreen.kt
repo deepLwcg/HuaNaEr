@@ -500,13 +500,6 @@ private fun AccountingSettingsCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                if (defaultExpenseCategory != null) {
-                    CategoryCircleIcon(
-                        name = defaultExpenseCategory.name,
-                        color = defaultExpenseCategory.color,
-                        size = 24.dp
-                    )
-                }
             }
 
             Spacer(Modifier.height(8.dp))
@@ -525,13 +518,6 @@ private fun AccountingSettingsCard(
                         defaultIncomeCategory?.name ?: "未设置",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                if (defaultIncomeCategory != null) {
-                    CategoryCircleIcon(
-                        name = defaultIncomeCategory.name,
-                        color = defaultIncomeCategory.color,
-                        size = 24.dp
                     )
                 }
             }
