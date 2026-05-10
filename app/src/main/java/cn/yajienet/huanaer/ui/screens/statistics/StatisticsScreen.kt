@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -94,9 +95,14 @@ fun StatisticsScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        // 收入 - 占50%宽度
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.weight(1f)
+                        ) {
                             Text(
                                 text = "收入",
                                 style = MaterialTheme.typography.labelMedium,
@@ -110,14 +116,19 @@ fun StatisticsScreen(
                             )
                         }
 
+                        // 分隔线
                         Box(
                             modifier = Modifier
-                                .height(32.dp)
+                                .height(40.dp)
                                 .width(1.dp)
                                 .background(MaterialTheme.colorScheme.outlineVariant)
                         )
 
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        // 支出 - 占50%宽度
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.weight(1f)
+                        ) {
                             Text(
                                 text = "支出",
                                 style = MaterialTheme.typography.labelMedium,

@@ -79,7 +79,7 @@ fun BudgetListScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(contentPadding)
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
     ) {
         if (uiState.isLoading) {
             LoadingState()
@@ -87,11 +87,14 @@ fun BudgetListScreen(
             EmptyState(
                 title = "暂无预算设置",
                 subtitle = "点击右上角按钮添加预算",
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 8.dp)
             )
         } else {
             AnimatedVisibility(visible = true, enter = fadeIn()) {
                 LazyColumn(
+                    contentPadding = PaddingValues(top = 8.dp, bottom = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(uiState.budgets) { budget ->

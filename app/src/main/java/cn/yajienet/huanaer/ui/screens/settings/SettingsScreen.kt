@@ -127,6 +127,7 @@ fun SettingsScreen(
             .fillMaxSize()
             .padding(contentPadding)
             .padding(horizontal = 16.dp),
+        contentPadding = PaddingValues(top = 0.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         // === 显示设置 ===
