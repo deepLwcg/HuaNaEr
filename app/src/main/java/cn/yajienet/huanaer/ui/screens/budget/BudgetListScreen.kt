@@ -36,9 +36,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,15 +64,9 @@ fun BudgetListScreen(
     val uiState by viewModel.uiState.collectAsState()
     val colors = extendedColorScheme()
 
-    // Track last trigger value to only respond to new triggers
-    var lastTrigger by remember { mutableIntStateOf(0) }
-
-    // Handle add budget trigger from FAB - only when trigger increases
+    // Handle add budget trigger from FAB - trigger count is tracked in ViewModel
     LaunchedEffect(addBudgetTrigger) {
-        if (addBudgetTrigger > lastTrigger) {
-            viewModel.showAddDialog()
-            lastTrigger = addBudgetTrigger
-        }
+        viewModel.handleAddTrigger(addBudgetTrigger)
     }
 
     Column(

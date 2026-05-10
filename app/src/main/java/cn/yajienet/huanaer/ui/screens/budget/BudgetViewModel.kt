@@ -25,7 +25,8 @@ data class BudgetUiState(
     val selectedCategoryId: Long? = null,
     val budgetAmount: String = "",
     val currentMonth: Int = Calendar.getInstance().get(Calendar.MONTH) + 1,
-    val currentYear: Int = Calendar.getInstance().get(Calendar.YEAR)
+    val currentYear: Int = Calendar.getInstance().get(Calendar.YEAR),
+    val lastTriggerCount: Int = 0  // 用于跟踪 FAB 触发，防止导航时重复触发
 )
 
 class BudgetViewModel(
@@ -55,6 +56,13 @@ class BudgetViewModel(
                     isLoading = false
                 )
             }
+        }
+    }
+
+    fun handleAddTrigger(trigger: Int) {
+        if (trigger > _uiState.value.lastTriggerCount) {
+            _uiState.update { it.copy(lastTriggerCount = trigger) }
+            showAddDialog()
         }
     }
 

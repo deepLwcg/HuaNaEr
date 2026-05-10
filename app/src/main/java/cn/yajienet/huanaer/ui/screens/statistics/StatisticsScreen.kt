@@ -2,12 +2,10 @@ package cn.yajienet.huanaer.ui.screens.statistics
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,8 +18,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -153,22 +149,19 @@ fun StatisticsScreen(
                                 PieChart(
                                     data = uiState.expenseByCategory,
                                     modifier = Modifier
-                                        .size(300.dp)
+                                        .size(220.dp)  // 减小饼图尺寸，提升绘制性能
                                         .align(Alignment.CenterHorizontally)
                                 )
 
                                 Spacer(modifier = Modifier.height(16.dp))
 
-                                LazyColumn(
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    items(uiState.expenseByCategory) { stat ->
-                                        CategoryStatRow(
-                                            stat = stat,
-                                            total = uiState.totalExpense,
-                                            isExpense = true
-                                        )
-                                    }
+                                uiState.expenseByCategory.forEach { stat ->
+                                    CategoryStatRow(
+                                        stat = stat,
+                                        total = uiState.totalExpense,
+                                        isExpense = true
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
                                 }
                             }
                         }
@@ -188,16 +181,13 @@ fun StatisticsScreen(
                             shape = RoundedCornerShape(16.dp)
                         ) {
                             Column(modifier = Modifier.padding(12.dp)) {
-                                LazyColumn(
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    items(uiState.incomeByCategory) { stat ->
-                                        CategoryStatRow(
-                                            stat = stat,
-                                            total = uiState.totalIncome,
-                                            isExpense = false
-                                        )
-                                    }
+                                uiState.incomeByCategory.forEach { stat ->
+                                    CategoryStatRow(
+                                        stat = stat,
+                                        total = uiState.totalIncome,
+                                        isExpense = false
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
                                 }
                             }
                         }
@@ -225,15 +215,7 @@ fun PieChart(
 
     val animationProgress = remember { Animatable(0f) }
 
-    LaunchedEffect(data) {
-        animationProgress.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(800, easing = androidx.compose.animation.core.FastOutSlowInEasing)
-        )
-    }
-
-    val totalPercentage = data.fold(0f) { acc, stat -> acc + stat.percentage }
-
+    // 使用 remember 缓存 Paint 对象，避免每次绘制时重新创建
     val textPaint = remember {
         android.graphics.Paint().apply {
             color = android.graphics.Color.BLACK
@@ -252,6 +234,21 @@ fun PieChart(
         }
     }
 
+    // 预计算总百分比和颜色，避免在 Canvas 中重复计算
+    val totalPercentage = remember(data) { data.fold(0f) { acc, stat -> acc + stat.percentage } }
+    val colors = remember(data) {
+        data.map { stat -> Color(android.graphics.Color.parseColor(stat.categoryColor)) }
+    }
+
+    // 只在数据变化时触发动画，避免每次重组都重新动画
+    LaunchedEffect(data) {
+        animationProgress.snapTo(0f)
+        animationProgress.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(500, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+        )
+    }
+
     Canvas(modifier = modifier) {
         val centerX = size.width / 2f
         val centerY = size.height / 2f
@@ -263,7 +260,7 @@ fun PieChart(
 
         data.forEachIndexed { index, stat ->
             val sweepAngle = (stat.percentage / totalPercentage) * 360f * animationProgress.value
-            val color = Color(android.graphics.Color.parseColor(stat.categoryColor))
+            val color = colors[index]
 
             drawArc(
                 color = color,

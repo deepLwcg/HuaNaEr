@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
@@ -114,22 +115,41 @@ fun CategoryManageScreen(
                             }
                             DropdownMenu(
                                 expanded = showAddMenu,
-                                onDismissRequest = { showAddMenu = false }
+                                onDismissRequest = { showAddMenu = false },
+                                modifier = Modifier.width(64.dp)
                             ) {
-                                DropdownMenuItem(
-                                    text = { Text("支出") },
-                                    onClick = {
-                                        showAddMenu = false
-                                        viewModel.showAddDialog(TransactionType.EXPENSE)
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("收入") },
-                                    onClick = {
-                                        showAddMenu = false
-                                        viewModel.showAddDialog(TransactionType.INCOME)
-                                    }
-                                )
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(36.dp)
+                                        .clickable {
+                                            showAddMenu = false
+                                            viewModel.showAddDialog(TransactionType.EXPENSE)
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        "支出",
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(36.dp)
+                                        .clickable {
+                                            showAddMenu = false
+                                            viewModel.showAddDialog(TransactionType.INCOME)
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        "收入",
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
                             }
                         }
                     },

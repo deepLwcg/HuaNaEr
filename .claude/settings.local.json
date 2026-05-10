@@ -16,7 +16,13 @@
       "Bash(gradlew.bat build *)",
       "Bash(./gradlew.bat build *)",
       "Bash(./gradlew.bat assembleDebug --no-daemon)",
-      "Bash(./gradlew.bat installDebug --no-daemon)"
+      "Bash(./gradlew.bat installDebug --no-daemon)",
+      "Bash(./gradlew assembleDebug --warning-mode=all)",
+      "Bash(./gradlew compileDebugKotlin)",
+      "Bash(gradlew.bat assembleDebug)",
+      "Bash(cmd //c \"gradlew.bat assembleDebug\")",
+      "Bash(./gradlew.bat assembleDebug)",
+      "Bash(./gradlew.bat installDebug)"
     ]
   }
 }
