@@ -6,8 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import cn.yajienet.huanaer.data.model.TransactionType
-import cn.yajienet.huanaer.util.CurrencyFormat
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
+import cn.yajienet.huanaer.util.CurrencyFormat
 
 /**
  * Display an amount with appropriate color based on transaction type
