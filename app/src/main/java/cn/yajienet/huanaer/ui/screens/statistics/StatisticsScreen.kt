@@ -1,5 +1,8 @@
 package cn.yajienet.huanaer.ui.screens.statistics
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,20 +17,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronLeft
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -35,13 +34,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import cn.yajienet.huanaer.ui.theme.ExpenseRed
-import cn.yajienet.huanaer.ui.theme.IncomeGreen
-import java.text.NumberFormat
-import java.util.Locale
+import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
+import cn.yajienet.huanaer.ui.components.EmptyState
+import cn.yajienet.huanaer.ui.components.LoadingState
+import cn.yajienet.huanaer.ui.components.MonthYearSelector
+import cn.yajienet.huanaer.ui.theme.extendedColorScheme
+import cn.yajienet.huanaer.util.CurrencyFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,144 +55,178 @@ fun StatisticsScreen() {
         factory = StatisticsViewModelFactory(application)
     )
     val uiState by viewModel.uiState.collectAsState()
-    val currencyFormat = NumberFormat.getCurrencyInstance(Locale.CHINA)
+    val colors = extendedColorScheme()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            TopAppBar(title = { Text("统计") })
+            TopAppBar(
+                title = { Text("统计分析") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                scrollBehavior = scrollBehavior
+            )
         }
     ) { innerPadding ->
         if (uiState.isLoading) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                CircularProgressIndicator()
-            }
+            LoadingState(modifier = Modifier.padding(innerPadding))
         } else {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp)
             ) {
                 // Month selector
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = { viewModel.previousMonth() }) {
-                        Icon(Icons.Filled.ChevronLeft, "上个月")
-                    }
-                    Text(
-                        text = "${uiState.selectedYear}年${uiState.selectedMonth}月",
-                        style = androidx.compose.material3.MaterialTheme.typography.titleMedium
-                    )
-                    IconButton(onClick = { viewModel.nextMonth() }) {
-                        Icon(Icons.Filled.ChevronRight, "下个月")
-                    }
-                }
+                MonthYearSelector(
+                    year = uiState.selectedYear,
+                    month = uiState.selectedMonth,
+                    onPrevious = { viewModel.previousMonth() },
+                    onNext = { viewModel.nextMonth() },
+                    modifier = Modifier.padding(vertical = 16.dp)
+                )
 
-                // Summary
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp),
-                    shape = RoundedCornerShape(8.dp)
+                AnimatedVisibility(
+                    visible = !uiState.isLoading,
+                    enter = fadeIn()
                 ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Row(
+                    Column {
+                        // Summary card
+                        Card(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
+                            shape = RoundedCornerShape(24.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                            )
                         ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("收入", style = androidx.compose.material3.MaterialTheme.typography.labelMedium)
-                                Text(
-                                    currencyFormat.format(uiState.totalIncome),
-                                    style = androidx.compose.material3.MaterialTheme.typography.titleMedium,
-                                    color = IncomeGreen
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(24.dp),
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                // Income
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = "收入",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text(
+                                        text = CurrencyFormat.format(uiState.totalIncome),
+                                        style = MaterialTheme.typography.titleLarge,
+                                        color = colors.income,
+                                        modifier = Modifier.padding(top = 4.dp)
+                                    )
+                                }
+
+                                // Divider
+                                Box(
+                                    modifier = Modifier
+                                        .height(40.dp)
+                                        .width(1.dp)
+                                        .background(MaterialTheme.colorScheme.outlineVariant)
                                 )
-                            }
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("支出", style = androidx.compose.material3.MaterialTheme.typography.labelMedium)
-                                Text(
-                                    currencyFormat.format(uiState.totalExpense),
-                                    style = androidx.compose.material3.MaterialTheme.typography.titleMedium,
-                                    color = ExpenseRed
-                                )
+
+                                // Expense
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = "支出",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text(
+                                        text = CurrencyFormat.format(uiState.totalExpense),
+                                        style = MaterialTheme.typography.titleLarge,
+                                        color = colors.expense,
+                                        modifier = Modifier.padding(top = 4.dp)
+                                    )
+                                }
                             }
                         }
-                    }
-                }
 
-                // Expense by category
-                if (uiState.expenseByCategory.isNotEmpty()) {
-                    Text(
-                        text = "支出分布",
-                        style = androidx.compose.material3.MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
-                    )
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            // Simple pie chart visualization
-                            SimplePieChart(
-                                data = uiState.expenseByCategory,
-                                modifier = Modifier
-                                    .size(120.dp)
-                                    .align(Alignment.CenterHorizontally)
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Expense by category
+                        if (uiState.expenseByCategory.isNotEmpty()) {
+                            Text(
+                                text = "支出分布",
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(bottom = 12.dp)
                             )
 
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    // Pie chart
+                                    PieChart(
+                                        data = uiState.expenseByCategory,
+                                        modifier = Modifier
+                                            .size(160.dp)
+                                            .align(Alignment.CenterHorizontally)
+                                    )
 
-                            LazyColumn {
-                                items(uiState.expenseByCategory) { stat ->
-                                    CategoryStatItem(stat, uiState.totalExpense)
+                                    Spacer(modifier = Modifier.height(16.dp))
+
+                                    // Category list
+                                    LazyColumn(
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        items(uiState.expenseByCategory) { stat ->
+                                            CategoryStatRow(
+                                                stat = stat,
+                                                total = uiState.totalExpense,
+                                                isExpense = true
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(24.dp))
+                        }
+
+                        // Income by category
+                        if (uiState.incomeByCategory.isNotEmpty()) {
+                            Text(
+                                text = "收入分布",
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(bottom = 12.dp)
+                            )
+
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    LazyColumn(
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        items(uiState.incomeByCategory) { stat ->
+                                            CategoryStatRow(
+                                                stat = stat,
+                                                total = uiState.totalIncome,
+                                                isExpense = false
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
-                }
 
-                // Income by category
-                if (uiState.incomeByCategory.isNotEmpty()) {
-                    Text(
-                        text = "收入分布",
-                        style = androidx.compose.material3.MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
-                    )
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            LazyColumn {
-                                items(uiState.incomeByCategory) { stat ->
-                                    CategoryStatItem(stat, uiState.totalIncome, isIncome = true)
-                                }
-                            }
+                        // Empty state
+                        if (uiState.expenseByCategory.isEmpty() && uiState.incomeByCategory.isEmpty()) {
+                            EmptyState(
+                                title = "本月暂无数据",
+                                subtitle = "开始记账后可查看统计",
+                                modifier = Modifier.fillMaxSize().weight(1f)
+                            )
                         }
-                    }
-                }
-
-                // Empty state
-                if (uiState.expenseByCategory.isEmpty() && uiState.incomeByCategory.isEmpty()) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text("本月暂无数据")
                     }
                 }
             }
@@ -198,75 +235,79 @@ fun StatisticsScreen() {
 }
 
 @Composable
-fun SimplePieChart(
+fun PieChart(
     data: List<CategoryStatistics>,
     modifier: Modifier = Modifier
 ) {
     if (data.isEmpty()) return
 
-    val totalPercentage = data.sumOf { it.percentage.toDouble() }
-    var currentAngle = 0f
+    Canvas(modifier = modifier) {
+        var startAngle = 0f
 
-    Box(
-        modifier = modifier
-            .clip(CircleShape)
-            .background(Color.Gray)
-    ) {
-        // Simple representation - colored segments would need canvas drawing
-        // For simplicity, just show colored dots representing each category
-        Row(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            data.take(5).forEach { stat ->
-                Box(
-                    modifier = Modifier
-                        .size(16.dp)
-                        .background(Color(android.graphics.Color.parseColor(stat.categoryColor)), CircleShape)
-                )
-            }
+        data.forEach { stat ->
+            val sweepAngle = stat.percentage * 360f
+            val color = Color(android.graphics.Color.parseColor(stat.categoryColor))
+
+            drawArc(
+                color = color,
+                startAngle = startAngle,
+                sweepAngle = sweepAngle,
+                useCenter = true,
+                style = Stroke(width = 32.dp.toPx()),
+                size = size
+            )
+
+            startAngle += sweepAngle
         }
     }
 }
 
 @Composable
-fun CategoryStatItem(
+fun CategoryStatRow(
     stat: CategoryStatistics,
     total: Double,
-    isIncome: Boolean = false
+    isExpense: Boolean,
+    modifier: Modifier = Modifier
 ) {
-    val currencyFormat = NumberFormat.getCurrencyInstance(Locale.CHINA)
+    val colors = extendedColorScheme()
+    val progressColor = if (isExpense) colors.expense else colors.income
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
+        modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(24.dp)
-                .background(Color(android.graphics.Color.parseColor(stat.categoryColor)), CircleShape)
+        CategoryCircleIcon(
+            name = stat.categoryName,
+            color = stat.categoryColor,
+            size = 32.dp,
+            textStyle = MaterialTheme.typography.labelSmall
         )
-        Spacer(modifier = Modifier.width(8.dp))
+
+        Spacer(modifier = Modifier.width(12.dp))
+
         Column(modifier = Modifier.weight(1f)) {
-            Text(stat.categoryName, style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
+            Text(
+                text = stat.categoryName,
+                style = MaterialTheme.typography.bodyMedium
+            )
             LinearProgressIndicator(
                 progress = { stat.percentage },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(4.dp)
-                    .padding(top = 4.dp),
-                color = if (isIncome) IncomeGreen else ExpenseRed
+                    .padding(top = 4.dp)
+                    .clip(RoundedCornerShape(2.dp)),
+                color = progressColor,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
         }
-        Spacer(modifier = Modifier.width(8.dp))
+
+        Spacer(modifier = Modifier.width(12.dp))
+
         Text(
-            currencyFormat.format(stat.amount),
-            style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
-            color = if (isIncome) IncomeGreen else ExpenseRed
+            text = CurrencyFormat.format(stat.amount),
+            style = MaterialTheme.typography.bodyMedium,
+            color = progressColor
         )
     }
 }

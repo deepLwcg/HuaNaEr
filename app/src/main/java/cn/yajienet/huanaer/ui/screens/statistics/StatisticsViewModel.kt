@@ -8,13 +8,13 @@ import cn.yajienet.huanaer.data.model.Category
 import cn.yajienet.huanaer.data.model.TransactionType
 import cn.yajienet.huanaer.data.repository.CategoryRepository
 import cn.yajienet.huanaer.data.repository.TransactionRepository
+import cn.yajienet.huanaer.util.DateUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.Calendar
 
 data class CategoryStatistics(
     val categoryId: Long,
@@ -29,8 +29,8 @@ data class StatisticsUiState(
     val totalIncome: Double = 0.0,
     val expenseByCategory: List<CategoryStatistics> = emptyList(),
     val incomeByCategory: List<CategoryStatistics> = emptyList(),
-    val selectedMonth: Int = Calendar.getInstance().get(Calendar.MONTH) + 1,
-    val selectedYear: Int = Calendar.getInstance().get(Calendar.YEAR),
+    val selectedMonth: Int = DateUtils.getCurrentMonth(),
+    val selectedYear: Int = DateUtils.getCurrentYear(),
     val isLoading: Boolean = true
 )
 
@@ -51,8 +51,8 @@ class StatisticsViewModel(
             _uiState.update { it.copy(isLoading = true) }
 
             val state = _uiState.value
-            val startTime = getMonthStartTime(state.selectedMonth, state.selectedYear)
-            val endTime = getMonthEndTime(state.selectedMonth, state.selectedYear)
+            val startTime = DateUtils.getMonthStartTime(state.selectedMonth, state.selectedYear)
+            val endTime = DateUtils.getMonthEndTime(state.selectedMonth, state.selectedYear)
 
             val totalExpense = transactionRepository.getTotalByTypeAndDateRange(
                 TransactionType.EXPENSE, startTime, endTime
@@ -120,21 +120,6 @@ class StatisticsViewModel(
         val newYear = if (state.selectedMonth == 12) state.selectedYear + 1 else state.selectedYear
         _uiState.update { it.copy(selectedMonth = newMonth, selectedYear = newYear) }
         loadData()
-    }
-
-    private fun getMonthStartTime(month: Int, year: Int): Long {
-        val cal = Calendar.getInstance()
-        cal.set(year, month - 1, 1, 0, 0, 0)
-        cal.set(Calendar.MILLISECOND, 0)
-        return cal.timeInMillis
-    }
-
-    private fun getMonthEndTime(month: Int, year: Int): Long {
-        val cal = Calendar.getInstance()
-        cal.set(year, month - 1, 1, 0, 0, 0)
-        cal.set(Calendar.MILLISECOND, 0)
-        cal.add(Calendar.MONTH, 1)
-        return cal.timeInMillis
     }
 }
 

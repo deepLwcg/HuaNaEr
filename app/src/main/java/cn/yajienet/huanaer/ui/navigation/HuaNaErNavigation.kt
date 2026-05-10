@@ -1,5 +1,7 @@
 package cn.yajienet.huanaer.ui.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
@@ -7,14 +9,17 @@ import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -37,8 +42,7 @@ data class BottomNavItem(
 
 @Composable
 fun HuaNaErNavigation(
-    modifier: Modifier = Modifier,
-    onNavigateToAddTransaction: () -> Unit = {}
+    modifier: Modifier = Modifier
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -55,9 +59,13 @@ fun HuaNaErNavigation(
 
     Scaffold(
         modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.surface,
         bottomBar = {
             if (showBottomBar) {
-                NavigationBar {
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 8.dp
+                ) {
                     bottomNavItems.forEach { item ->
                         NavigationBarItem(
                             selected = currentDestination?.hierarchy?.any { it.route == item.screen.route } == true,
@@ -71,7 +79,14 @@ fun HuaNaErNavigation(
                                 }
                             },
                             icon = { Icon(imageVector = item.icon, contentDescription = item.label) },
-                            label = { Text(item.label) }
+                            label = { Text(item.label) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                            )
                         )
                     }
                 }
@@ -81,7 +96,31 @@ fun HuaNaErNavigation(
         NavHost(
             navController = navController,
             startDestination = Screen.Home.route,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Start,
+                    animationSpec = tween(300)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Start,
+                    animationSpec = tween(300)
+                )
+            },
+            popEnterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.End,
+                    animationSpec = tween(300)
+                )
+            },
+            popExitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.End,
+                    animationSpec = tween(300)
+                )
+            }
         ) {
             composable(Screen.Home.route) {
                 HomeScreen(
@@ -90,12 +129,6 @@ fun HuaNaErNavigation(
                     },
                     onTransactionClick = { transactionId ->
                         navController.navigate(Screen.TransactionDetail.createRoute(transactionId))
-                    },
-                    onNavigateToStatistics = {
-                        navController.navigate(Screen.Statistics.route)
-                    },
-                    onNavigateToBudget = {
-                        navController.navigate(Screen.BudgetList.route)
                     }
                 )
             }
@@ -107,15 +140,11 @@ fun HuaNaErNavigation(
             }
             composable(Screen.BudgetList.route) {
                 BudgetListScreen(
-                    onAddBudgetClick = {
-                        navController.navigate(Screen.AddBudget.route)
-                    },
                     onBudgetClick = { budgetId ->
                         navController.navigate(Screen.BudgetDetail.createRoute(budgetId))
                     }
                 )
             }
-            // Additional screens will be added later
             composable(Screen.AddTransaction.route) {
                 AddTransactionScreen(
                     onNavigateBack = { navController.popBackStack() }
@@ -131,10 +160,6 @@ fun HuaNaErNavigation(
                 } else {
                     Text("无效的交易ID")
                 }
-            }
-            composable(Screen.AddBudget.route) {
-                // Placeholder - will be implemented
-                Text("添加预算")
             }
             composable(Screen.BudgetDetail.route) { backStackEntry ->
                 val budgetId = backStackEntry.arguments?.getString("budgetId")?.toLongOrNull()

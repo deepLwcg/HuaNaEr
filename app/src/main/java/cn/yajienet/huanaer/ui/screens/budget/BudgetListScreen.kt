@@ -1,14 +1,18 @@
 package cn.yajienet.huanaer.ui.screens.budget
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,32 +22,36 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.lifecycle.viewmodel.compose.viewModel
-import cn.yajienet.huanaer.data.model.Budget
-import cn.yajienet.huanaer.ui.theme.BudgetDanger
-import java.text.NumberFormat
-import java.util.Locale
+import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
+import cn.yajienet.huanaer.ui.components.EmptyState
+import cn.yajienet.huanaer.ui.components.LoadingState
+import cn.yajienet.huanaer.ui.theme.extendedColorScheme
+import cn.yajienet.huanaer.util.CurrencyFormat
+import cn.yajienet.huanaer.util.DateUtils
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -57,14 +65,28 @@ fun BudgetListScreen(
         factory = BudgetViewModelFactory(application)
     )
     val uiState by viewModel.uiState.collectAsState()
-    val currencyFormat = NumberFormat.getCurrencyInstance(Locale.CHINA)
+    val colors = extendedColorScheme()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            TopAppBar(title = { Text("预算管理") })
+            TopAppBar(
+                title = { Text("预算管理") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                scrollBehavior = scrollBehavior
+            )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { viewModel.showAddDialog() }) {
+            FloatingActionButton(
+                onClick = { viewModel.showAddDialog() },
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                shape = RoundedCornerShape(16.dp)
+            ) {
                 Icon(Icons.Filled.Add, "添加预算")
             }
         }
@@ -76,42 +98,32 @@ fun BudgetListScreen(
                 .padding(16.dp)
         ) {
             Text(
-                text = "${uiState.currentYear}年${uiState.currentMonth}月预算",
-                style = androidx.compose.material3.MaterialTheme.typography.titleMedium
+                text = DateUtils.formatMonthYear(uiState.currentMonth, uiState.currentYear),
+                style = MaterialTheme.typography.titleMedium
             )
 
+            Spacer(modifier = Modifier.height(16.dp))
+
             if (uiState.isLoading) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    androidx.compose.material3.CircularProgressIndicator()
-                }
+                LoadingState()
             } else if (uiState.budgets.isEmpty()) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("暂无预算设置")
-                    Text(
-                        "点击下方按钮添加预算",
-                        style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
-                }
+                EmptyState(
+                    title = "暂无预算设置",
+                    subtitle = "点击下方按钮添加预算",
+                    modifier = Modifier.fillMaxSize()
+                )
             } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(uiState.budgets) { budget ->
-                        BudgetCard(
-                            budget = budget,
-                            currencyFormat = currencyFormat,
-                            onDelete = { viewModel.deleteBudget(budget) }
-                        )
+                AnimatedVisibility(visible = true, enter = fadeIn()) {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(uiState.budgets) { budget ->
+                            BudgetCard(
+                                budget = budget,
+                                onDelete = { viewModel.deleteBudget(budget) },
+                                onClick = { onBudgetClick(budget.id) }
+                            )
+                        }
                     }
                 }
             }
@@ -125,10 +137,10 @@ fun BudgetListScreen(
             title = { Text("添加预算") },
             text = {
                 Column {
-                    Text("选择分类", style = androidx.compose.material3.MaterialTheme.typography.labelMedium)
+                    Text("选择分类", style = MaterialTheme.typography.labelMedium)
+                    Spacer(Modifier.height(8.dp))
                     FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(top = 8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         uiState.categories.forEach { category ->
                             FilterChip(
@@ -143,7 +155,7 @@ fun BudgetListScreen(
                         value = uiState.budgetAmount,
                         onValueChange = { viewModel.setAmount(it) },
                         label = { Text("预算金额") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        prefix = { Text("¥") },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 16.dp)
@@ -166,75 +178,104 @@ fun BudgetListScreen(
 
 @Composable
 fun BudgetCard(
-    budget: Budget,
-    currencyFormat: NumberFormat,
-    onDelete: () -> Unit
+    budget: cn.yajienet.huanaer.data.model.Budget,
+    onDelete: () -> Unit,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
+    val colors = extendedColorScheme()
     val progress = (budget.spent / budget.amount).toFloat().coerceIn(0f, 1f)
     val isOverBudget = budget.spent > budget.amount
+    val progressColor = when {
+        progress >= 1f -> colors.budgetDanger
+        progress >= 0.8f -> colors.budgetWarning
+        else -> colors.income
+    }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp)
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp)),
+        onClick = onClick,
+        colors = CardDefaults.cardColors(
+            containerColor = if (isOverBudget)
+                colors.budgetDanger.copy(alpha = 0.1f)
+            else
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+        Column(modifier = Modifier.padding(20.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    budget.categoryName,
-                    style = androidx.compose.material3.MaterialTheme.typography.titleMedium
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    CategoryCircleIcon(
+                        name = budget.categoryName,
+                        color = budget.categoryColor,
+                        size = 36.dp
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        budget.categoryName,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
                 IconButton(onClick = onDelete) {
                     Icon(
                         Icons.Filled.Delete,
                         "删除",
-                        tint = androidx.compose.material3.MaterialTheme.colorScheme.error
+                        tint = MaterialTheme.colorScheme.error
                     )
                 }
             }
 
+            Spacer(Modifier.height(16.dp))
+
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
+                Column {
+                    Text(
+                        "已用: ${CurrencyFormat.format(budget.spent)}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (isOverBudget) colors.budgetDanger else MaterialTheme.colorScheme.onSurface
+                    )
+                }
                 Text(
-                    "已用: ${currencyFormat.format(budget.spent)}",
-                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
-                    color = if (isOverBudget) BudgetDanger else androidx.compose.material3.MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    "预算: ${currencyFormat.format(budget.amount)}",
-                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium
+                    "预算: ${CurrencyFormat.format(budget.amount)}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+
+            Spacer(Modifier.height(8.dp))
 
             LinearProgressIndicator(
                 progress = { progress },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp)
                     .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp)),
+                color = progressColor,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
+
+            Spacer(Modifier.height(8.dp))
 
             if (isOverBudget) {
                 Text(
-                    "超出预算 ${currencyFormat.format(budget.spent - budget.amount)}",
-                    style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
-                    color = BudgetDanger,
-                    modifier = Modifier.padding(top = 4.dp)
+                    "超出预算 ${CurrencyFormat.format(budget.spent - budget.amount)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.budgetDanger
                 )
             } else {
                 Text(
-                    "剩余 ${currencyFormat.format(budget.amount - budget.spent)}",
-                    style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(top = 4.dp)
+                    "剩余 ${CurrencyFormat.format(budget.amount - budget.spent)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.income
                 )
             }
         }
