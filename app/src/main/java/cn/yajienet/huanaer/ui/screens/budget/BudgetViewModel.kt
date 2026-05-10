@@ -9,11 +9,13 @@ import cn.yajienet.huanaer.data.model.Budget
 import cn.yajienet.huanaer.data.repository.BudgetRepository
 import cn.yajienet.huanaer.data.repository.CategoryRepository
 import cn.yajienet.huanaer.data.model.Category
+import cn.yajienet.huanaer.data.model.TransactionType
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -26,7 +28,7 @@ data class BudgetUiState(
     val budgetAmount: String = "",
     val currentMonth: Int = Calendar.getInstance().get(Calendar.MONTH) + 1,
     val currentYear: Int = Calendar.getInstance().get(Calendar.YEAR),
-    val lastTriggerCount: Int = 0  // 用于跟踪 FAB 触发，防止导航时重复触发
+    val lastTriggerCount: Int = 0
 )
 
 class BudgetViewModel(
@@ -34,60 +36,86 @@ class BudgetViewModel(
     private val categoryRepository: CategoryRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(BudgetUiState())
-    val uiState: StateFlow<BudgetUiState> = _uiState.asStateFlow()
+    private val _showAddDialog = MutableStateFlow(false)
+    private val _selectedCategoryId = MutableStateFlow<Long?>(null)
+    private val _budgetAmount = MutableStateFlow("")
+    private val _lastTriggerCount = MutableStateFlow(0)
+    private val _currentMonth = MutableStateFlow(Calendar.getInstance().get(Calendar.MONTH) + 1)
+    private val _currentYear = MutableStateFlow(Calendar.getInstance().get(Calendar.YEAR))
 
-    init {
-        loadData()
+    // 使用 flatMapLatest 动态订阅预算数据
+    private val budgetsFlow = combine(_currentMonth, _currentYear) { month, year ->
+        month to year
+    }.flatMapLatest { (month, year) ->
+        budgetRepository.getByMonthYear(month, year)
     }
 
-    fun loadData() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-
-            val state = _uiState.value
-            val budgets = budgetRepository.getByMonthYear(state.currentMonth, state.currentYear).first()
-            val categories = categoryRepository.getByType(cn.yajienet.huanaer.data.model.TransactionType.EXPENSE).first()
-
-            _uiState.update {
-                it.copy(
-                    budgets = budgets,
-                    categories = categories,
-                    isLoading = false
-                )
-            }
-        }
+    // 分离数据订阅和 UI 状态
+    private val dataFlow = combine(
+        budgetsFlow,
+        categoryRepository.getByType(TransactionType.EXPENSE)
+    ) { budgets, categories ->
+        DataState(budgets, categories)
     }
+
+    private val dialogFlow = combine(
+        _showAddDialog,
+        _selectedCategoryId,
+        _budgetAmount
+    ) { showDialog, selectedId, amount ->
+        DialogState(showDialog, selectedId, amount)
+    }
+
+    val uiState: StateFlow<BudgetUiState> = combine(
+        dataFlow,
+        dialogFlow,
+        _lastTriggerCount,
+        _currentMonth,
+        _currentYear
+    ) { data, dialog, triggerCount, month, year ->
+        BudgetUiState(
+            budgets = data.budgets,
+            categories = data.categories,
+            isLoading = false,
+            showAddDialog = dialog.showDialog,
+            selectedCategoryId = dialog.selectedId ?: data.categories.firstOrNull()?.id,
+            budgetAmount = dialog.amount,
+            currentMonth = month,
+            currentYear = year,
+            lastTriggerCount = triggerCount
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), BudgetUiState(isLoading = true))
+
+    private data class DataState(val budgets: List<Budget>, val categories: List<Category>)
+    private data class DialogState(val showDialog: Boolean, val selectedId: Long?, val amount: String)
 
     fun handleAddTrigger(trigger: Int) {
-        if (trigger > _uiState.value.lastTriggerCount) {
-            _uiState.update { it.copy(lastTriggerCount = trigger) }
+        if (trigger > _lastTriggerCount.value) {
+            _lastTriggerCount.value = trigger
             showAddDialog()
         }
     }
 
     fun showAddDialog() {
-        _uiState.update { it.copy(
-            showAddDialog = true,
-            selectedCategoryId = it.categories.firstOrNull()?.id,
-            budgetAmount = ""
-        ) }
+        _showAddDialog.value = true
+        _selectedCategoryId.value = uiState.value.categories.firstOrNull()?.id
+        _budgetAmount.value = ""
     }
 
     fun hideAddDialog() {
-        _uiState.update { it.copy(showAddDialog = false) }
+        _showAddDialog.value = false
     }
 
     fun setCategory(categoryId: Long) {
-        _uiState.update { it.copy(selectedCategoryId = categoryId) }
+        _selectedCategoryId.value = categoryId
     }
 
     fun setAmount(amount: String) {
-        _uiState.update { it.copy(budgetAmount = amount) }
+        _budgetAmount.value = amount
     }
 
     fun addBudget() {
-        val state = _uiState.value
+        val state = uiState.value
         val categoryId = state.selectedCategoryId
         val amount = state.budgetAmount.toDoubleOrNull()
 
@@ -102,7 +130,6 @@ class BudgetViewModel(
             )
             budgetRepository.insert(budget)
             hideAddDialog()
-            loadData()
         }
     }
 
@@ -117,7 +144,6 @@ class BudgetViewModel(
                     year = budget.year
                 )
             )
-            loadData()
         }
     }
 }

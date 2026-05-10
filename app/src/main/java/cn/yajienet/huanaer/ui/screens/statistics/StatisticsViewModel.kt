@@ -4,17 +4,17 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import cn.yajienet.huanaer.data.model.Category
 import cn.yajienet.huanaer.data.model.TransactionType
 import cn.yajienet.huanaer.data.repository.CategoryRepository
 import cn.yajienet.huanaer.data.repository.TransactionRepository
 import cn.yajienet.huanaer.util.DateUtils
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
 
 data class CategoryStatistics(
     val categoryId: Long,
@@ -39,39 +39,23 @@ class StatisticsViewModel(
     private val categoryRepository: CategoryRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(StatisticsUiState())
-    val uiState: StateFlow<StatisticsUiState> = _uiState.asStateFlow()
+    private val _selectedMonth = MutableStateFlow(DateUtils.getCurrentMonth())
+    private val _selectedYear = MutableStateFlow(DateUtils.getCurrentYear())
 
-    init {
-        loadData()
+    // 计算时间范围
+    private val dateRange = combine(_selectedMonth, _selectedYear) { month, year ->
+        DateUtils.getMonthStartTime(month, year) to DateUtils.getMonthEndTime(month, year)
     }
 
-    fun loadData() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-
-            val state = _uiState.value
-            val startTime = DateUtils.getMonthStartTime(state.selectedMonth, state.selectedYear)
-            val endTime = DateUtils.getMonthEndTime(state.selectedMonth, state.selectedYear)
-
-            val totalExpense = transactionRepository.getTotalByTypeAndDateRange(
-                TransactionType.EXPENSE, startTime, endTime
-            ).first()
-
-            val totalIncome = transactionRepository.getTotalByTypeAndDateRange(
-                TransactionType.INCOME, startTime, endTime
-            ).first()
-
-            val expenseTotals = transactionRepository.getCategoryTotals(
-                TransactionType.EXPENSE, startTime, endTime
-            ).first()
-
-            val incomeTotals = transactionRepository.getCategoryTotals(
-                TransactionType.INCOME, startTime, endTime
-            ).first()
-
-            val categories = categoryRepository.getAll().first()
-
+    // 使用 flatMapLatest 动态切换 Flow，当月份变化时自动重新订阅
+    val uiState: StateFlow<StatisticsUiState> = dateRange.flatMapLatest { (startTime, endTime) ->
+        combine(
+            categoryRepository.getAll(),
+            transactionRepository.getTotalByTypeAndDateRange(TransactionType.EXPENSE, startTime, endTime),
+            transactionRepository.getTotalByTypeAndDateRange(TransactionType.INCOME, startTime, endTime),
+            transactionRepository.getCategoryTotals(TransactionType.EXPENSE, startTime, endTime),
+            transactionRepository.getCategoryTotals(TransactionType.INCOME, startTime, endTime)
+        ) { categories, totalExpense, totalIncome, expenseTotals, incomeTotals ->
             val expenseStats = expenseTotals.map { (categoryId, amount) ->
                 val category = categories.find { it.id == categoryId }
                 CategoryStatistics(
@@ -94,32 +78,30 @@ class StatisticsViewModel(
                 )
             }.sortedByDescending { it.amount }
 
-            _uiState.update {
-                it.copy(
-                    totalExpense = totalExpense,
-                    totalIncome = totalIncome,
-                    expenseByCategory = expenseStats,
-                    incomeByCategory = incomeStats,
-                    isLoading = false
-                )
-            }
+            StatisticsUiState(
+                totalExpense = totalExpense,
+                totalIncome = totalIncome,
+                expenseByCategory = expenseStats,
+                incomeByCategory = incomeStats,
+                selectedMonth = _selectedMonth.value,
+                selectedYear = _selectedYear.value,
+                isLoading = false
+            )
         }
-    }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatisticsUiState(isLoading = true))
 
     fun previousMonth() {
-        val state = _uiState.value
-        val newMonth = if (state.selectedMonth == 1) 12 else state.selectedMonth - 1
-        val newYear = if (state.selectedMonth == 1) state.selectedYear - 1 else state.selectedYear
-        _uiState.update { it.copy(selectedMonth = newMonth, selectedYear = newYear) }
-        loadData()
+        val currentMonth = _selectedMonth.value
+        val currentYear = _selectedYear.value
+        _selectedMonth.value = if (currentMonth == 1) 12 else currentMonth - 1
+        _selectedYear.value = if (currentMonth == 1) currentYear - 1 else currentYear
     }
 
     fun nextMonth() {
-        val state = _uiState.value
-        val newMonth = if (state.selectedMonth == 12) 1 else state.selectedMonth + 1
-        val newYear = if (state.selectedMonth == 12) state.selectedYear + 1 else state.selectedYear
-        _uiState.update { it.copy(selectedMonth = newMonth, selectedYear = newYear) }
-        loadData()
+        val currentMonth = _selectedMonth.value
+        val currentYear = _selectedYear.value
+        _selectedMonth.value = if (currentMonth == 12) 1 else currentMonth + 1
+        _selectedYear.value = if (currentMonth == 12) currentYear + 1 else currentYear
     }
 }
 

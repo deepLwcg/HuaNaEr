@@ -180,7 +180,7 @@ fun HuaNaErNavigation(
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier.fillMaxSize(),
-                    beyondViewportPageCount = 1,  // 预加载相邻页面，减少滑动卡顿
+                    beyondViewportPageCount = 3,  // 预加载更多页面，减少滑动卡顿
                     pageSpacing = 0.dp
                 ) { page ->
                     when (page) {
