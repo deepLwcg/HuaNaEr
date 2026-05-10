@@ -4,8 +4,6 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -35,7 +33,6 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -140,6 +137,16 @@ fun HuaNaErNavigation(
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
+                        } else if (pagerState.currentPage == 2) {
+                            IconButton(
+                                onClick = { addBudgetTrigger++ }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Add,
+                                    contentDescription = "添加预算",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
                     }
                 )
@@ -170,17 +177,6 @@ fun HuaNaErNavigation(
                         }
                     }
                 )
-            }
-        },
-        floatingActionButton = {
-            if (isMainScreen && pagerState.currentPage == 2) {
-                FloatingActionButton(
-                    onClick = { addBudgetTrigger++ },
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ) {
-                    Icon(Icons.Filled.Add, contentDescription = "添加预算")
-                }
             }
         }
     ) { innerPadding ->
