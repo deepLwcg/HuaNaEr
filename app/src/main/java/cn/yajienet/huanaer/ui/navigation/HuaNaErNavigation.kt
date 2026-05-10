@@ -40,17 +40,21 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -58,6 +62,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import cn.yajienet.huanaer.ui.screens.home.HomeScreen
 import cn.yajienet.huanaer.ui.screens.statistics.StatisticsScreen
+import cn.yajienet.huanaer.ui.screens.statistics.StatisticsViewModel
+import cn.yajienet.huanaer.ui.screens.statistics.StatisticsViewModelFactory
 import cn.yajienet.huanaer.ui.screens.category.CategoryManageScreen
 import cn.yajienet.huanaer.ui.screens.budget.BudgetListScreen
 import cn.yajienet.huanaer.ui.screens.budget.BudgetDetailScreen
@@ -65,6 +71,8 @@ import cn.yajienet.huanaer.ui.screens.transaction.AddTransactionScreen
 import cn.yajienet.huanaer.ui.screens.transactionlist.TransactionListScreen
 import cn.yajienet.huanaer.ui.screens.transaction.TransactionDetailScreen
 import cn.yajienet.huanaer.ui.screens.settings.SettingsScreen
+import cn.yajienet.huanaer.ui.components.MonthYearPickerDialog
+import cn.yajienet.huanaer.util.DateUtils
 import kotlinx.coroutines.launch
 
 data class BottomNavItem(
@@ -82,6 +90,15 @@ fun HuaNaErNavigation(
     val navController = rememberNavController()
     var addBudgetTrigger by remember { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
+
+    // 统计页面的ViewModel，在TopAppBar中共享
+    val context = LocalContext.current
+    val application = context.applicationContext as cn.yajienet.huanaer.HuaNaErApplication
+    val statisticsViewModel: StatisticsViewModel = viewModel(
+        factory = StatisticsViewModelFactory(application)
+    )
+    val statisticsUiState by statisticsViewModel.uiState.collectAsState()
+    var showMonthYearPicker by remember { mutableStateOf(false) }
 
     val bottomNavItems = remember {
         listOf(
@@ -137,6 +154,22 @@ fun HuaNaErNavigation(
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
+                        } else if (pagerState.currentPage == 1) {
+                            // 统计页面时间选择器 - 点击弹出选择对话框
+                            Text(
+                                text = DateUtils.formatMonthYear(
+                                    statisticsUiState.selectedMonth,
+                                    statisticsUiState.selectedYear
+                                ),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .padding(end = 16.dp)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) { showMonthYearPicker = true }
+                            )
                         } else if (pagerState.currentPage == 2) {
                             IconButton(
                                 onClick = { addBudgetTrigger++ }
@@ -228,7 +261,10 @@ fun HuaNaErNavigation(
                                 navController.navigate(Screen.TransactionList.route)
                             }
                         )
-                        1 -> StatisticsScreen(contentPadding = innerPadding)
+                        1 -> StatisticsScreen(
+                            contentPadding = innerPadding,
+                            viewModel = statisticsViewModel
+                        )
                         2 -> BudgetListScreen(
                             contentPadding = innerPadding,
                             onBudgetClick = { budgetId ->
@@ -286,6 +322,19 @@ fun HuaNaErNavigation(
                 )
             }
         }
+    }
+
+    // 统计页面月份选择对话框
+    if (showMonthYearPicker) {
+        MonthYearPickerDialog(
+            initialYear = statisticsUiState.selectedYear,
+            initialMonth = statisticsUiState.selectedMonth,
+            onDismiss = { showMonthYearPicker = false },
+            onConfirm = { year, month ->
+                statisticsViewModel.setDate(year, month)
+                showMonthYearPicker = false
+            }
+        )
     }
 }
 

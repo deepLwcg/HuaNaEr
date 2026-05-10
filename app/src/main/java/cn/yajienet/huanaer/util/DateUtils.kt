@@ -59,10 +59,10 @@ object DateUtils {
     }
 
     /**
-     * Format month and year to display string (yyyy年MM月)
+     * Format month and year to display string (yyyy/MM)
      */
     fun formatMonthYear(month: Int, year: Int): String {
-        return "${year}年${month}月"
+        return "${year}/${month.toString().padStart(2, '0')}"
     }
 
     /**

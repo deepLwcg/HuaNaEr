@@ -85,7 +85,7 @@ fun MonthYearSelector(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun MonthYearPickerDialog(
+fun MonthYearPickerDialog(
     initialYear: Int,
     initialMonth: Int,
     onDismiss: () -> Unit,

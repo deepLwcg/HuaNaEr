@@ -45,45 +45,33 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
 import cn.yajienet.huanaer.ui.components.EmptyState
 import cn.yajienet.huanaer.ui.components.LoadingState
-import cn.yajienet.huanaer.ui.components.MonthYearSelector
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import cn.yajienet.huanaer.util.CurrencyFormat
 
 @Composable
 fun StatisticsScreen(
-    contentPadding: PaddingValues = PaddingValues(0.dp)
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    viewModel: StatisticsViewModel? = null
 ) {
     val context = LocalContext.current
     val application = context.applicationContext as cn.yajienet.huanaer.HuaNaErApplication
-    val viewModel: StatisticsViewModel = viewModel(
+    val statsViewModel: StatisticsViewModel = viewModel ?: viewModel(
         factory = StatisticsViewModelFactory(application)
     )
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by statsViewModel.uiState.collectAsState()
     val colors = extendedColorScheme()
 
     if (uiState.isLoading) {
         LoadingState()
     } else if (uiState.expenseByCategory.isEmpty() && uiState.incomeByCategory.isEmpty()) {
-        Column(
+        EmptyState(
+            title = "本月暂无数据",
+            subtitle = "开始记账后可查看统计",
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
                 .padding(horizontal = 16.dp)
-        ) {
-            MonthYearSelector(
-                year = uiState.selectedYear,
-                month = uiState.selectedMonth,
-                onPrevious = { viewModel.previousMonth() },
-                onNext = { viewModel.nextMonth() },
-                onDateSelected = { year, month -> viewModel.setDate(year, month) },
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-            EmptyState(
-                title = "本月暂无数据",
-                subtitle = "开始记账后可查看统计",
-                modifier = Modifier.fillMaxSize().weight(1f)
-            )
-        }
+        )
     } else {
         LazyColumn(
             modifier = Modifier
@@ -93,18 +81,6 @@ fun StatisticsScreen(
             contentPadding = PaddingValues(vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // 时间选择器
-            item {
-                MonthYearSelector(
-                    year = uiState.selectedYear,
-                    month = uiState.selectedMonth,
-                    onPrevious = { viewModel.previousMonth() },
-                    onNext = { viewModel.nextMonth() },
-                    onDateSelected = { year, month -> viewModel.setDate(year, month) },
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-            }
-
             // 收入支出汇总卡片
             item {
                 Card(
