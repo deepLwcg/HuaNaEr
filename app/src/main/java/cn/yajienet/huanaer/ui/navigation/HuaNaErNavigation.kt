@@ -43,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -69,33 +70,26 @@ fun HuaNaErNavigation(
     modifier: Modifier = Modifier
 ) {
     val navController = rememberNavController()
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = navBackStackEntry?.destination
     var addBudgetTrigger by remember { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
 
-    val bottomNavItems = listOf(
-        BottomNavItem(Screen.Home, Icons.Filled.Home, "首页", "花哪儿"),
-        BottomNavItem(Screen.Statistics, Icons.Filled.BarChart, "统计", "统计分析"),
-        BottomNavItem(Screen.BudgetList, Icons.Filled.AccountBalanceWallet, "预算", "预算管理"),
-        BottomNavItem(Screen.CategoryManage, Icons.Filled.Category, "分类", "分类管理")
-    )
-
-    val mainRoutes = bottomNavItems.map { it.screen.route }
-
-    val currentRoute = currentDestination?.route ?: Screen.Home.route
-    val isMainScreen = currentRoute in mainRoutes
-    val currentMainPageIndex = bottomNavItems.indexOfFirst { it.screen.route == currentRoute }.coerceIn(0, bottomNavItems.lastIndex)
+    val bottomNavItems = remember {
+        listOf(
+            BottomNavItem(Screen.Home, Icons.Filled.Home, "首页", "花哪儿"),
+            BottomNavItem(Screen.Statistics, Icons.Filled.BarChart, "统计", "统计分析"),
+            BottomNavItem(Screen.BudgetList, Icons.Filled.AccountBalanceWallet, "预算", "预算管理"),
+            BottomNavItem(Screen.CategoryManage, Icons.Filled.Category, "分类", "分类管理")
+        )
+    }
 
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { bottomNavItems.size })
 
-    val inSubScreen = currentDestination?.route != null && !isMainScreen
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
 
-    LaunchedEffect(currentMainPageIndex, isMainScreen) {
-        if (isMainScreen && pagerState.currentPage != currentMainPageIndex) {
-            pagerState.scrollToPage(currentMainPageIndex)
-        }
-    }
+    // 主屏幕路由集合
+    val mainRoutes = remember { setOf("main") }
+    val isMainScreen = currentRoute == null || currentRoute in mainRoutes
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -103,10 +97,7 @@ fun HuaNaErNavigation(
         topBar = {
             if (isMainScreen) {
                 TopAppBar(
-                    title = {
-                        val pageIndex = pagerState.currentPage.coerceIn(0, bottomNavItems.lastIndex)
-                        Text(bottomNavItems[pageIndex].title)
-                    },
+                    title = { Text(bottomNavItems[pagerState.currentPage].title) },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surface,
                         titleContentColor = MaterialTheme.colorScheme.onSurface
@@ -116,61 +107,15 @@ fun HuaNaErNavigation(
         },
         bottomBar = {
             if (isMainScreen) {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 4.dp
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp, bottom = 12.dp)
-                            .selectableGroup(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        bottomNavItems.forEachIndexed { index, item ->
-                            val selected = pagerState.currentPage == index
-                            Column(
-                                modifier = Modifier
-                                    .padding(horizontal = 12.dp)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null
-                                    ) {
-                                        scope.launch {
-                                            pagerState.scrollToPage(index)
-                                        }
-                                    },
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Surface(
-                                    color = if (selected) MaterialTheme.colorScheme.primaryContainer
-                                            else MaterialTheme.colorScheme.surface,
-                                    shape = RoundedCornerShape(16.dp),
-                                    modifier = Modifier.size(32.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = item.icon,
-                                        contentDescription = item.label,
-                                        tint = if (selected) MaterialTheme.colorScheme.primary
-                                               else MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier
-                                            .size(24.dp)
-                                            .padding(4.dp)
-                                    )
-                                }
-                                Spacer(Modifier.height(0.dp))
-                                Text(
-                                    text = item.label,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    maxLines = 1,
-                                    color = if (selected) MaterialTheme.colorScheme.primary
-                                            else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
+                BottomNavBar(
+                    items = bottomNavItems,
+                    selectedIndex = pagerState.currentPage,
+                    onItemClick = { index ->
+                        scope.launch {
+                            pagerState.animateScrollToPage(index)
                         }
                     }
-                }
+                )
             }
         },
         floatingActionButton = {
@@ -200,7 +145,7 @@ fun HuaNaErNavigation(
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Home.route,
+            startDestination = "main",
             modifier = Modifier.fillMaxSize(),
             enterTransition = {
                 slideIntoContainer(
@@ -227,39 +172,36 @@ fun HuaNaErNavigation(
                 )
             }
         ) {
-            composable(Screen.Home.route) {
-                MainPager(
-                    pagerState = pagerState,
-                    innerPadding = innerPadding,
-                    navController = navController,
-                    addBudgetTrigger = addBudgetTrigger
-                )
-            }
-            composable(Screen.Statistics.route) {
-                MainPager(
-                    pagerState = pagerState,
-                    innerPadding = innerPadding,
-                    navController = navController,
-                    addBudgetTrigger = addBudgetTrigger
-                )
-            }
-            composable(Screen.BudgetList.route) {
-                MainPager(
-                    pagerState = pagerState,
-                    innerPadding = innerPadding,
-                    navController = navController,
-                    addBudgetTrigger = addBudgetTrigger
-                )
-            }
-            composable(Screen.CategoryManage.route) {
-                MainPager(
-                    pagerState = pagerState,
-                    innerPadding = innerPadding,
-                    navController = navController,
-                    addBudgetTrigger = addBudgetTrigger
-                )
+            // 主屏幕 - 使用单一路由，包含 HorizontalPager
+            composable("main") {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize(),
+                    beyondViewportPageCount = 0,  // 不预加载，减少内存占用
+                    pageSpacing = 0.dp
+                ) { page ->
+                    when (page) {
+                        0 -> HomeScreen(
+                            contentPadding = innerPadding,
+                            onAddTransactionClick = { navController.navigate(Screen.AddTransaction.route) },
+                            onTransactionClick = { transactionId ->
+                                navController.navigate(Screen.TransactionDetail.createRoute(transactionId))
+                            }
+                        )
+                        1 -> StatisticsScreen(contentPadding = innerPadding)
+                        2 -> BudgetListScreen(
+                            contentPadding = innerPadding,
+                            onBudgetClick = { budgetId ->
+                                navController.navigate(Screen.BudgetDetail.createRoute(budgetId))
+                            },
+                            addBudgetTrigger = addBudgetTrigger
+                        )
+                        3 -> CategoryManageScreen(contentPadding = innerPadding)
+                    }
+                }
             }
 
+            // 子屏幕
             composable(Screen.AddTransaction.route) {
                 AddTransactionScreen(onNavigateBack = { navController.popBackStack() })
             }
@@ -289,38 +231,77 @@ fun HuaNaErNavigation(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun MainPager(
-    pagerState: androidx.compose.foundation.pager.PagerState,
-    innerPadding: androidx.compose.foundation.layout.PaddingValues,
-    navController: androidx.navigation.NavHostController,
-    addBudgetTrigger: Int
+private fun BottomNavBar(
+    items: List<BottomNavItem>,
+    selectedIndex: Int,
+    onItemClick: (Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    HorizontalPager(
-        state = pagerState,
-        modifier = Modifier.fillMaxSize(),
-        beyondViewportPageCount = 1,
-        pageSpacing = 0.dp,
-        userScrollEnabled = true
-    ) { page ->
-        when (page) {
-            0 -> HomeScreen(
-                contentPadding = innerPadding,
-                onAddTransactionClick = { navController.navigate(Screen.AddTransaction.route) },
-                onTransactionClick = { transactionId ->
-                    navController.navigate(Screen.TransactionDetail.createRoute(transactionId))
-                }
-            )
-            1 -> StatisticsScreen(contentPadding = innerPadding)
-            2 -> BudgetListScreen(
-                contentPadding = innerPadding,
-                onBudgetClick = { budgetId ->
-                    navController.navigate(Screen.BudgetDetail.createRoute(budgetId))
-                },
-                addBudgetTrigger = addBudgetTrigger
-            )
-            3 -> CategoryManageScreen(contentPadding = innerPadding)
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 4.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp, bottom = 12.dp)
+                .selectableGroup(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            items.forEachIndexed { index, item ->
+                val selected = selectedIndex == index
+                NavBarItem(
+                    item = item,
+                    selected = selected,
+                    onClick = { onItemClick(index) }
+                )
+            }
         }
+    }
+}
+
+@Composable
+private fun NavBarItem(
+    item: BottomNavItem,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .padding(horizontal = 12.dp)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            ),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Surface(
+            color = if (selected) MaterialTheme.colorScheme.primaryContainer
+                    else MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.size(32.dp)
+        ) {
+            Icon(
+                imageVector = item.icon,
+                contentDescription = item.label,
+                tint = if (selected) MaterialTheme.colorScheme.primary
+                       else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .size(24.dp)
+                    .padding(4.dp)
+            )
+        }
+        Spacer(Modifier.height(0.dp))
+        Text(
+            text = item.label,
+            style = MaterialTheme.typography.labelSmall,
+            maxLines = 1,
+            color = if (selected) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
