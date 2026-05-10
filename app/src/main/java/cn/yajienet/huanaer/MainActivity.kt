@@ -7,8 +7,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import cn.yajienet.huanaer.data.datastore.ThemeMode
 import cn.yajienet.huanaer.ui.navigation.HuaNaErNavigation
+import cn.yajienet.huanaer.ui.screens.splash.SplashScreen
 import cn.yajienet.huanaer.ui.theme.HuaNaErTheme
 
 class MainActivity : ComponentActivity() {
@@ -21,6 +25,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val themeMode by app.settingsRepository.themeMode.collectAsState(initial = ThemeMode.SYSTEM)
             val dynamicColor by app.settingsRepository.dynamicColor.collectAsState(initial = true)
+            var showSplash by remember { mutableStateOf(true) }
 
             HuaNaErTheme(
                 darkTheme = when (themeMode) {
@@ -30,7 +35,13 @@ class MainActivity : ComponentActivity() {
                 },
                 dynamicColor = dynamicColor
             ) {
-                HuaNaErNavigation()
+                if (showSplash) {
+                    SplashScreen(
+                        onSplashComplete = { showSplash = false }
+                    )
+                } else {
+                    HuaNaErNavigation()
+                }
             }
         }
     }
