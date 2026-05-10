@@ -43,6 +43,16 @@ class CategoryRepository(private val categoryDao: CategoryDao) {
         }
     }
 
+    suspend fun updateSortOrder(id: Long, sortOrder: Int) {
+        categoryDao.updateSortOrder(id, sortOrder)
+    }
+
+    suspend fun updateAllSortOrders(categories: List<Category>) {
+        categories.forEachIndexed { index, category ->
+            categoryDao.updateSortOrder(category.id, index)
+        }
+    }
+
     private fun CategoryEntity.toCategory(): Category {
         return Category(
             id = id,

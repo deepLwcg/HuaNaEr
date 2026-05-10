@@ -10,73 +10,51 @@ HuaNaEr (花哪儿) is a personal accounting/bookkeeping Android application bui
 - **minSdk**: 31 (Android 12)
 - **targetSdk**: 34
 - **Java version**: 11
-- **Architecture**: Simple MVVM
-
-## Features
-
-- **收支记录**: Add income/expense transactions with categories
-- **统计图表**: Monthly expense/income statistics by category
-- **分类管理**: CRUD operations for transaction categories
-- **预算设置**: Monthly budget tracking with progress visualization
+- **Architecture**: Simple MVVM with manual dependency injection
 
 ## Build Commands
 
 ```bash
-# Build the project
-./gradlew build
+# Build the project (Windows)
+gradlew.bat build
 
 # Clean build
-./gradlew clean build
+gradlew.bat clean build
 
 # Assemble debug APK
-./gradlew assembleDebug
+gradlew.bat assembleDebug
 
 # Install on device
-./gradlew installDebug
-```
+gradlew.bat installDebug
 
-## Testing Commands
-
-```bash
 # Run unit tests
-./gradlew test
+gradlew.bat test
 
 # Run instrumented tests
-./gradlew connectedAndroidTest
+gradlew.bat connectedAndroidTest
 ```
 
-## Project Structure
+## Architecture
 
-```
-app/src/main/java/cn/yajienet/huanaer/
-├── HuaNaErApplication.kt         # Application with DI setup
-├── MainActivity.kt               # Main entry point
-│
-├── data/
-│   ├── local/
-│   │   ├── database/             # Room database setup
-│   │   ├── entity/               # Room entities
-│   │   └── dao/                  # Data access objects
-│   ├── model/                    # Domain models
-│   └── repository/               # Repository layer
-│
-├── ui/
-│   ├── components/               # Shared UI components
-│   ├── navigation/               # Navigation setup
-│   ├── screens/                  # Feature screens (home, transaction, statistics, category, budget)
-│   └── theme/                    # Material 3 theme
-│
-└── util/                         # Utility classes
-```
+### Navigation Structure
+The app uses a hybrid navigation approach:
+- **Main screens** (Home, Statistics, Budget, Category) are managed by `HorizontalPager` for swipe navigation
+- **Detail screens** (AddTransaction, TransactionDetail, BudgetDetail) use `NavHost` with slide transitions
+- See `HuaNaErNavigation.kt` for the navigation graph
 
-## Key Dependencies
+### Dependency Injection
+Manual DI via `HuaNaErApplication` class:
+- Access repositories via `(context.applicationContext as HuaNaErApplication).transactionRepository`
+- ViewModels use `ViewModelProvider.Factory` to inject repositories
+- Database is a singleton with `getDatabase(context)`
 
-- Room (2.6.1) - Local database
-- Navigation Compose (2.7.7) - Screen navigation
-- ViewModel Compose (2.7.0) - MVVM architecture
-- Coroutines (1.7.3) - Async operations
-- Material Icons Extended - Icon library
-- Vico (2.0.0-alpha.22) - Charts (available)
+### Data Layer
+- **Entities**: `TransactionEntity`, `CategoryEntity`, `BudgetEntity` (Room)
+- **Models**: `Transaction`, `Category`, `Budget` (domain models)
+- **Repositories**: Expose `Flow<T>` for reactive updates; use `combine()` in ViewModels
+
+### Default Categories
+On first launch, the app seeds 8 expense and 5 income categories with Chinese names. See `HuaNaErApplication.initDefaultCategories()`.
 
 ## Database Schema
 
@@ -86,10 +64,16 @@ app/src/main/java/cn/yajienet/huanaer/
 | categories | id, name, icon, color, type, sortOrder, isDefault |
 | budgets | id, categoryId, amount, month, year, createdAt |
 
-## Architecture Notes
+## Key Dependencies
 
-- Single-activity architecture using Jetpack Compose
-- Material 3 theming with dynamic color support
-- MVVM pattern with ViewModel + StateFlow
-- Room database with Flow-based reactive queries
-- Manual dependency injection via Application class
+- Room (2.6.1) - Local database with Flow-based queries
+- Navigation Compose (2.7.7) - Screen navigation
+- ViewModel Compose (2.7.0) - MVVM architecture
+- Coroutines (1.7.3) - Async operations
+- Material Icons Extended - Icon library
+- Vico (2.0.0-alpha.22) - Charts for statistics
+
+## Utility Classes
+
+- `DateUtils` - Date formatting and month/year calculations for queries
+- `CurrencyFormat` - Currency display formatting

@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -55,6 +57,7 @@ import cn.yajienet.huanaer.ui.screens.budget.BudgetListScreen
 import cn.yajienet.huanaer.ui.screens.budget.BudgetDetailScreen
 import cn.yajienet.huanaer.ui.screens.transaction.AddTransactionScreen
 import cn.yajienet.huanaer.ui.screens.transaction.TransactionDetailScreen
+import cn.yajienet.huanaer.ui.screens.settings.SettingsScreen
 import kotlinx.coroutines.launch
 
 data class BottomNavItem(
@@ -78,7 +81,7 @@ fun HuaNaErNavigation(
             BottomNavItem(Screen.Home, Icons.Filled.Home, "首页", "花哪儿"),
             BottomNavItem(Screen.Statistics, Icons.Filled.BarChart, "统计", "统计分析"),
             BottomNavItem(Screen.BudgetList, Icons.Filled.AccountBalanceWallet, "预算", "预算管理"),
-            BottomNavItem(Screen.CategoryManage, Icons.Filled.Category, "分类", "分类管理")
+            BottomNavItem(Screen.Settings, Icons.Filled.Settings, "设置", "设置")
         )
     }
 
@@ -196,7 +199,10 @@ fun HuaNaErNavigation(
                             },
                             addBudgetTrigger = addBudgetTrigger
                         )
-                        3 -> CategoryManageScreen(contentPadding = innerPadding)
+                        3 -> SettingsScreen(
+                            contentPadding = innerPadding,
+                            onNavigateToCategoryManage = { navController.navigate(Screen.CategoryManage.route) }
+                        )
                     }
                 }
             }
@@ -226,6 +232,12 @@ fun HuaNaErNavigation(
                 } else {
                     Text("无效的预算ID")
                 }
+            }
+            composable(Screen.CategoryManage.route) {
+                CategoryManageScreen(
+                    contentPadding = PaddingValues(0.dp),
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
         }
     }

@@ -2,10 +2,12 @@ package cn.yajienet.huanaer
 
 import android.app.Application
 import cn.yajienet.huanaer.data.local.database.HuaNaErDatabase
+import cn.yajienet.huanaer.data.datastore.SettingsDataStore
 import cn.yajienet.huanaer.data.local.entity.CategoryEntity
 import cn.yajienet.huanaer.data.model.TransactionType
 import cn.yajienet.huanaer.data.repository.BudgetRepository
 import cn.yajienet.huanaer.data.repository.CategoryRepository
+import cn.yajienet.huanaer.data.repository.SettingsRepository
 import cn.yajienet.huanaer.data.repository.TransactionRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,6 +20,14 @@ class HuaNaErApplication : Application() {
 
     val database: HuaNaErDatabase by lazy {
         HuaNaErDatabase.getDatabase(this)
+    }
+
+    val settingsDataStore: SettingsDataStore by lazy {
+        SettingsDataStore(this)
+    }
+
+    val settingsRepository: SettingsRepository by lazy {
+        SettingsRepository(settingsDataStore)
     }
 
     val transactionRepository: TransactionRepository by lazy {

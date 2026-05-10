@@ -18,11 +18,19 @@ data class CategoryUiState(
     val expenseCategories: List<Category> = emptyList(),
     val incomeCategories: List<Category> = emptyList(),
     val isLoading: Boolean = true,
-    val editingCategory: Category? = null,
+
+    // Tab 状态
+    val selectedTab: Int = 0,  // 0=支出, 1=收入
+
+    // 对话框状态
     val showAddDialog: Boolean = false,
     val dialogType: TransactionType = TransactionType.EXPENSE,
     val dialogName: String = "",
-    val dialogColor: String = "#FF6B6B"
+    val dialogColor: String = "#FF6B6B",
+
+    // 编辑状态
+    val showEditDialog: Boolean = false,
+    val editingCategory: Category? = null
 )
 
 class CategoryViewModel(
@@ -49,12 +57,19 @@ class CategoryViewModel(
         }
     }
 
+    // Tab 切换
+    fun selectTab(index: Int) {
+        _uiState.update { it.copy(selectedTab = index) }
+    }
+
+    // 添加分类
     fun showAddDialog(type: TransactionType) {
         _uiState.update { it.copy(
             showAddDialog = true,
             dialogType = type,
             dialogName = "",
-            dialogColor = if (type == TransactionType.EXPENSE) "#FF6B6B" else "#4CAF50"
+            dialogColor = if (type == TransactionType.EXPENSE) "#FF6B6B" else "#4CAF50",
+            editingCategory = null
         ) }
     }
 
@@ -75,19 +90,58 @@ class CategoryViewModel(
         if (state.dialogName.isBlank()) return
 
         viewModelScope.launch {
+            val categories = if (state.dialogType == TransactionType.EXPENSE)
+                state.expenseCategories else state.incomeCategories
+
             val category = CategoryEntity(
                 name = state.dialogName,
                 icon = "label",
                 color = state.dialogColor,
                 type = state.dialogType,
-                sortOrder = if (state.dialogType == TransactionType.EXPENSE)
-                    state.expenseCategories.size else state.incomeCategories.size
+                sortOrder = categories.size,
+                isDefault = false
             )
             categoryRepository.insert(category)
             hideAddDialog()
         }
     }
 
+    // 编辑分类
+    fun showEditDialog(category: Category) {
+        _uiState.update { it.copy(
+            showEditDialog = true,
+            editingCategory = category,
+            dialogName = category.name,
+            dialogColor = category.color,
+            dialogType = category.type
+        ) }
+    }
+
+    fun hideEditDialog() {
+        _uiState.update { it.copy(showEditDialog = false, editingCategory = null) }
+    }
+
+    fun updateCategory() {
+        val state = _uiState.value
+        val editing = state.editingCategory
+        if (editing == null || state.dialogName.isBlank()) return
+
+        viewModelScope.launch {
+            val updated = CategoryEntity(
+                id = editing.id,
+                name = state.dialogName,
+                icon = editing.icon,
+                color = state.dialogColor,
+                type = editing.type,
+                sortOrder = editing.sortOrder,
+                isDefault = editing.isDefault
+            )
+            categoryRepository.update(updated)
+            hideEditDialog()
+        }
+    }
+
+    // 删除分类
     fun deleteCategory(category: Category) {
         viewModelScope.launch {
             categoryRepository.delete(
@@ -101,6 +155,33 @@ class CategoryViewModel(
                     isDefault = category.isDefault
                 )
             )
+        }
+    }
+
+    // 拖拽排序
+    fun moveCategory(fromIndex: Int, toIndex: Int) {
+        val state = _uiState.value
+        val categories = if (state.selectedTab == 0)
+            state.expenseCategories.toMutableList()
+        else
+            state.incomeCategories.toMutableList()
+
+        if (fromIndex < 0 || fromIndex >= categories.size ||
+            toIndex < 0 || toIndex >= categories.size) return
+
+        val item = categories.removeAt(fromIndex)
+        categories.add(toIndex, item)
+
+        // 更新 UI 状态
+        if (state.selectedTab == 0) {
+            _uiState.update { it.copy(expenseCategories = categories) }
+        } else {
+            _uiState.update { it.copy(incomeCategories = categories) }
+        }
+
+        // 保存排序到数据库
+        viewModelScope.launch {
+            categoryRepository.updateAllSortOrders(categories)
         }
     }
 }

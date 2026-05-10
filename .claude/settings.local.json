@@ -12,7 +12,11 @@
       "Bash(git add *)",
       "Bash(./gradlew assembleDebug)",
       "Bash(./gradlew installDebug)",
-      "Bash(adb logcat *)"
+      "Bash(adb logcat *)",
+      "Bash(gradlew.bat build *)",
+      "Bash(./gradlew.bat build *)",
+      "Bash(./gradlew.bat assembleDebug --no-daemon)",
+      "Bash(./gradlew.bat installDebug --no-daemon)"
     ]
   }
 }

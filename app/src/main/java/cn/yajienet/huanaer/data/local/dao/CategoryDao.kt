@@ -32,4 +32,7 @@ interface CategoryDao {
 
     @Query("SELECT * FROM categories WHERE isDefault = 1")
     fun getDefaultCategories(): Flow<List<CategoryEntity>>
+
+    @Query("UPDATE categories SET sortOrder = :sortOrder WHERE id = :id")
+    suspend fun updateSortOrder(id: Long, sortOrder: Int)
 }

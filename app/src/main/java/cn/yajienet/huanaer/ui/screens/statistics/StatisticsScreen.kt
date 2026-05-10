@@ -41,6 +41,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -152,7 +153,7 @@ fun StatisticsScreen(
                                 PieChart(
                                     data = uiState.expenseByCategory,
                                     modifier = Modifier
-                                        .size(180.dp)
+                                        .size(300.dp)
                                         .align(Alignment.CenterHorizontally)
                                 )
 
@@ -233,18 +234,37 @@ fun PieChart(
 
     val totalPercentage = data.fold(0f) { acc, stat -> acc + stat.percentage }
 
+    val textPaint = remember {
+        android.graphics.Paint().apply {
+            color = android.graphics.Color.BLACK
+            textSize = 40f
+            textAlign = android.graphics.Paint.Align.LEFT
+            isAntiAlias = true
+            setTypeface(android.graphics.Typeface.DEFAULT_BOLD)
+        }
+    }
+
+    val linePaint = remember {
+        android.graphics.Paint().apply {
+            color = android.graphics.Color.parseColor("#666666")
+            strokeWidth = 2f
+            isAntiAlias = true
+        }
+    }
+
     Canvas(modifier = modifier) {
         val centerX = size.width / 2f
         val centerY = size.height / 2f
-        val radius = minOf(centerX, centerY) * 0.85f
+        val radius = minOf(centerX, centerY) * 0.7f
+        val innerRadius = radius * 0.35f
+        val outerLabelRadius = radius + 40f
 
-        var startAngle = -90f // Start from top
+        var startAngle = -90f
 
-        data.forEach { stat ->
+        data.forEachIndexed { index, stat ->
             val sweepAngle = (stat.percentage / totalPercentage) * 360f * animationProgress.value
             val color = Color(android.graphics.Color.parseColor(stat.categoryColor))
 
-            // Draw filled pie slice
             drawArc(
                 color = color,
                 startAngle = startAngle,
@@ -255,7 +275,6 @@ fun PieChart(
                 size = Size(radius * 2, radius * 2)
             )
 
-            // Draw slice border for visual separation
             drawArc(
                 color = Color.White,
                 startAngle = startAngle,
@@ -266,13 +285,54 @@ fun PieChart(
                 size = Size(radius * 2, radius * 2)
             )
 
+            // Draw label outside with connecting line
+            if (animationProgress.value > 0.95f && sweepAngle > 15f) {
+                val midAngle = startAngle + sweepAngle / 2f
+                val radians = (midAngle * kotlin.math.PI / 180f).toFloat()
+
+                // Point on the pie edge
+                val pieEdgeX = centerX + radius * kotlin.math.cos(radians)
+                val pieEdgeY = centerY + radius * kotlin.math.sin(radians)
+
+                // Point outside for label
+                val labelX = centerX + outerLabelRadius * kotlin.math.cos(radians)
+                val labelY = centerY + outerLabelRadius * kotlin.math.sin(radians)
+
+                // Draw connecting line
+                val nativeCanvas = drawContext.canvas.nativeCanvas
+                nativeCanvas.drawLine(
+                    pieEdgeX,
+                    pieEdgeY,
+                    labelX,
+                    labelY,
+                    linePaint
+                )
+
+                // Draw small circle at connection point
+                nativeCanvas.drawCircle(pieEdgeX, pieEdgeY, 6f, linePaint)
+
+                // Draw label text
+                val percentageText = "${(stat.percentage * 100).toInt()}%"
+                val labelText = "${stat.categoryName} $percentageText"
+
+                // Adjust text position based on angle (left or right side)
+                val textX = if (kotlin.math.cos(radians) >= 0) labelX + 8f else labelX - textPaint.measureText(labelText) - 8f
+                val textY = labelY + textPaint.textSize / 3f
+
+                nativeCanvas.drawText(
+                    labelText,
+                    textX,
+                    textY,
+                    textPaint
+                )
+            }
+
             startAngle += sweepAngle
         }
 
-        // Draw center circle for donut effect (optional, makes it look cleaner)
         drawCircle(
             color = Color.White,
-            radius = radius * 0.35f,
+            radius = innerRadius,
             center = Offset(centerX, centerY)
         )
     }
