@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew build *)",
+      "WebSearch",
+      "Bash(./gradlew compileDebugKotlin --no-daemon)",
+      "Bash(./gradlew :app:tasks --no-daemon)",
+      "Bash(./gradlew assembleDebug --no-daemon)",
+      "Bash(./gradlew :app:kspDebugKotlin --info --no-daemon)",
+      "Bash(./gradlew clean *)"
+    ]
+  }
+}
