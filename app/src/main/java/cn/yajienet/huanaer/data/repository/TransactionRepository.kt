@@ -24,6 +24,20 @@ class TransactionRepository(
         transactionDao.delete(transaction)
     }
 
+    suspend fun deleteTransaction(transaction: Transaction) {
+        val entity = TransactionEntity(
+            id = transaction.id,
+            amount = transaction.amount,
+            type = transaction.type,
+            categoryId = transaction.categoryId,
+            date = transaction.date,
+            note = transaction.note,
+            createdAt = transaction.createdAt,
+            updatedAt = transaction.updatedAt
+        )
+        transactionDao.delete(entity)
+    }
+
     suspend fun getById(id: Long): Transaction? {
         val entity = transactionDao.getById(id)
         return entity?.toTransaction()

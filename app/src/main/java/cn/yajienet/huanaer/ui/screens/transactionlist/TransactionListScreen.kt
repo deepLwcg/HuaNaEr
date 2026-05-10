@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -39,6 +40,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -73,6 +75,15 @@ fun TransactionListScreen(
 
     var showStartDatePicker by remember { mutableStateOf(false) }
     var showEndDatePicker by remember { mutableStateOf(false) }
+    var expandedItemId by remember { mutableStateOf<Long?>(null) }
+    val lazyListState = rememberLazyListState()
+
+    // 滚动时收回所有展开的删除按钮
+    LaunchedEffect(lazyListState.isScrollInProgress) {
+        if (lazyListState.isScrollInProgress) {
+            expandedItemId = null
+        }
+    }
 
     if (uiState.isLoading) {
         LoadingState()
@@ -186,7 +197,7 @@ fun TransactionListScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
                     )
                 ) {
                     Row(
@@ -266,13 +277,17 @@ fun TransactionListScreen(
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize().weight(1f),
+                        state = lazyListState,
                         contentPadding = PaddingValues(vertical = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(uiState.transactions) { transaction ->
                             TransactionListItem(
                                 transaction = transaction,
-                                onClick = { onTransactionClick(transaction.id) }
+                                onClick = { onTransactionClick(transaction.id) },
+                                onDelete = { viewModel.deleteTransaction(transaction) },
+                                isExpanded = expandedItemId == transaction.id,
+                                onExpand = { expandedItemId = transaction.id }
                             )
                         }
                     }

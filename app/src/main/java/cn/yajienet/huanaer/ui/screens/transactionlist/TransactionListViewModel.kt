@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 enum class TimeSelectionMode {
     MONTH,
@@ -126,6 +127,12 @@ class TransactionListViewModel(
     fun setCustomDateRange(start: Long, end: Long) {
         _startDate.value = start
         _endDate.value = end
+    }
+
+    fun deleteTransaction(transaction: Transaction) {
+        viewModelScope.launch {
+            transactionRepository.deleteTransaction(transaction)
+        }
     }
 }
 

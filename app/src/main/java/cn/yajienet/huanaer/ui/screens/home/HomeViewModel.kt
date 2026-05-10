@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 
 data class HomeUiState(
     val totalIncome: Double = 0.0,
@@ -47,6 +48,12 @@ class HomeViewModel(
         SharingStarted.WhileSubscribed(5000),
         HomeUiState(isLoading = true)
     )
+
+    fun deleteTransaction(transaction: Transaction) {
+        viewModelScope.launch {
+            repository.deleteTransaction(transaction)
+        }
+    }
 }
 
 class HomeViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
