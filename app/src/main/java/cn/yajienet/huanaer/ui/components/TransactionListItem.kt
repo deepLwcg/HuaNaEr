@@ -163,7 +163,7 @@ fun TransactionListItem(
                 .clickable(enabled = offsetX.value == 0f) { onClick() },
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
         ) {

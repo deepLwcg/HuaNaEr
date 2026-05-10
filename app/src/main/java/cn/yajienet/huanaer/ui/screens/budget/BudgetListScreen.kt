@@ -175,9 +175,9 @@ fun BudgetCard(
         onClick = onClick,
         colors = CardDefaults.cardColors(
             containerColor = if (isOverBudget)
-                colors.budgetDanger.copy(alpha = 0.1f)
+                colors.budgetDanger.copy(alpha = 0.15f)
             else
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                MaterialTheme.colorScheme.surfaceContainerLow
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
