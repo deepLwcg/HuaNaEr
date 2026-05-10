@@ -1,7 +1,15 @@
 package cn.yajienet.huanaer.ui.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -26,6 +34,7 @@ import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -99,18 +108,59 @@ fun HuaNaErNavigation(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
-            if (isMainScreen) {
+            AnimatedVisibility(
+                visible = isMainScreen,
+                enter = fadeIn(
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                ) + slideInVertically(
+                    initialOffsetY = { -it },
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                ),
+                exit = fadeOut(
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                ) + slideOutVertically(
+                    targetOffsetY = { -it },
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                )
+            ) {
                 TopAppBar(
                     title = { Text(bottomNavItems[pagerState.currentPage].title) },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surface,
                         titleContentColor = MaterialTheme.colorScheme.onSurface
-                    )
+                    ),
+                    actions = {
+                        if (pagerState.currentPage == 0) {
+                            IconButton(
+                                onClick = { navController.navigate(Screen.AddTransaction.route) }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Add,
+                                    contentDescription = "添加交易",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
                 )
             }
         },
         bottomBar = {
-            if (isMainScreen) {
+            AnimatedVisibility(
+                visible = isMainScreen,
+                enter = fadeIn(
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                ) + slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                ),
+                exit = fadeOut(
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                ) + slideOutVertically(
+                    targetOffsetY = { it },
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                )
+            ) {
                 BottomNavBar(
                     items = bottomNavItems,
                     selectedIndex = pagerState.currentPage,
@@ -123,26 +173,13 @@ fun HuaNaErNavigation(
             }
         },
         floatingActionButton = {
-            if (isMainScreen) {
-                when (pagerState.currentPage) {
-                    0 -> {
-                        FloatingActionButton(
-                            onClick = { navController.navigate(Screen.AddTransaction.route) },
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        ) {
-                            Icon(Icons.Filled.Add, contentDescription = "添加交易")
-                        }
-                    }
-                    2 -> {
-                        FloatingActionButton(
-                            onClick = { addBudgetTrigger++ },
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        ) {
-                            Icon(Icons.Filled.Add, contentDescription = "添加预算")
-                        }
-                    }
+            if (isMainScreen && pagerState.currentPage == 2) {
+                FloatingActionButton(
+                    onClick = { addBudgetTrigger++ },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ) {
+                    Icon(Icons.Filled.Add, contentDescription = "添加预算")
                 }
             }
         }
@@ -154,25 +191,25 @@ fun HuaNaErNavigation(
             enterTransition = {
                 slideIntoContainer(
                     AnimatedContentTransitionScope.SlideDirection.Start,
-                    animationSpec = tween(300)
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
                 )
             },
             exitTransition = {
                 slideOutOfContainer(
                     AnimatedContentTransitionScope.SlideDirection.Start,
-                    animationSpec = tween(300)
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
                 )
             },
             popEnterTransition = {
                 slideIntoContainer(
                     AnimatedContentTransitionScope.SlideDirection.End,
-                    animationSpec = tween(300)
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
                 )
             },
             popExitTransition = {
                 slideOutOfContainer(
                     AnimatedContentTransitionScope.SlideDirection.End,
-                    animationSpec = tween(300)
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
                 )
             }
         ) {

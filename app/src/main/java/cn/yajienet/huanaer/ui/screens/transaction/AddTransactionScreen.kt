@@ -34,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -65,7 +66,13 @@ fun AddTransactionScreen(
     )
 
     // 用于控制焦点切换
+    val amountFocusRequester = remember { FocusRequester() }
     val noteFocusRequester = remember { FocusRequester() }
+
+    // 页面进入时金额输入框自动获取焦点
+    LaunchedEffect(Unit) {
+        amountFocusRequester.requestFocus()
+    }
 
     if (uiState.saved) {
         onNavigateBack()
@@ -122,7 +129,9 @@ fun AddTransactionScreen(
                 keyboardActions = KeyboardActions(
                     onNext = { noteFocusRequester.requestFocus() }
                 ),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(amountFocusRequester),
                 isError = uiState.error != null && uiState.amount.isBlank()
             )
 
