@@ -1,15 +1,24 @@
 package cn.yajienet.huanaer.ui.screens.transaction
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
@@ -17,37 +26,46 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cn.yajienet.huanaer.data.model.TransactionType
+import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
+import cn.yajienet.huanaer.ui.components.neubru.BouncyIconButton
+import cn.yajienet.huanaer.ui.components.neubru.CelebrationOverlay
+import cn.yajienet.huanaer.ui.components.neubru.NeubruNumberPad
+import cn.yajienet.huanaer.ui.components.neubru.PillChip
+import cn.yajienet.huanaer.util.CurrencyFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionScreen(
     onNavigateBack: () -> Unit = {}
@@ -59,23 +77,11 @@ fun AddTransactionScreen(
     )
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.CHINA)
-    var showDatePicker by remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = uiState.date
-    )
 
-    // 用于控制焦点切换
-    val amountFocusRequester = remember { FocusRequester() }
-    val noteFocusRequester = remember { FocusRequester() }
-
-    // 页面进入时金额输入框自动获取焦点
-    LaunchedEffect(Unit) {
-        amountFocusRequester.requestFocus()
-    }
-
-    if (uiState.saved) {
-        onNavigateBack()
+    LaunchedEffect(uiState.saved) {
+        if (uiState.saved) {
+            onNavigateBack()
+        }
     }
 
     Scaffold(
@@ -91,116 +97,291 @@ fun AddTransactionScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
+        AddTransactionContent(
+            viewModel = viewModel,
+            modifier = Modifier.padding(innerPadding)
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddTransactionContent(
+    viewModel: TransactionViewModel,
+    modifier: Modifier = Modifier,
+    onSaved: (() -> Unit)? = null
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.CHINA)
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = uiState.date
+    )
+    var showCelebration by remember { mutableStateOf(false) }
+
+    // 本地管理金额字符串，避免与 ViewModel 状态同步延迟
+    var amountText by remember { mutableStateOf("") }
+    // ViewModel 金额变化时同步到本地（如重置）
+    LaunchedEffect(uiState.amount) {
+        if (uiState.amount != amountText) {
+            amountText = uiState.amount
+        }
+    }
+
+    // 金额字符串由 ViewModel 管理，数字键盘直接操作
+    // 保存成功时触发庆祝动画
+    LaunchedEffect(uiState.saved) {
+        if (uiState.saved) {
+            showCelebration = true
+        }
+    }
+
+    Box(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Type selection
-            Column {
-                Text("类型", style = androidx.compose.material3.MaterialTheme.typography.labelLarge)
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+            // 类型切换 — PillChip
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                PillChip(
+                    text = {
+                        Text(
+                            "支出",
+                            color = if (uiState.type == TransactionType.EXPENSE)
+                                MaterialTheme.colorScheme.onPrimary
+                            else MaterialTheme.colorScheme.onSurface
+                        )
+                    },
+                    selected = uiState.type == TransactionType.EXPENSE,
+                    onClick = { viewModel.setType(TransactionType.EXPENSE) },
+                    selectedColor = MaterialTheme.colorScheme.error
+                )
+                PillChip(
+                    text = {
+                        Text(
+                            "收入",
+                            color = if (uiState.type == TransactionType.INCOME)
+                                MaterialTheme.colorScheme.onPrimary
+                            else MaterialTheme.colorScheme.onSurface
+                        )
+                    },
+                    selected = uiState.type == TransactionType.INCOME,
+                    onClick = { viewModel.setType(TransactionType.INCOME) },
+                    selectedColor = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            // 金额显示 — 大字
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    FilterChip(
-                        selected = uiState.type == TransactionType.EXPENSE,
-                        onClick = { viewModel.setType(TransactionType.EXPENSE) },
-                        label = { Text("支出") }
+                    Text(
+                        text = "金额",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    FilterChip(
-                        selected = uiState.type == TransactionType.INCOME,
-                        onClick = { viewModel.setType(TransactionType.INCOME) },
-                        label = { Text("收入") }
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = if (amountText.isBlank()) "¥0.00"
+                               else "¥$amountText",
+                        style = MaterialTheme.typography.displayLarge.copy(
+                            fontSize = 40.sp,
+                            fontWeight = FontWeight.Black
+                        ),
+                        color = if (uiState.type == TransactionType.EXPENSE)
+                            MaterialTheme.colorScheme.error
+                        else MaterialTheme.colorScheme.primary
                     )
                 }
             }
 
-            // Amount input - 右下角为下一步按钮，点击切换到备注
-            OutlinedTextField(
-                value = uiState.amount,
-                onValueChange = { viewModel.setAmount(it) },
-                label = { Text("金额") },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Decimal,
-                    imeAction = ImeAction.Next
-                ),
-                keyboardActions = KeyboardActions(
-                    onNext = { noteFocusRequester.requestFocus() }
-                ),
+            // 分类选择 — LazyRow + BouncyIconButton
+            Column {
+                Text(
+                    "分类",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(8.dp))
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(uiState.categories, key = { it.id }) { category ->
+                        val selected = uiState.selectedCategoryId == category.id
+                        BouncyIconButton(
+                            onClick = { viewModel.setCategory(category.id) },
+                            size = 56.dp,
+                            hapticEnabled = true
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                CategoryCircleIcon(
+                                    name = category.name,
+                                    color = category.color,
+                                    size = if (selected) 52.dp else 44.dp
+                                )
+                                if (selected) {
+                                    Surface(
+                                        modifier = Modifier.size(56.dp),
+                                        shape = RoundedCornerShape(28.dp),
+                                        color = Color.Transparent,
+                                        border = BorderStroke(
+                                            2.5.dp,
+                                            MaterialTheme.colorScheme.primary
+                                        )
+                                    ) {}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 日期选择
+            Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .focusRequester(amountFocusRequester),
-                isError = uiState.error != null && uiState.amount.isBlank()
-            )
-
-            // Category selection
-            Column {
-                Text("分类", style = androidx.compose.material3.MaterialTheme.typography.labelLarge)
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable { showDatePicker = true },
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    uiState.categories.forEach { category ->
-                        FilterChip(
-                            selected = uiState.selectedCategoryId == category.id,
-                            onClick = { viewModel.setCategory(category.id) },
-                            label = { Text(category.name) }
+                    Text(
+                        dateFormat.format(uiState.date),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Icon(
+                        Icons.Default.DateRange,
+                        contentDescription = "选择日期",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            // 备注输入
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh
+            ) {
+                Box(modifier = Modifier.padding(16.dp)) {
+                    var noteText by remember(uiState.note) { mutableStateOf(uiState.note) }
+                    Column {
+                        Text(
+                            "备注",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        BasicTextField(
+                            value = noteText,
+                            onValueChange = { newText ->
+                                noteText = newText
+                                viewModel.setNote(newText)
+                            },
+                            textStyle = MaterialTheme.typography.bodyLarge.copy(
+                                color = MaterialTheme.colorScheme.onSurface
+                            ),
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            decorationBox = { innerTextField ->
+                                Box {
+                                    if (noteText.isEmpty()) {
+                                        Text(
+                                            "添加备注...",
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                        )
+                                    }
+                                    innerTextField()
+                                }
+                            }
                         )
                     }
                 }
             }
 
-            // Note input
-            OutlinedTextField(
-                value = uiState.note,
-                onValueChange = { viewModel.setNote(it) },
-                label = { Text("备注") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .focusRequester(noteFocusRequester)
-            )
+            Spacer(Modifier.height(4.dp))
 
-            // Date picker field
-            OutlinedTextField(
-                value = dateFormat.format(uiState.date),
-                onValueChange = {},
-                label = { Text("日期") },
-                readOnly = true,
-                trailingIcon = {
-                    IconButton(onClick = { showDatePicker = true }) {
-                        Icon(Icons.Default.DateRange, "选择日期")
+            // 数字键盘
+            NeubruNumberPad(
+                onDigit = { digit ->
+                    val current = amountText
+                    // 限制小数点后两位
+                    if (current.contains(".")) {
+                        val afterDot = current.substringAfter(".")
+                        if (afterDot.length >= 2) return@NeubruNumberPad
+                    }
+                    // 限制首位为0时只能输入小数点
+                    val newAmount = if (current == "0" && digit != ".") {
+                        digit
+                    } else {
+                        current + digit
+                    }
+                    amountText = newAmount
+                    viewModel.setAmount(newAmount)
+                },
+                onDecimal = {
+                    val newAmount = when {
+                        amountText.isEmpty() -> "0."
+                        !amountText.contains(".") -> "$amountText."
+                        else -> return@NeubruNumberPad // 已有小数点
+                    }
+                    amountText = newAmount
+                    viewModel.setAmount(newAmount)
+                },
+                onDelete = {
+                    if (amountText.isNotEmpty()) {
+                        val newAmount = amountText.dropLast(1)
+                        amountText = newAmount
+                        viewModel.setAmount(newAmount)
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { showDatePicker = true }
+                onDone = { viewModel.saveTransaction() }
             )
 
-            // Save button
-            Button(
-                onClick = { viewModel.saveTransaction() },
-                enabled = !uiState.isSaving,
-                modifier = Modifier.fillMaxWidth()
+            // 错误提示
+            AnimatedVisibility(
+                visible = uiState.error != null,
+                enter = fadeIn(),
+                exit = fadeOut()
             ) {
-                if (uiState.isSaving) {
-                    Text("保存中...")
-                } else {
-                    Text("保存")
+                uiState.error?.let { error ->
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
             }
-
-            // Error display
-            uiState.error?.let { error ->
-                Text(
-                    text = error,
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.error
-                )
-            }
         }
+
+        // 庆祝动画
+        CelebrationOverlay(
+            trigger = showCelebration,
+            onFinished = {
+                showCelebration = false
+                onSaved?.invoke()
+            }
+        )
     }
 
-    // Date picker dialog
+    // 日期选择对话框
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -224,5 +405,34 @@ fun AddTransactionScreen(
         ) {
             DatePicker(state = datePickerState)
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddTransactionBottomSheet(
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+    val application = context.applicationContext as cn.yajienet.huanaer.HuaNaErApplication
+    val viewModel: TransactionViewModel = viewModel(
+        factory = TransactionViewModelFactory(application)
+    )
+
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+    ) {
+        AddTransactionContent(
+            viewModel = viewModel,
+            onSaved = {
+                // 保存成功后关闭底部弹窗
+                onDismiss()
+            }
+        )
     }
 }

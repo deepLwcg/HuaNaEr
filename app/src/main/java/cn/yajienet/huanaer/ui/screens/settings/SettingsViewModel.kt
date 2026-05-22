@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import cn.yajienet.huanaer.HuaNaErApplication
 import cn.yajienet.huanaer.data.datastore.ThemeMode
+import cn.yajienet.huanaer.data.datastore.ThemeStyle
 import cn.yajienet.huanaer.data.model.Category
 import cn.yajienet.huanaer.data.model.TransactionType
 import cn.yajienet.huanaer.data.repository.CategoryRepository
@@ -24,6 +25,7 @@ import java.io.File
 
 data class SettingsUiState(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val themeStyle: ThemeStyle = ThemeStyle.MINT_BREEZE,
     val dynamicColorEnabled: Boolean = true,
 
     // 记账设置
@@ -54,7 +56,7 @@ data class SettingsUiState(
     val showClearDataDialog: Boolean = false,
     val showDeleteFileDialog: Boolean = false,
     val fileToDelete: File? = null,
-    val deleteFileType: String? = null, // "backup" or "export"
+    val deleteFileType: String? = null,
     val showRestartDialog: Boolean = false,
 
     // 导航
@@ -83,6 +85,11 @@ class SettingsViewModel(
         viewModelScope.launch {
             settingsRepository.themeMode.collect { mode ->
                 _uiState.update { it.copy(themeMode = mode) }
+            }
+        }
+        viewModelScope.launch {
+            settingsRepository.themeStyle.collect { style ->
+                _uiState.update { it.copy(themeStyle = style) }
             }
         }
         viewModelScope.launch {
@@ -133,15 +140,15 @@ class SettingsViewModel(
     }
 
     fun setThemeMode(mode: ThemeMode) {
-        viewModelScope.launch {
-            settingsRepository.setThemeMode(mode)
-        }
+        viewModelScope.launch { settingsRepository.setThemeMode(mode) }
+    }
+
+    fun setThemeStyle(style: ThemeStyle) {
+        viewModelScope.launch { settingsRepository.setThemeStyle(style) }
     }
 
     fun setDynamicColorEnabled(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsRepository.setDynamicColor(enabled)
-        }
+        viewModelScope.launch { settingsRepository.setDynamicColor(enabled) }
     }
 
     // 记账设置
@@ -154,9 +161,7 @@ class SettingsViewModel(
     }
 
     fun setMonthStartDay(day: Int) {
-        viewModelScope.launch {
-            settingsRepository.setMonthStartDay(day)
-        }
+        viewModelScope.launch { settingsRepository.setMonthStartDay(day) }
         hideMonthStartDayDialog()
     }
 
@@ -189,9 +194,7 @@ class SettingsViewModel(
     }
 
     fun setLargeAmountThreshold(threshold: Double) {
-        viewModelScope.launch {
-            settingsRepository.setLargeAmountThreshold(threshold)
-        }
+        viewModelScope.launch { settingsRepository.setLargeAmountThreshold(threshold) }
         hideLargeAmountDialog()
     }
 
@@ -206,9 +209,7 @@ class SettingsViewModel(
     fun createBackup() {
         viewModelScope.launch {
             _uiState.update { it.copy(isBackingUp = true, message = null, errorMessage = null) }
-
             val result = backupManager.createBackup()
-
             _uiState.update {
                 it.copy(
                     isBackingUp = false,
@@ -230,16 +231,11 @@ class SettingsViewModel(
 
     fun restoreFromBackup() {
         val file = _uiState.value.selectedBackupFile ?: return
-
         viewModelScope.launch {
             _uiState.update { it.copy(isRestoring = true, message = null, errorMessage = null) }
-
-            // 先关闭数据库连接
             val app = application as HuaNaErApplication
             app.database.close()
-
             val result = backupManager.restoreFromBackup(file)
-
             _uiState.update {
                 it.copy(
                     isRestoring = false,
@@ -257,12 +253,10 @@ class SettingsViewModel(
     }
 
     fun restartApp() {
-        // 重启应用
         val intent = application.packageManager.getLaunchIntentForPackage(application.packageName)
         intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         intent?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         application.startActivity(intent)
-        // 结束当前进程
         android.os.Process.killProcess(android.os.Process.myPid())
     }
 
@@ -277,10 +271,8 @@ class SettingsViewModel(
     fun clearAllData() {
         viewModelScope.launch {
             _uiState.update { it.copy(isClearing = true, message = null, errorMessage = null) }
-
             val app = application as HuaNaErApplication
             val success = backupManager.clearAllData(app.database)
-
             _uiState.update {
                 it.copy(
                     isClearing = false,
@@ -296,7 +288,6 @@ class SettingsViewModel(
         _uiState.update { it.copy(message = null, errorMessage = null) }
     }
 
-    // 删除文件
     fun showDeleteFileDialog(file: File, type: String) {
         _uiState.update { it.copy(showDeleteFileDialog = true, fileToDelete = file, deleteFileType = type) }
     }
@@ -309,7 +300,6 @@ class SettingsViewModel(
         val file = _uiState.value.fileToDelete
         val type = _uiState.value.deleteFileType
         if (file == null || type == null) return
-
         viewModelScope.launch {
             val success = file.delete()
             _uiState.update {
@@ -325,7 +315,6 @@ class SettingsViewModel(
         }
     }
 
-    // 分享备份文件
     fun shareBackupFile(file: File) {
         try {
             val uri = FileProvider.getUriForFile(
@@ -344,13 +333,10 @@ class SettingsViewModel(
         }
     }
 
-    // 导入外部数据
     fun importFromExternalFile(file: File) {
         viewModelScope.launch {
             _uiState.update { it.copy(isImporting = true, message = null, errorMessage = null) }
-
             val result = backupManager.restoreFromBackup(file)
-
             _uiState.update {
                 it.copy(
                     isImporting = false,

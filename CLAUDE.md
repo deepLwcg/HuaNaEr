@@ -120,12 +120,14 @@ animationSpec = spring(
 
 ## Key Dependencies
 
+Dependencies managed via Gradle Version Catalog (`gradle/libs.versions.toml`):
 - Room (2.6.1) - Local database with Flow-based queries
 - Navigation Compose (2.7.7) - Screen navigation
 - ViewModel Compose (2.7.0) - MVVM architecture
 - Coroutines (1.7.3) - Async operations
 - Material Icons Extended - Icon library
 - Vico (2.0.0-alpha.22) - Charts for statistics
+- DataStore Preferences (1.0.0) - User settings storage
 
 ## Utility Classes
 
@@ -141,3 +143,17 @@ User preferences stored in `SettingsDataStore`:
 - `monthStartDay` - Custom month start day for accounting
 - `defaultExpenseCategoryId` / `defaultIncomeCategoryId` - Quick add defaults
 - `largeAmountThreshold` - Threshold for large amount warnings
+
+## Quick Entry Features
+
+### Desktop Widget
+The app provides a desktop widget (`AddTransactionWidget`) for quick transaction entry:
+- Widget layout defined in `res/layout/widget_add_transaction.xml`
+- Widget configuration in `res/xml/widget_info.xml`
+- Tapping the widget launches MainActivity with `ACTION_ADD_TRANSACTION` intent, navigating directly to AddTransactionScreen
+
+### App Shortcuts
+Static app shortcuts defined in `res/xml/shortcuts.xml` allow quick access to add transaction from launcher.
+
+### Splash Screen
+On normal launch, `SplashScreen` displays for 2 seconds before showing main content. Shortcut/widget launches bypass splash screen.

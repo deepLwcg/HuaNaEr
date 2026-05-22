@@ -1,5 +1,6 @@
 package cn.yajienet.huanaer.data.repository
 
+import cn.yajienet.huanaer.data.local.dao.DailyTotal
 import cn.yajienet.huanaer.data.local.dao.TransactionDao
 import cn.yajienet.huanaer.data.local.dao.TransactionWithCategory
 import cn.yajienet.huanaer.data.local.entity.TransactionEntity
@@ -76,6 +77,12 @@ class TransactionRepository(
     fun getCategoryTotals(type: TransactionType, startTime: Long, endTime: Long): Flow<Map<Long, Double>> {
         return transactionDao.getCategoryTotals(type, startTime, endTime).map { totals ->
             totals.associate { it.categoryId to it.total }
+        }
+    }
+
+    fun getDailyTotalsAsPairs(type: TransactionType, startTime: Long, endTime: Long): Flow<List<Pair<Long, Double>>> {
+        return transactionDao.getDailyTotals(type, startTime, endTime).map { totals ->
+            totals.map { it.day * 86400000L to it.total }
         }
     }
 

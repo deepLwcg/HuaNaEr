@@ -1,5 +1,8 @@
 package cn.yajienet.huanaer.ui.navigation
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -8,6 +11,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -28,7 +32,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Settings
@@ -51,8 +54,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -68,9 +74,11 @@ import cn.yajienet.huanaer.ui.screens.category.CategoryManageScreen
 import cn.yajienet.huanaer.ui.screens.budget.BudgetListScreen
 import cn.yajienet.huanaer.ui.screens.budget.BudgetDetailScreen
 import cn.yajienet.huanaer.ui.screens.transaction.AddTransactionScreen
+import cn.yajienet.huanaer.ui.screens.transaction.AddTransactionBottomSheet
 import cn.yajienet.huanaer.ui.screens.transactionlist.TransactionListScreen
 import cn.yajienet.huanaer.ui.screens.transaction.TransactionDetailScreen
 import cn.yajienet.huanaer.ui.screens.settings.SettingsScreen
+import cn.yajienet.huanaer.ui.components.neubru.GlassCard
 import cn.yajienet.huanaer.ui.components.MonthYearPickerDialog
 import cn.yajienet.huanaer.util.DateUtils
 import kotlinx.coroutines.launch
@@ -90,6 +98,7 @@ fun HuaNaErNavigation(
 ) {
     val navController = rememberNavController()
     var addBudgetTrigger by remember { mutableIntStateOf(0) }
+    var showAddTransaction by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     // 处理快捷方式的初始路由
@@ -154,7 +163,7 @@ fun HuaNaErNavigation(
                     actions = {
                         if (pagerState.currentPage == 0) {
                             IconButton(
-                                onClick = { navController.navigate(Screen.AddTransaction.route) }
+                                onClick = { showAddTransaction = true }
                             ) {
                                 Icon(
                                     imageVector = Icons.Filled.Add,
@@ -163,7 +172,6 @@ fun HuaNaErNavigation(
                                 )
                             }
                         } else if (pagerState.currentPage == 1) {
-                            // 统计页面时间选择器 - 点击弹出选择对话框
                             Text(
                                 text = DateUtils.formatMonthYear(
                                     statisticsUiState.selectedMonth,
@@ -255,13 +263,13 @@ fun HuaNaErNavigation(
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier.fillMaxSize(),
-                    beyondViewportPageCount = 3,  // 预加载更多页面，减少滑动卡顿
+                    beyondViewportPageCount = 3,
                     pageSpacing = 0.dp
                 ) { page ->
                     when (page) {
                         0 -> HomeScreen(
                             contentPadding = innerPadding,
-                            onAddTransactionClick = { navController.navigate(Screen.AddTransaction.route) },
+                            onAddTransactionClick = { showAddTransaction = true },
                             onTransactionClick = { transactionId ->
                                 navController.navigate(Screen.TransactionDetail.createRoute(transactionId))
                             },
@@ -332,6 +340,13 @@ fun HuaNaErNavigation(
         }
     }
 
+    // 添加交易底部弹窗（从主页面触发）
+    if (showAddTransaction) {
+        AddTransactionBottomSheet(
+            onDismiss = { showAddTransaction = false }
+        )
+    }
+
     // 统计页面月份选择对话框
     if (showMonthYearPicker) {
         MonthYearPickerDialog(
@@ -353,10 +368,10 @@ private fun BottomNavBar(
     onItemClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
+    GlassCard(
         modifier = modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 4.dp
+        cornerRadius = 0.dp,
+        contentPadding = 0.dp
     ) {
         Row(
             modifier = Modifier
@@ -384,6 +399,15 @@ private fun NavBarItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val scale by animateFloatAsState(
+        targetValue = if (selected) 1.1f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "navItemScale"
+    )
+
     Column(
         modifier = modifier
             .padding(horizontal = 12.dp)
@@ -396,9 +420,12 @@ private fun NavBarItem(
     ) {
         Surface(
             color = if (selected) MaterialTheme.colorScheme.primaryContainer
-                    else MaterialTheme.colorScheme.surface,
+                    else Color.Transparent,
             shape = RoundedCornerShape(16.dp),
-            modifier = Modifier.size(32.dp)
+            border = if (selected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
+            modifier = Modifier
+                .size(32.dp)
+                .scale(scale)
         ) {
             Icon(
                 imageVector = item.icon,
@@ -410,10 +437,12 @@ private fun NavBarItem(
                     .padding(4.dp)
             )
         }
-        Spacer(Modifier.height(0.dp))
+        Spacer(Modifier.height(2.dp))
         Text(
             text = item.label,
-            style = MaterialTheme.typography.labelSmall,
+            style = MaterialTheme.typography.labelSmall.copy(
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+            ),
             maxLines = 1,
             color = if (selected) MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.onSurfaceVariant

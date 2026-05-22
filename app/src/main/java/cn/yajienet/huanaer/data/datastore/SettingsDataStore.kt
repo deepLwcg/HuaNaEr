@@ -4,10 +4,10 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
-import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -18,17 +18,29 @@ enum class ThemeMode {
     SYSTEM      // 跟随系统
 }
 
+enum class ThemeStyle {
+    MINT_BREEZE,    // 薄荷清风
+    SUNSET_GLOW,    // 落日余晖
+    MIDNIGHT_NEON   // 午夜霓虹
+}
+
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 class SettingsDataStore(private val context: Context) {
 
     companion object {
         private val THEME_MODE_KEY = intPreferencesKey("theme_mode")
+        private val THEME_STYLE_KEY = intPreferencesKey("theme_style")
         private val DYNAMIC_COLOR_KEY = booleanPreferencesKey("dynamic_color")
         private val MONTH_START_DAY_KEY = intPreferencesKey("month_start_day")
         private val DEFAULT_EXPENSE_CATEGORY_KEY = longPreferencesKey("default_expense_category")
         private val DEFAULT_INCOME_CATEGORY_KEY = longPreferencesKey("default_income_category")
         private val LARGE_AMOUNT_THRESHOLD_KEY = doublePreferencesKey("large_amount_threshold")
+    }
+
+    val themeStyle: Flow<ThemeStyle> = context.dataStore.data.map { preferences ->
+        val ordinal = preferences[THEME_STYLE_KEY] ?: ThemeStyle.MINT_BREEZE.ordinal
+        ThemeStyle.entries.getOrElse(ordinal) { ThemeStyle.MINT_BREEZE }
     }
 
     val themeMode: Flow<ThemeMode> = context.dataStore.data.map { preferences ->
@@ -40,22 +52,18 @@ class SettingsDataStore(private val context: Context) {
         preferences[DYNAMIC_COLOR_KEY] ?: true
     }
 
-    // 每月起始日 (1-28)
     val monthStartDay: Flow<Int> = context.dataStore.data.map { preferences ->
         preferences[MONTH_START_DAY_KEY] ?: 1
     }
 
-    // 默认支出分类ID (-1 表示未设置)
     val defaultExpenseCategoryId: Flow<Long> = context.dataStore.data.map { preferences ->
         preferences[DEFAULT_EXPENSE_CATEGORY_KEY] ?: -1L
     }
 
-    // 默认收入分类ID (-1 表示未设置)
     val defaultIncomeCategoryId: Flow<Long> = context.dataStore.data.map { preferences ->
         preferences[DEFAULT_INCOME_CATEGORY_KEY] ?: -1L
     }
 
-    // 大额提醒阈值 (0 表示不提醒)
     val largeAmountThreshold: Flow<Double> = context.dataStore.data.map { preferences ->
         preferences[LARGE_AMOUNT_THRESHOLD_KEY] ?: 0.0
     }
@@ -63,6 +71,12 @@ class SettingsDataStore(private val context: Context) {
     suspend fun setThemeMode(mode: ThemeMode) {
         context.dataStore.edit { preferences ->
             preferences[THEME_MODE_KEY] = mode.ordinal
+        }
+    }
+
+    suspend fun setThemeStyle(style: ThemeStyle) {
+        context.dataStore.edit { preferences ->
+            preferences[THEME_STYLE_KEY] = style.ordinal
         }
     }
 

@@ -19,9 +19,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -33,26 +33,20 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Reorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -66,12 +60,18 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cn.yajienet.huanaer.data.model.Category
 import cn.yajienet.huanaer.data.model.TransactionType
+import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
 import cn.yajienet.huanaer.ui.components.LoadingState
+import cn.yajienet.huanaer.ui.components.neubru.BouncyIconButton
+import cn.yajienet.huanaer.ui.components.neubru.NeubruCard
+import cn.yajienet.huanaer.ui.components.neubru.PillChip
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,12 +87,43 @@ fun CategoryManageScreen(
     )
     val uiState by viewModel.uiState.collectAsState()
 
-    // 拖拽状态
     var draggingIndex by remember { mutableIntStateOf(-1) }
     var dragOffsetY by remember { mutableStateOf(0f) }
 
     val categories = if (uiState.selectedTab == 0)
         uiState.expenseCategories else uiState.incomeCategories
+
+    val listState = rememberLazyListState()
+    val itemSpacingPx = with(LocalDensity.current) { 8.dp.toPx() }
+
+    // 根据拖拽偏移和列表布局计算目标索引
+    val dragTargetIndex by remember {
+        derivedStateOf {
+            if (draggingIndex < 0 || draggingIndex >= categories.size) {
+                -1
+            } else {
+                val layoutInfo = listState.layoutInfo
+                if (layoutInfo.visibleItemsInfo.isEmpty()) {
+                    draggingIndex
+                } else {
+                    val draggingItem = layoutInfo.visibleItemsInfo.find { it.index == draggingIndex }
+                    if (draggingItem != null) {
+                        val itemHeight = draggingItem.size.toFloat()
+                        val itemStep = itemHeight + itemSpacingPx
+                        if (itemStep > 0f) {
+                            val offsetSteps = (dragOffsetY / itemStep).roundToInt()
+                            val target = draggingIndex + offsetSteps
+                            target.coerceIn(0, categories.size - 1)
+                        } else {
+                            draggingIndex
+                        }
+                    } else {
+                        draggingIndex
+                    }
+                }
+            }
+        }
+    }
 
     if (uiState.isLoading) {
         LoadingState()
@@ -102,7 +133,7 @@ fun CategoryManageScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("分类管理") },
+                    title = { Text("分类管理", fontWeight = FontWeight.Bold) },
                     navigationIcon = {
                         IconButton(onClick = onNavigateBack) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
@@ -111,7 +142,7 @@ fun CategoryManageScreen(
                     actions = {
                         Box {
                             IconButton(onClick = { showAddMenu = true }) {
-                                Icon(Icons.Filled.Add, contentDescription = "添加分类")
+                                Icon(Icons.Filled.Add, contentDescription = "添加分类", tint = MaterialTheme.colorScheme.primary)
                             }
                             DropdownMenu(
                                 expanded = showAddMenu,
@@ -128,11 +159,7 @@ fun CategoryManageScreen(
                                         },
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(
-                                        "支出",
-                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
+                                    Text("支出", style = MaterialTheme.typography.bodyMedium)
                                 }
                                 Box(
                                     modifier = Modifier
@@ -144,18 +171,11 @@ fun CategoryManageScreen(
                                         },
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(
-                                        "收入",
-                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
+                                    Text("收入", style = MaterialTheme.typography.bodyMedium)
                                 }
                             }
                         }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    )
+                    }
                 )
             }
         ) { innerPadding ->
@@ -163,30 +183,47 @@ fun CategoryManageScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
+                    .padding(horizontal = 16.dp)
             ) {
-                // Tab 分页
-                TabRow(
-                    selectedTabIndex = uiState.selectedTab,
-                    containerColor = MaterialTheme.colorScheme.surface
+                // PillChip 切换支出/收入
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Tab(
+                    PillChip(
+                        text = {
+                            Text(
+                                "支出分类",
+                                color = if (uiState.selectedTab == 0)
+                                    MaterialTheme.colorScheme.onPrimary
+                                else MaterialTheme.colorScheme.onSurface
+                            )
+                        },
                         selected = uiState.selectedTab == 0,
                         onClick = { viewModel.selectTab(0) },
-                        text = { Text("支出分类") }
+                        selectedColor = MaterialTheme.colorScheme.error
                     )
-                    Tab(
+                    PillChip(
+                        text = {
+                            Text(
+                                "收入分类",
+                                color = if (uiState.selectedTab == 1)
+                                    MaterialTheme.colorScheme.onPrimary
+                                else MaterialTheme.colorScheme.onSurface
+                            )
+                        },
                         selected = uiState.selectedTab == 1,
                         onClick = { viewModel.selectTab(1) },
-                        text = { Text("收入分类") }
+                        selectedColor = MaterialTheme.colorScheme.primary
                     )
                 }
 
                 Spacer(Modifier.height(8.dp))
 
-                // 分类列表
                 LazyColumn(
+                    state = listState,
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     itemsIndexed(
@@ -203,22 +240,17 @@ fun CategoryManageScreen(
                                 draggingIndex = index
                                 dragOffsetY = 0f
                             },
-                            onDragEnd = { targetIndex ->
-                                if (draggingIndex >= 0 && targetIndex != draggingIndex) {
-                                    viewModel.moveCategory(draggingIndex, targetIndex)
+                            onDragEnd = {
+                                val target = dragTargetIndex
+                                if (draggingIndex >= 0 && target >= 0 && target != draggingIndex) {
+                                    viewModel.moveCategory(draggingIndex, target)
                                 }
                                 draggingIndex = -1
                                 dragOffsetY = 0f
                             },
-                            onDragChange = { offset ->
+                            onDragChange = { delta ->
                                 if (draggingIndex == index) {
-                                    dragOffsetY = offset
-                                    // 计算目标位置
-                                    val itemHeight = 72f
-                                    val targetIndex = index + (offset / itemHeight).roundToInt()
-                                    if (targetIndex != index && targetIndex >= 0 && targetIndex < categories.size) {
-                                        // 可以在这里实时更新位置
-                                    }
+                                    dragOffsetY += delta
                                 }
                             }
                         )
@@ -227,7 +259,6 @@ fun CategoryManageScreen(
             }
         }
 
-        // 添加对话框
         if (uiState.showAddDialog) {
             CategoryDialog(
                 title = "添加${if (uiState.dialogType == TransactionType.EXPENSE) "支出" else "收入"}分类",
@@ -240,7 +271,6 @@ fun CategoryManageScreen(
             )
         }
 
-        // 编辑对话框
         if (uiState.showEditDialog && uiState.editingCategory != null) {
             CategoryDialog(
                 title = "编辑分类",
@@ -266,10 +296,7 @@ private fun CategoryDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    // 将当前颜色转换为 HSV
-    var hue by remember(color) {
-        mutableFloatStateOf(colorToHue(color))
-    }
+    var hue by remember(color) { mutableFloatStateOf(colorToHue(color)) }
     var customColorMode by remember { mutableStateOf(false) }
 
     AlertDialog(
@@ -277,7 +304,6 @@ private fun CategoryDialog(
         title = { Text(title) },
         text = {
             Column {
-                // 名称输入
                 OutlinedTextField(
                     value = name,
                     onValueChange = onNameChange,
@@ -285,10 +311,8 @@ private fun CategoryDialog(
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
-
                 Spacer(Modifier.height(16.dp))
 
-                // 颜色预览
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -301,19 +325,14 @@ private fun CategoryDialog(
                     )
                     Spacer(Modifier.width(12.dp))
                     Text(
-                        text = "当前颜色: $color",
+                        "当前颜色: $color",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-
                 Spacer(Modifier.height(12.dp))
 
-                // 预设颜色快捷选择
-                Text(
-                    text = "预设颜色",
-                    style = MaterialTheme.typography.labelMedium
-                )
+                Text("预设颜色", style = MaterialTheme.typography.labelMedium)
                 Spacer(Modifier.height(8.dp))
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -338,54 +357,29 @@ private fun CategoryDialog(
                             contentAlignment = Alignment.Center
                         ) {
                             if (isSelected) {
-                                Icon(
-                                    Icons.Filled.Check,
-                                    "选中",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(18.dp)
-                                )
+                                Icon(Icons.Filled.Check, "选中", tint = Color.White, modifier = Modifier.size(18.dp))
                             }
                         }
                     }
                 }
 
                 Spacer(Modifier.height(16.dp))
-
-                // 自定义颜色
-                Text(
-                    text = "自定义颜色",
-                    style = MaterialTheme.typography.labelMedium
-                )
+                Text("自定义颜色", style = MaterialTheme.typography.labelMedium)
                 Spacer(Modifier.height(8.dp))
-
-                // 色相滑块
-                Text(
-                    text = "色相",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(Modifier.height(4.dp))
-
-                // 色相渐变背景的滑块
                 Slider(
                     value = hue,
                     onValueChange = { newHue ->
                         hue = newHue
-                        val newColor = hueToHex(newHue)
-                        onColorChange(newColor)
+                        onColorChange(hueToHex(newHue))
                         customColorMode = true
                     },
                     valueRange = 0f..360f,
                     modifier = Modifier.fillMaxWidth()
                 )
-
                 Spacer(Modifier.height(8.dp))
-
-                // 十六进制颜色输入
                 OutlinedTextField(
                     value = color,
                     onValueChange = { input ->
-                        // 验证是否是有效的十六进制颜色
                         val cleaned = input.uppercase().replace("#", "")
                         if (cleaned.length <= 6 && cleaned.all { it in '0'..'9' || it in 'A'..'F' }) {
                             val newColor = "#$cleaned"
@@ -403,22 +397,16 @@ private fun CategoryDialog(
             }
         },
         confirmButton = {
-            Button(
-                onClick = onConfirm,
-                enabled = name.isNotBlank() && color.length == 7
-            ) {
+            Button(onClick = onConfirm, enabled = name.isNotBlank() && color.length == 7) {
                 Text("确定")
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消")
-            }
+            TextButton(onClick = onDismiss) { Text("取消") }
         }
     )
 }
 
-// 将十六进制颜色转换为色相值
 private fun colorToHue(colorHex: String): Float {
     try {
         val color = android.graphics.Color.parseColor(colorHex)
@@ -430,12 +418,11 @@ private fun colorToHue(colorHex: String): Float {
     }
 }
 
-// 将色相值转换为十六进制颜色 (饱和度和亮度固定为较鲜艳的值)
 private fun hueToHex(hue: Float): String {
     val hsv = FloatArray(3)
     hsv[0] = hue
-    hsv[1] = 0.7f  // 饱和度
-    hsv[2] = 0.8f  // 亮度
+    hsv[1] = 0.7f
+    hsv[2] = 0.8f
     val color = android.graphics.Color.HSVToColor(hsv)
     return String.format("#%06X", (0xFFFFFF and color))
 }
@@ -448,7 +435,7 @@ private fun CategoryListItem(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onDragStart: () -> Unit,
-    onDragEnd: (Int) -> Unit,
+    onDragEnd: () -> Unit,
     onDragChange: (Float) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -457,31 +444,22 @@ private fun CategoryListItem(
         label = "elevation"
     )
 
-    Card(
+    NeubruCard(
         modifier = modifier
             .fillMaxWidth()
             .offset { IntOffset(0, dragOffset.roundToInt()) }
-            .shadow(elevation, RoundedCornerShape(12.dp))
+            .shadow(elevation, RoundedCornerShape(16.dp))
             .pointerInput(Unit) {
                 detectDragGesturesAfterLongPress(
                     onDragStart = { onDragStart() },
-                    onDragEnd = {
-                        val targetIndex = (dragOffset / 72f).roundToInt()
-                        onDragEnd(targetIndex)
-                    },
+                    onDragEnd = { onDragEnd() },
                     onDrag = { change, offset ->
                         change.consume()
                         onDragChange(offset.y)
                     }
                 )
             },
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isDragging)
-                MaterialTheme.colorScheme.surfaceVariant
-            else
-                MaterialTheme.colorScheme.surface
-        )
+        cornerRadius = 12.dp
     ) {
         Row(
             modifier = Modifier
@@ -489,63 +467,34 @@ private fun CategoryListItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 分类图标
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(Color(android.graphics.Color.parseColor(category.color))),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = category.name.take(2),
-                    color = Color.White,
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
+            CategoryCircleIcon(
+                name = category.name,
+                color = category.color,
+                size = 40.dp
+            )
 
-            Spacer(Modifier.width(16.dp))
+            Spacer(Modifier.width(12.dp))
 
-            // 分类名称
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = category.name,
-                    style = MaterialTheme.typography.titleMedium
+                    category.name,
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                 )
                 if (isDragging) {
-                    Text(
-                        text = "拖动中...",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Text("拖动中...", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
                 }
             }
 
-            // 拖拽提示图标
             if (isDragging) {
-                Icon(
-                    Icons.Filled.Reorder,
-                    contentDescription = "拖拽",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                Icon(Icons.Filled.Reorder, "拖拽", tint = MaterialTheme.colorScheme.primary)
             }
 
-            // 编辑按钮
-            IconButton(onClick = onEdit) {
-                Icon(
-                    Icons.Filled.Edit,
-                    contentDescription = "编辑",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+            BouncyIconButton(onClick = onEdit, size = 36.dp) {
+                Icon(Icons.Filled.Edit, "编辑", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
             }
 
-            // 删除按钮
-            IconButton(onClick = onDelete) {
-                Icon(
-                    Icons.Filled.Delete,
-                    contentDescription = "删除",
-                    tint = MaterialTheme.colorScheme.error
-                )
+            BouncyIconButton(onClick = onDelete, size = 36.dp) {
+                Icon(Icons.Filled.Delete, "删除", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
             }
         }
     }

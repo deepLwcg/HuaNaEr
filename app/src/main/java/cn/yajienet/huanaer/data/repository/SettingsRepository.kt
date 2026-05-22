@@ -2,9 +2,12 @@ package cn.yajienet.huanaer.data.repository
 
 import cn.yajienet.huanaer.data.datastore.SettingsDataStore
 import cn.yajienet.huanaer.data.datastore.ThemeMode
+import cn.yajienet.huanaer.data.datastore.ThemeStyle
 import kotlinx.coroutines.flow.Flow
 
 class SettingsRepository(private val settingsDataStore: SettingsDataStore) {
+
+    val themeStyle: Flow<ThemeStyle> = settingsDataStore.themeStyle
 
     val themeMode: Flow<ThemeMode> = settingsDataStore.themeMode
     val dynamicColor: Flow<Boolean> = settingsDataStore.dynamicColor
@@ -15,6 +18,10 @@ class SettingsRepository(private val settingsDataStore: SettingsDataStore) {
 
     suspend fun setThemeMode(mode: ThemeMode) {
         settingsDataStore.setThemeMode(mode)
+    }
+
+    suspend fun setThemeStyle(style: ThemeStyle) {
+        settingsDataStore.setThemeStyle(style)
     }
 
     suspend fun setDynamicColor(enabled: Boolean) {

@@ -1,6 +1,7 @@
 package cn.yajienet.huanaer.ui.screens.statistics
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -9,7 +10,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,34 +18,36 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
 import cn.yajienet.huanaer.ui.components.EmptyState
 import cn.yajienet.huanaer.ui.components.LoadingState
+import cn.yajienet.huanaer.ui.components.neubru.AnimatedCounter
+import cn.yajienet.huanaer.ui.components.neubru.NeubruCard
+import cn.yajienet.huanaer.ui.components.neubru.PillChip
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import cn.yajienet.huanaer.util.CurrencyFormat
 
@@ -82,14 +84,39 @@ fun StatisticsScreen(
             contentPadding = PaddingValues(vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // 收入支出汇总卡片
+            // 时间范围 PillChip
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val ranges = listOf(
+                        TimeRange.THIS_MONTH to "本月",
+                        TimeRange.LAST_3_MONTHS to "近3月",
+                        TimeRange.LAST_6_MONTHS to "近6月",
+                        TimeRange.THIS_YEAR to "今年"
                     )
+                    items(ranges) { (range, label) ->
+                        PillChip(
+                            text = {
+                                Text(
+                                    label,
+                                    color = if (uiState.selectedTimeRange == range)
+                                        MaterialTheme.colorScheme.onPrimary
+                                    else MaterialTheme.colorScheme.onSurface
+                                )
+                            },
+                            selected = uiState.selectedTimeRange == range,
+                            onClick = { statsViewModel.setTimeRange(range) },
+                            selectedColor = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
+
+            // 收入支出汇总 — NeubruCard
+            item {
+                NeubruCard(
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
                         modifier = Modifier
@@ -98,93 +125,87 @@ fun StatisticsScreen(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // 收入 - 占50%宽度
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = "收入",
+                                "收入",
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            Text(
-                                text = CurrencyFormat.format(uiState.totalIncome),
+                            AnimatedCounter(
+                                targetValue = uiState.totalIncome,
                                 style = MaterialTheme.typography.titleLarge,
-                                color = colors.income,
-                                modifier = Modifier.padding(top = 4.dp)
+                                color = colors.income
                             )
                         }
-
-                        // 分隔线
                         Box(
                             modifier = Modifier
                                 .height(40.dp)
                                 .width(1.dp)
                                 .background(MaterialTheme.colorScheme.outlineVariant)
                         )
-
-                        // 支出 - 占50%宽度
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = "支出",
+                                "支出",
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            Text(
-                                text = CurrencyFormat.format(uiState.totalExpense),
+                            AnimatedCounter(
+                                targetValue = uiState.totalExpense,
                                 style = MaterialTheme.typography.titleLarge,
-                                color = colors.expense,
-                                modifier = Modifier.padding(top = 4.dp)
+                                color = colors.expense
                             )
                         }
                     }
                 }
             }
 
-            // 支出分布饼图
+            // 环形图
             if (uiState.expenseByCategory.isNotEmpty()) {
                 item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer
-                        )
+                    NeubruCard(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Box(
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp),
-                            contentAlignment = Alignment.Center
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            PieChart(
+                            Text(
+                                "支出分布",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(Modifier.height(12.dp))
+                            DonutChart(
                                 data = uiState.expenseByCategory,
-                                modifier = Modifier.size(220.dp)
+                                totalAmount = uiState.totalExpense,
+                                modifier = Modifier.size(200.dp)
                             )
                         }
                     }
                 }
 
-                // 支出详情列表标题
+                // 支出详情
                 item {
                     Text(
-                        text = "支出详情",
-                        style = MaterialTheme.typography.titleMedium
+                        "支出详情",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
                     )
                 }
 
-                // 支出详情列表项
                 items(uiState.expenseByCategory) { stat ->
-                    Card(
+                    NeubruCard(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer
-                        )
+                        cornerRadius = 12.dp
                     ) {
                         CategoryStatRow(
                             stat = stat,
@@ -196,25 +217,21 @@ fun StatisticsScreen(
                 }
             }
 
-            // 收入分布
+            // 收入详情
             if (uiState.incomeByCategory.isNotEmpty()) {
-                // 收入详情列表标题
                 item {
                     Text(
-                        text = "收入详情",
+                        "收入详情",
                         style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(top = 8.dp)
                     )
                 }
 
-                // 收入详情列表项
                 items(uiState.incomeByCategory) { stat ->
-                    Card(
+                    NeubruCard(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer
-                        )
+                        cornerRadius = 12.dp
                     ) {
                         CategoryStatRow(
                             stat = stat,
@@ -230,123 +247,83 @@ fun StatisticsScreen(
 }
 
 @Composable
-fun PieChart(
+fun DonutChart(
     data: List<CategoryStatistics>,
+    totalAmount: Double,
     modifier: Modifier = Modifier
 ) {
     if (data.isEmpty()) return
 
     val animationProgress = remember { Animatable(0f) }
-
-    // 使用主题颜色，支持深色/浅色模式切换
-    val textColor = MaterialTheme.colorScheme.onSurface
-    val lineColor = MaterialTheme.colorScheme.outlineVariant
-    val surfaceColor = MaterialTheme.colorScheme.surface
-
-    // 预计算总百分比和颜色，避免在 Canvas 中重复计算
-    val totalPercentage = remember(data) { data.fold(0f) { acc, stat -> acc + stat.percentage } }
     val pieColors = remember(data) {
-        data.map { stat -> Color(android.graphics.Color.parseColor(stat.categoryColor)) }
+        data.map { Color(android.graphics.Color.parseColor(it.categoryColor)) }
     }
+    val totalPercentage = remember(data) { data.fold(0f) { acc, stat -> acc + stat.percentage } }
 
-    // 缓存 Paint 对象，避免每次重组都创建新对象
-    val linePaint = remember(lineColor) {
-        android.graphics.Paint().apply {
-            color = lineColor.toArgb()
-            strokeWidth = 2f
-            isAntiAlias = true
-        }
-    }
-    val textPaint = remember(textColor) {
-        android.graphics.Paint().apply {
-            color = textColor.toArgb()
-            textSize = 40f
-            textAlign = android.graphics.Paint.Align.LEFT
-            isAntiAlias = true
-            setTypeface(android.graphics.Typeface.DEFAULT_BOLD)
-        }
-    }
-
-    // 只在数据变化时触发动画，避免每次重组都重新动画
     LaunchedEffect(data) {
         animationProgress.snapTo(0f)
         animationProgress.animateTo(
             targetValue = 1f,
-            animationSpec = tween(500, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+            animationSpec = tween(600, easing = FastOutSlowInEasing)
         )
     }
 
-    Canvas(modifier = modifier) {
-        val centerX = size.width / 2f
-        val centerY = size.height / 2f
-        val radius = minOf(centerX, centerY) * 0.7f
-        val innerRadius = radius * 0.35f
-        val outerLabelRadius = radius + 40f
+    val strokeWidth = 24.dp
+    val backgroundColor = MaterialTheme.colorScheme.surfaceVariant
+    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
 
-        var startAngle = -90f
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        Canvas(modifier = modifier) {
+            val strokePx = strokeWidth.toPx()
+            val diameter = minOf(size.width, size.height) - strokePx
+            val radius = diameter / 2f
+            val center = Offset(size.width / 2f, size.height / 2f)
 
-        data.forEachIndexed { index, stat ->
-            val sweepAngle = (stat.percentage / totalPercentage) * 360f * animationProgress.value
-            val color = pieColors[index]
-
-            drawArc(
-                color = color,
-                startAngle = startAngle,
-                sweepAngle = sweepAngle,
-                useCenter = true,
-                style = Fill,
-                topLeft = Offset(centerX - radius, centerY - radius),
-                size = Size(radius * 2, radius * 2)
+            // 背景环
+            drawCircle(
+                color = backgroundColor,
+                radius = radius,
+                center = center,
+                style = Stroke(width = strokePx)
             )
 
-            drawArc(
-                color = surfaceColor,
-                startAngle = startAngle,
-                sweepAngle = sweepAngle,
-                useCenter = true,
-                style = Stroke(width = 2.dp.toPx()),
-                topLeft = Offset(centerX - radius, centerY - radius),
-                size = Size(radius * 2, radius * 2)
-            )
+            var startAngle = -90f
+            val gapAngle = if (data.size > 1) 2f else 0f
+            data.forEachIndexed { index, stat ->
+                val sweepAngle = (stat.percentage / totalPercentage) * (360f - gapAngle * data.size) * animationProgress.value
+                val color = pieColors[index]
 
-            // Draw label outside with connecting line
-            if (animationProgress.value > 0.95f && sweepAngle > 15f) {
-                val midAngle = startAngle + sweepAngle / 2f
-                val radians = (midAngle * kotlin.math.PI / 180f).toFloat()
-
-                // Point on the pie edge
-                val pieEdgeX = centerX + radius * kotlin.math.cos(radians)
-                val pieEdgeY = centerY + radius * kotlin.math.sin(radians)
-
-                // Point outside for label
-                val labelX = centerX + outerLabelRadius * kotlin.math.cos(radians)
-                val labelY = centerY + outerLabelRadius * kotlin.math.sin(radians)
-
-                // Draw connecting line and text using native canvas
-                val nativeCanvas = drawContext.canvas.nativeCanvas
-
-                nativeCanvas.drawLine(pieEdgeX, pieEdgeY, labelX, labelY, linePaint)
-                nativeCanvas.drawCircle(pieEdgeX, pieEdgeY, 6f, linePaint)
-
-                // Draw label text
-                val percentageText = "${(stat.percentage * 100).toInt()}%"
-                val labelText = "${stat.categoryName} $percentageText"
-
-                // Adjust text position based on angle (left or right side)
-                val textX = if (kotlin.math.cos(radians) >= 0) labelX + 8f else labelX - textPaint.measureText(labelText) - 8f
-                val textY = labelY + textPaint.textSize / 3f
-
-                nativeCanvas.drawText(labelText, textX, textY, textPaint)
+                drawArc(
+                    color = color,
+                    startAngle = startAngle + gapAngle / 2,
+                    sweepAngle = sweepAngle,
+                    useCenter = false,
+                    topLeft = Offset(center.x - radius, center.y - radius),
+                    size = Size(radius * 2,radius * 2),
+                    style = Stroke(
+                        width = strokePx,
+                        cap = StrokeCap.Butt
+                    )
+                )
+                startAngle += sweepAngle + gapAngle
             }
-
-            startAngle += sweepAngle
         }
 
-        drawCircle(
-            color = surfaceColor,
-            radius = innerRadius,
-            center = Offset(centerX, centerY)
-        )
+        // 中心总额
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = CurrencyFormat.format(totalAmount),
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.ExtraBold
+                ),
+                color = onSurfaceColor
+            )
+            Text(
+                "总支出",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 
@@ -359,6 +336,9 @@ fun CategoryStatRow(
 ) {
     val colors = extendedColorScheme()
     val progressColor = if (isExpense) colors.expense else colors.income
+    val parsedColor = remember(stat.categoryColor) {
+        Color(android.graphics.Color.parseColor(stat.categoryColor))
+    }
 
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -367,34 +347,42 @@ fun CategoryStatRow(
         CategoryCircleIcon(
             name = stat.categoryName,
             color = stat.categoryColor,
-            size = 28.dp,
+            size = 32.dp,
             textStyle = MaterialTheme.typography.labelSmall
         )
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(10.dp))
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = stat.categoryName,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold
             )
-            LinearProgressIndicator(
-                progress = { stat.percentage },
+            Spacer(Modifier.height(4.dp))
+            // 粗边框进度条
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(4.dp)
-                    .padding(top = 4.dp)
-                    .clip(RoundedCornerShape(2.dp)),
-                color = progressColor,
-                trackColor = MaterialTheme.colorScheme.surfaceVariant
-            )
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(stat.percentage.coerceIn(0f, 1f))
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(progressColor)
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(10.dp))
 
-        Text(
-            text = CurrencyFormat.format(stat.amount),
-            style = MaterialTheme.typography.bodyMedium,
+        AnimatedCounter(
+            targetValue = stat.amount,
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
             color = progressColor
         )
     }

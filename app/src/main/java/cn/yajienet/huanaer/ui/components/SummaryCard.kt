@@ -1,7 +1,6 @@
 package cn.yajienet.huanaer.ui.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,149 +11,178 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import cn.yajienet.huanaer.ui.components.neubru.AnimatedCounter
+import cn.yajienet.huanaer.ui.components.neubru.GlassCard
+import cn.yajienet.huanaer.ui.components.neubru.NeubruCard
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import cn.yajienet.huanaer.util.CurrencyFormat
 
 @Composable
 fun SummaryCard(
+    totalBalance: Double,
     totalIncome: Double,
     totalExpense: Double,
-    balance: Double,
+    dailyExpenses: List<Pair<Long, Double>> = emptyList(),
     modifier: Modifier = Modifier
 ) {
-    val colors = extendedColorScheme()
-    val borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+    val extendedColors = extendedColorScheme()
 
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(MaterialTheme.colorScheme.primaryContainer)
-            .border(
-                width = 1.dp,
-                color = borderColor,
-                shape = RoundedCornerShape(20.dp)
-            )
-            .padding(20.dp)
-    ) {
-        // 标题行
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "本月概览",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-            Text(
-                text = if (balance >= 0) "结余" else "亏损",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
-            )
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        // Total Balance - GlassCard
+        GlassCard {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp)
+            ) {
+                Column {
+                    Text(
+                        text = "总余额",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    AnimatedCounter(
+                        targetValue = totalBalance,
+                        style = MaterialTheme.typography.displaySmall.copy(
+                            fontWeight = FontWeight.Black
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    if (dailyExpenses.size >= 2) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        SparkLine(
+                            data = dailyExpenses.map { it.second },
+                            color = extendedColors.expense,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(40.dp)
+                        )
+                    }
+                }
+            }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // 结余金额 - 主展示
-        Text(
-            text = CurrencyFormat.format(balance),
-            style = MaterialTheme.typography.headlineLarge,
-            color = if (balance >= 0) colors.income else colors.expense,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // 收入支出并排展示
+        // Income / Expense Row - NeubruCards
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // 收入卡片
-            SummaryItemCard(
-                icon = Icons.Filled.ArrowUpward,
-                label = "收入",
-                value = totalIncome,
-                backgroundColor = colors.incomeContainer.copy(alpha = 0.3f),
-                iconColor = colors.income,
-                textColor = colors.income,
-                modifier = Modifier.weight(1f)
-            )
-
-            // 支出卡片
-            SummaryItemCard(
-                icon = Icons.Filled.ArrowDownward,
-                label = "支出",
-                value = totalExpense,
-                backgroundColor = colors.expenseContainer.copy(alpha = 0.3f),
-                iconColor = colors.expense,
-                textColor = colors.expense,
-                modifier = Modifier.weight(1f)
-            )
+            NeubruCard(
+                modifier = Modifier.weight(1f),
+                backgroundColor = extendedColors.incomeContainer.copy(alpha = 0.3f),
+                borderColor = extendedColors.income.copy(alpha = 0.5f)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "收入",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = extendedColors.income
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "¥${CurrencyFormat.format(totalIncome)}",
+                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                        color = extendedColors.income
+                    )
+                }
+            }
+            NeubruCard(
+                modifier = Modifier.weight(1f),
+                backgroundColor = extendedColors.expenseContainer.copy(alpha = 0.3f),
+                borderColor = extendedColors.expense.copy(alpha = 0.5f)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "支出",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = extendedColors.expense
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "¥${CurrencyFormat.format(totalExpense)}",
+                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                        color = extendedColors.expense
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun SummaryItemCard(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    label: String,
-    value: Double,
-    backgroundColor: Color,
-    iconColor: Color,
-    textColor: Color,
+private fun SparkLine(
+    data: List<Double>,
+    color: Color,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(backgroundColor)
-            .padding(horizontal = 12.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        // 图标圆形背景
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .clip(CircleShape)
-                .background(iconColor.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = iconColor,
-                modifier = Modifier.size(18.dp)
-            )
+    if (data.isEmpty()) return
+
+    val maxVal = data.maxOrNull() ?: return
+    val minVal = data.minOrNull() ?: return
+    val range = maxVal - minVal
+    val safeRange = if (range == 0.0) 1.0 else range
+
+    Canvas(modifier = modifier) {
+        val stepX = size.width / (data.size - 1).coerceAtLeast(1)
+        val padding = 4.dp.toPx()
+
+        val points = data.mapIndexed { index, value ->
+            val x = index * stepX
+            val y = size.height - padding - ((value - minVal) / safeRange * (size.height - padding * 2)).toFloat()
+            androidx.compose.ui.geometry.Offset(x, y)
         }
 
-        Column {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+        // Gradient fill under the line
+        val fillPath = Path().apply {
+            moveTo(points.first().x, size.height)
+            points.forEach { point -> lineTo(point.x, point.y) }
+            lineTo(points.last().x, size.height)
+            close()
+        }
+
+        drawPath(
+            path = fillPath,
+            brush = Brush.verticalGradient(
+                colors = listOf(color.copy(alpha = 0.3f), color.copy(alpha = 0.05f)),
+                startY = 0f,
+                endY = size.height
             )
-            Text(
-                text = CurrencyFormat.format(value),
-                style = MaterialTheme.typography.titleMedium,
-                color = textColor
+        )
+
+        // Line
+        val linePath = Path().apply {
+            moveTo(points.first().x, points.first().y)
+            for (i in 1 until points.size) {
+                lineTo(points[i].x, points[i].y)
+            }
+        }
+
+        drawPath(
+            path = linePath,
+            color = color,
+            style = Stroke(width = 2.dp.toPx())
+        )
+
+        // End dot
+        if (points.isNotEmpty()) {
+            drawCircle(
+                color = color,
+                radius = 3.dp.toPx(),
+                center = points.last()
             )
         }
     }

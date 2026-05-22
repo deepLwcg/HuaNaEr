@@ -133,6 +133,20 @@ class BudgetViewModel(
         }
     }
 
+    fun addBudgetWithCategory(categoryId: Long, amount: Double) {
+        if (categoryId <= 0 || amount <= 0) return
+        val state = uiState.value
+        viewModelScope.launch {
+            val budget = BudgetEntity(
+                categoryId = categoryId,
+                amount = amount,
+                month = state.currentMonth,
+                year = state.currentYear
+            )
+            budgetRepository.insert(budget)
+        }
+    }
+
     fun deleteBudget(budget: Budget) {
         viewModelScope.launch {
             budgetRepository.delete(

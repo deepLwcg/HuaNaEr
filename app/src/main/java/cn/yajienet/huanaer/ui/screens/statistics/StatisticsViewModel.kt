@@ -13,8 +13,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
+import java.util.Calendar
+
+enum class TimeRange { THIS_MONTH, LAST_3_MONTHS, LAST_6_MONTHS, THIS_YEAR }
 
 data class CategoryStatistics(
     val categoryId: Long,
@@ -31,9 +33,11 @@ data class StatisticsUiState(
     val incomeByCategory: List<CategoryStatistics> = emptyList(),
     val selectedMonth: Int = DateUtils.getCurrentMonth(),
     val selectedYear: Int = DateUtils.getCurrentYear(),
+    val selectedTimeRange: TimeRange = TimeRange.THIS_MONTH,
     val isLoading: Boolean = true
 )
 
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class StatisticsViewModel(
     private val transactionRepository: TransactionRepository,
     private val categoryRepository: CategoryRepository
@@ -41,14 +45,58 @@ class StatisticsViewModel(
 
     private val _selectedMonth = MutableStateFlow(DateUtils.getCurrentMonth())
     private val _selectedYear = MutableStateFlow(DateUtils.getCurrentYear())
+    private val _selectedTimeRange = MutableStateFlow(TimeRange.THIS_MONTH)
 
-    // 计算时间范围
-    private val dateRange = combine(_selectedMonth, _selectedYear) { month, year ->
-        DateUtils.getMonthStartTime(month, year) to DateUtils.getMonthEndTime(month, year)
+    // 根据 TimeRange 计算时间范围
+    private fun calcDateRange(timeRange: TimeRange): Pair<Long, Long> {
+        val cal = Calendar.getInstance()
+        val year = cal.get(Calendar.YEAR)
+        val month = cal.get(Calendar.MONTH) + 1
+        return when (timeRange) {
+            TimeRange.THIS_MONTH -> {
+                DateUtils.getMonthStartTime(month, year) to DateUtils.getMonthEndTime(month, year)
+            }
+            TimeRange.LAST_3_MONTHS -> {
+                cal.set(Calendar.DAY_OF_MONTH, 1)
+                cal.add(Calendar.MONTH, -2)
+                val start = cal.timeInMillis
+                cal.add(Calendar.MONTH, 3)
+                cal.add(Calendar.DAY_OF_MONTH, -1)
+                val end = cal.timeInMillis
+                start to end
+            }
+            TimeRange.LAST_6_MONTHS -> {
+                cal.set(Calendar.DAY_OF_MONTH, 1)
+                cal.add(Calendar.MONTH, -5)
+                val start = cal.timeInMillis
+                cal.add(Calendar.MONTH, 6)
+                cal.add(Calendar.DAY_OF_MONTH, -1)
+                val end = cal.timeInMillis
+                start to end
+            }
+            TimeRange.THIS_YEAR -> {
+                cal.set(Calendar.MONTH, Calendar.JANUARY)
+                cal.set(Calendar.DAY_OF_MONTH, 1)
+                val start = cal.timeInMillis
+                cal.set(Calendar.MONTH, Calendar.DECEMBER)
+                cal.set(Calendar.DAY_OF_MONTH, 31)
+                val end = cal.timeInMillis
+                start to end
+            }
+        }
     }
 
-    // 使用 flatMapLatest 动态切换 Flow，当月份变化时自动重新订阅
-    val uiState: StateFlow<StatisticsUiState> = dateRange.flatMapLatest { (startTime, endTime) ->
+    // 计算时间范围
+    private val dateRange = _selectedTimeRange.flatMapLatest { timeRange ->
+        val (start, end) = calcDateRange(timeRange)
+        combine(_selectedMonth, _selectedYear) { _, _ -> start to end }
+    }
+
+    // 使用 flatMapLatest 动态切换 Flow，当时间范围变化时自动重新订阅
+    val uiState: StateFlow<StatisticsUiState> = combine(dateRange, _selectedTimeRange) { range, timeRange ->
+        range to timeRange
+    }.flatMapLatest { (dateRangePair, timeRange) ->
+        val (startTime, endTime) = dateRangePair
         combine(
             categoryRepository.getAll(),
             transactionRepository.getTotalByTypeAndDateRange(TransactionType.EXPENSE, startTime, endTime),
@@ -85,6 +133,7 @@ class StatisticsViewModel(
                 incomeByCategory = incomeStats,
                 selectedMonth = _selectedMonth.value,
                 selectedYear = _selectedYear.value,
+                selectedTimeRange = timeRange,
                 isLoading = false
             )
         }
@@ -102,6 +151,12 @@ class StatisticsViewModel(
         val currentYear = _selectedYear.value
         _selectedMonth.value = if (currentMonth == 12) 1 else currentMonth + 1
         _selectedYear.value = if (currentMonth == 12) currentYear + 1 else currentYear
+    }
+
+    val selectedTimeRange: TimeRange get() = _selectedTimeRange.value
+
+    fun setTimeRange(range: TimeRange) {
+        _selectedTimeRange.value = range
     }
 
     fun setDate(year: Int, month: Int) {

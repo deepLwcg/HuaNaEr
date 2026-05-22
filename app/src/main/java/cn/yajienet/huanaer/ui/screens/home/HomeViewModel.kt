@@ -19,6 +19,7 @@ data class HomeUiState(
     val totalExpense: Double = 0.0,
     val balance: Double = 0.0,
     val recentTransactions: List<Transaction> = emptyList(),
+    val dailyExpenses: List<Pair<Long, Double>> = emptyList(),
     val isLoading: Boolean = true
 )
 
@@ -34,13 +35,15 @@ class HomeViewModel(
     val uiState: StateFlow<HomeUiState> = combine(
         repository.getTotalByTypeAndDateRange(TransactionType.INCOME, monthStartTime, monthEndTime),
         repository.getTotalByTypeAndDateRange(TransactionType.EXPENSE, monthStartTime, monthEndTime),
-        repository.getRecentTransactions(10)
-    ) { income, expense, transactions ->
+        repository.getRecentTransactions(10),
+        repository.getDailyTotalsAsPairs(TransactionType.EXPENSE, monthStartTime, monthEndTime)
+    ) { income, expense, transactions, daily ->
         HomeUiState(
             totalIncome = income,
             totalExpense = expense,
             balance = income - expense,
             recentTransactions = transactions,
+            dailyExpenses = daily.takeLast(7),
             isLoading = false
         )
     }.stateIn(
