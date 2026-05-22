@@ -12,7 +12,7 @@ data class NeubruElevation(
     val cornerRadius: Dp = 16.dp
 )
 
-val LocalNeubruElevation = androidx.compose.runtime.compositionLocalOf { NeubruElevation() }
+val LocalNeubruElevation = androidx.compose.runtime.staticCompositionLocalOf { NeubruElevation() }
 
 @Composable
 @ReadOnlyComposable

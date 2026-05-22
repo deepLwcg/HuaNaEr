@@ -5,8 +5,9 @@ import cn.yajienet.huanaer.data.model.TransactionType
 
 class Converters {
     @TypeConverter
-    fun fromTransactionType(type: TransactionType): String = type.name
+    fun fromTransactionType(value: TransactionType): String = value.name
 
     @TypeConverter
-    fun toTransactionType(value: String): TransactionType = TransactionType.valueOf(value)
+    fun toTransactionType(value: String): TransactionType =
+        try { TransactionType.valueOf(value) } catch (_: IllegalArgumentException) { TransactionType.EXPENSE }
 }

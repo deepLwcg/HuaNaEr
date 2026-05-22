@@ -1,36 +1,40 @@
 package cn.yajienet.huanaer.data.datastore
 
 import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
+private val Context.dataStore by preferencesDataStore(name = "settings")
+
 enum class ThemeMode {
-    LIGHT,      // 浅色模式
-    DARK,       // 深色模式
-    SYSTEM      // 跟随系统
+    LIGHT,
+    DARK,
+    SYSTEM
 }
 
 enum class ThemeStyle {
-    MINT_BREEZE,    // 薄荷清风
-    SUNSET_GLOW,    // 落日余晖
-    MIDNIGHT_NEON   // 午夜霓虹
+    MINT_BREEZE,
+    SUNSET_GLOW,
+    MIDNIGHT_NEON
 }
-
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 class SettingsDataStore(private val context: Context) {
 
     companion object {
-        private val THEME_MODE_KEY = intPreferencesKey("theme_mode")
-        private val THEME_STYLE_KEY = intPreferencesKey("theme_style")
+        // 新版使用 string key 存枚举 name
+        private val THEME_MODE_KEY = stringPreferencesKey("theme_mode_v2")
+        private val THEME_STYLE_KEY = stringPreferencesKey("theme_style_v2")
+        // 旧版 int key，用于兼容
+        private val THEME_MODE_KEY_LEGACY = intPreferencesKey("theme_mode")
+        private val THEME_STYLE_KEY_LEGACY = intPreferencesKey("theme_style")
+        // 以下 key 保持不变
         private val DYNAMIC_COLOR_KEY = booleanPreferencesKey("dynamic_color")
         private val MONTH_START_DAY_KEY = intPreferencesKey("month_start_day")
         private val DEFAULT_EXPENSE_CATEGORY_KEY = longPreferencesKey("default_expense_category")
@@ -39,13 +43,25 @@ class SettingsDataStore(private val context: Context) {
     }
 
     val themeStyle: Flow<ThemeStyle> = context.dataStore.data.map { preferences ->
-        val ordinal = preferences[THEME_STYLE_KEY] ?: ThemeStyle.MINT_BREEZE.ordinal
-        ThemeStyle.entries.getOrElse(ordinal) { ThemeStyle.MINT_BREEZE }
+        val name = preferences[THEME_STYLE_KEY]
+        if (name != null) {
+            ThemeStyle.entries.find { it.name == name } ?: ThemeStyle.MINT_BREEZE
+        } else {
+            val ordinal = preferences[THEME_STYLE_KEY_LEGACY]
+            if (ordinal != null) ThemeStyle.entries.getOrElse(ordinal) { ThemeStyle.MINT_BREEZE }
+            else ThemeStyle.MINT_BREEZE
+        }
     }
 
     val themeMode: Flow<ThemeMode> = context.dataStore.data.map { preferences ->
-        val ordinal = preferences[THEME_MODE_KEY] ?: ThemeMode.SYSTEM.ordinal
-        ThemeMode.entries.getOrElse(ordinal) { ThemeMode.SYSTEM }
+        val name = preferences[THEME_MODE_KEY]
+        if (name != null) {
+            ThemeMode.entries.find { it.name == name } ?: ThemeMode.SYSTEM
+        } else {
+            val ordinal = preferences[THEME_MODE_KEY_LEGACY]
+            if (ordinal != null) ThemeMode.entries.getOrElse(ordinal) { ThemeMode.SYSTEM }
+            else ThemeMode.SYSTEM
+        }
     }
 
     val dynamicColor: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -65,18 +81,20 @@ class SettingsDataStore(private val context: Context) {
     }
 
     val largeAmountThreshold: Flow<Double> = context.dataStore.data.map { preferences ->
-        preferences[LARGE_AMOUNT_THRESHOLD_KEY] ?: 0.0
+        preferences[LARGE_AMOUNT_THRESHOLD_KEY] ?: -1.0
     }
 
     suspend fun setThemeMode(mode: ThemeMode) {
         context.dataStore.edit { preferences ->
-            preferences[THEME_MODE_KEY] = mode.ordinal
+            preferences[THEME_MODE_KEY] = mode.name
+            preferences.remove(THEME_MODE_KEY_LEGACY)
         }
     }
 
     suspend fun setThemeStyle(style: ThemeStyle) {
         context.dataStore.edit { preferences ->
-            preferences[THEME_STYLE_KEY] = style.ordinal
+            preferences[THEME_STYLE_KEY] = style.name
+            preferences.remove(THEME_STYLE_KEY_LEGACY)
         }
     }
 

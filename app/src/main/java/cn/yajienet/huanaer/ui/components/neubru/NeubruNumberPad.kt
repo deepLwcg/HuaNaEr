@@ -62,7 +62,7 @@ fun NeubruNumberPad(
                     NumberPadKey(
                         key = key,
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                             when (key) {
                                 "." -> onDecimal()
                                 "⌫" -> onDelete()

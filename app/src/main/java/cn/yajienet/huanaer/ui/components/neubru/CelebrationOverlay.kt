@@ -43,7 +43,7 @@ fun CelebrationOverlay(
         Color(0xFFFF6B6B)
     )
 
-    val particles = remember {
+    val particles = remember(trigger) {
         List(40) {
             val angle = Random.nextFloat() * 360f
             val speed = Random.nextFloat() * 8f + 2f
@@ -87,8 +87,7 @@ fun CelebrationOverlay(
                     x = x * size.width - particleSize / 2f,
                     y = y * size.height - particleSize / 2f
                 ),
-                size = Size(particleSize, particleSize),
-                alpha = alpha
+                size = Size(particleSize, particleSize)
             )
         }
     }

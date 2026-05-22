@@ -69,7 +69,7 @@ fun BouncyIconButton(
                 enabled = enabled,
                 onClick = {
                     if (hapticEnabled) {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                     }
                     onClick()
                 }

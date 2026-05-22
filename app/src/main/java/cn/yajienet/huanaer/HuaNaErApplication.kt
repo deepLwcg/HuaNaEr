@@ -12,6 +12,7 @@ import cn.yajienet.huanaer.data.repository.TransactionRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class HuaNaErApplication : Application() {
@@ -53,9 +54,8 @@ class HuaNaErApplication : Application() {
     }
 
     private suspend fun initDefaultCategories() {
-        val existingCategories = categoryRepository.getAll()
-        existingCategories.collect { categories ->
-            if (categories.isEmpty()) {
+        val existingCategories = categoryRepository.getAll().first()
+        if (existingCategories.isEmpty()) {
                 val defaultExpenseCategories = listOf(
                     CategoryEntity(name = "餐饮", icon = "restaurant", color = "#FF6B6B", type = TransactionType.EXPENSE, sortOrder = 1, isDefault = true),
                     CategoryEntity(name = "交通", icon = "directions_car", color = "#4ECDC4", type = TransactionType.EXPENSE, sortOrder = 2, isDefault = true),
@@ -78,6 +78,5 @@ class HuaNaErApplication : Application() {
                 defaultExpenseCategories.forEach { categoryRepository.insert(it) }
                 defaultIncomeCategories.forEach { categoryRepository.insert(it) }
             }
-        }
     }
 }

@@ -178,17 +178,21 @@ fun BudgetCard(
     val isOverBudget = budget.spent > budget.amount
     val isWarning = rawProgress >= 0.8f && !isOverBudget
 
-    // 接近限额脉冲动画
-    val infiniteTransition = rememberInfiniteTransition(label = "budgetPulse")
-    val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(800),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "pulseAlpha"
-    )
+    // 接近限额脉冲动画（仅 warning/over 状态才创建）
+    val shouldPulse = isWarning || isOverBudget
+    val pulseAlpha = if (shouldPulse) {
+        val infiniteTransition = rememberInfiniteTransition(label = "budgetPulse")
+        val alpha by infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(800),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "pulseAlpha"
+        )
+        alpha
+    } else 0f
 
     val borderColor = when {
         isOverBudget -> colors.budgetDanger.copy(alpha = 0.5f + 0.5f * pulseAlpha)
@@ -347,7 +351,7 @@ fun AddBudgetBottomSheet(
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(uiState.categories) { category ->
+                items(uiState.categories, key = { it.id }) { category ->
                     val selected = selectedCategoryId == category.id
                     BouncyIconButton(
                         onClick = { selectedCategoryId = category.id },

@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -36,7 +37,6 @@ import cn.yajienet.huanaer.ui.components.EmptyState
 import cn.yajienet.huanaer.ui.components.LoadingState
 import cn.yajienet.huanaer.ui.components.SummaryCard
 import cn.yajienet.huanaer.ui.components.TransactionListItem
-import cn.yajienet.huanaer.ui.components.neubru.NeubruFab
 
 @Composable
 fun HomeScreen(
@@ -52,10 +52,9 @@ fun HomeScreen(
     var expandedItemId by remember { mutableStateOf<Long?>(null) }
     val lazyListState = rememberLazyListState()
 
-    LaunchedEffect(lazyListState.isScrollInProgress) {
-        if (lazyListState.isScrollInProgress) {
-            expandedItemId = null
-        }
+    LaunchedEffect(lazyListState) {
+        snapshotFlow { lazyListState.isScrollInProgress }
+            .collect { if (it) expandedItemId = null }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -137,16 +136,6 @@ fun HomeScreen(
                 }
             }
 
-            // FAB - 额外偏移避开底部导航栏
-            NeubruFab(
-                onClick = onAddTransactionClick,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(
-                        end = 24.dp,
-                        bottom = contentPadding.calculateBottomPadding() + 24.dp
-                    )
-            )
         }
     }
 }

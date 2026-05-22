@@ -263,7 +263,7 @@ fun HuaNaErNavigation(
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier.fillMaxSize(),
-                    beyondViewportPageCount = 3,
+                    beyondViewportPageCount = 1,
                     pageSpacing = 0.dp
                 ) { page ->
                     when (page) {
@@ -369,9 +369,7 @@ private fun BottomNavBar(
     modifier: Modifier = Modifier
 ) {
     GlassCard(
-        modifier = modifier.fillMaxWidth(),
-        cornerRadius = 0.dp,
-        contentPadding = 0.dp
+        modifier = modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier

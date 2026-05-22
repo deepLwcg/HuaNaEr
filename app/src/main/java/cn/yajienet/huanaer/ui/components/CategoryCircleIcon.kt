@@ -27,8 +27,12 @@ fun CategoryCircleIcon(
     textStyle: TextStyle = MaterialTheme.typography.labelLarge,
     modifier: Modifier = Modifier
 ) {
-    // 缓存解析后的颜色，避免每次重组都解析颜色字符串
-    val backgroundColor = remember(color) { Color(android.graphics.Color.parseColor(color)) }
+    val backgroundColor = remember(color) {
+        try { Color(android.graphics.Color.parseColor(color)) }
+        catch (_: IllegalArgumentException) { Color(0xFF808080) }
+    }
+    val luminance = 0.299f * backgroundColor.red + 0.587f * backgroundColor.green + 0.114f * backgroundColor.blue
+    val textColor = if (luminance > 0.5f) Color(0xFF1A1A1A) else Color.White
 
     Box(
         modifier = modifier
@@ -39,7 +43,7 @@ fun CategoryCircleIcon(
     ) {
         Text(
             text = name.take(2),
-            color = Color.White,
+            color = textColor,
             style = textStyle
         )
     }

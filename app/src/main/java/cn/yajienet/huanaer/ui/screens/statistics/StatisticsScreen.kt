@@ -95,7 +95,7 @@ fun StatisticsScreen(
                         TimeRange.LAST_6_MONTHS to "近6月",
                         TimeRange.THIS_YEAR to "今年"
                     )
-                    items(ranges) { (range, label) ->
+                    items(ranges, key = { it.first }) { (range, label) ->
                         PillChip(
                             text = {
                                 Text(
@@ -202,7 +202,7 @@ fun StatisticsScreen(
                     )
                 }
 
-                items(uiState.expenseByCategory) { stat ->
+                items(uiState.expenseByCategory, key = { it.categoryId }) { stat ->
                     NeubruCard(
                         modifier = Modifier.fillMaxWidth(),
                         cornerRadius = 12.dp
@@ -228,7 +228,7 @@ fun StatisticsScreen(
                     )
                 }
 
-                items(uiState.incomeByCategory) { stat ->
+                items(uiState.incomeByCategory, key = { it.categoryId }) { stat ->
                     NeubruCard(
                         modifier = Modifier.fillMaxWidth(),
                         cornerRadius = 12.dp
@@ -255,8 +255,12 @@ fun DonutChart(
     if (data.isEmpty()) return
 
     val animationProgress = remember { Animatable(0f) }
+    val primaryFallback = MaterialTheme.colorScheme.primary
     val pieColors = remember(data) {
-        data.map { Color(android.graphics.Color.parseColor(it.categoryColor)) }
+        data.map {
+            try { Color(android.graphics.Color.parseColor(it.categoryColor)) }
+            catch (_: IllegalArgumentException) { primaryFallback }
+        }
     }
     val totalPercentage = remember(data) { data.fold(0f) { acc, stat -> acc + stat.percentage } }
 

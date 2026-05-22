@@ -23,7 +23,7 @@ fun NeubruSwitch(
     modifier: Modifier = Modifier
 ) {
     val thumbOffset by animateDpAsState(
-        targetValue = if (checked) 24.dp else 0.dp,
+        targetValue = if (checked) 26.dp else 2.dp,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessMedium
@@ -43,11 +43,9 @@ fun NeubruSwitch(
         border = BorderStroke(2.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)),
         onClick = { onCheckedChange(!checked) }
     ) {
-        Box(modifier = Modifier.offset(x = thumbOffset)) {
+        Box(modifier = Modifier.offset(x = thumbOffset, y = 2.dp)) {
             Surface(
-                modifier = Modifier
-                    .size(24.dp)
-                    .offset(x = 0.dp, y = 0.dp),
+                modifier = Modifier.size(24.dp),
                 shape = CircleShape,
                 color = thumbColor,
                 border = BorderStroke(2.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)),

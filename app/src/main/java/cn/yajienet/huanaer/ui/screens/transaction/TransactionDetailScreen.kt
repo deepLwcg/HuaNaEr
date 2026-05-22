@@ -53,6 +53,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -96,8 +97,10 @@ fun TransactionDetailScreen(
     )
 
     // Navigate back when saved or deleted
-    if (uiState.saved || uiState.deleted) {
-        onNavigateBack()
+    LaunchedEffect(uiState.saved, uiState.deleted) {
+        if (uiState.saved || uiState.deleted) {
+            onNavigateBack()
+        }
     }
 
     Scaffold(

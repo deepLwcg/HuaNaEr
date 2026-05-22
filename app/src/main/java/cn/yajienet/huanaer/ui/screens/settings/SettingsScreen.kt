@@ -416,7 +416,7 @@ fun SettingsScreen(
                 )
             }
 
-            items(uiState.backupFiles) { file ->
+            items(uiState.backupFiles, key = { it.absolutePath }) { file ->
                 NeubruCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 12.dp) {
                     Row(
                         modifier = Modifier

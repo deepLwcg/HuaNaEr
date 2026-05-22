@@ -1,12 +1,13 @@
 package cn.yajienet.huanaer.ui.components.neubru
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -21,14 +22,17 @@ fun AnimatedCounter(
     color: Color = MaterialTheme.colorScheme.onSurface,
     style: TextStyle = MaterialTheme.typography.headlineLarge
 ) {
-    // 以分为单位做动画避免 Float 精度丢失（最大支持约 2.1 亿元）
     val targetCents = (targetValue * 100).roundToLong()
-    val animatedCents by animateFloatAsState(
-        targetValue = targetCents.toFloat(),
-        animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing),
-        label = "animatedCounter"
-    )
-    val displayValue = (animatedCents.toLong()).toDouble() / 100.0
+    val animatable = remember { Animatable(0f) }
+
+    LaunchedEffect(targetCents) {
+        animatable.animateTo(
+            targetValue = targetCents.toFloat(),
+            animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
+        )
+    }
+
+    val displayValue = animatable.value.roundToLong().toDouble() / 100.0
 
     Text(
         text = "$prefix${CurrencyFormat.format(displayValue)}",
