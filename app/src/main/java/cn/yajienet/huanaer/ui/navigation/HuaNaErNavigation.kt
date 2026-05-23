@@ -101,6 +101,7 @@ fun HuaNaErNavigation(
     val navController = rememberNavController()
     var addBudgetTrigger by remember { mutableIntStateOf(0) }
     var showAddTransaction by remember { mutableStateOf(false) }
+    var addTransactionSheetKey by remember { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
 
     // 处理快捷方式的初始路由
@@ -345,7 +346,11 @@ fun HuaNaErNavigation(
     // 添加交易底部弹窗（从主页面触发）
     if (showAddTransaction) {
         AddTransactionBottomSheet(
-            onDismiss = { showAddTransaction = false }
+            sheetKey = addTransactionSheetKey,
+            onDismiss = {
+                showAddTransaction = false
+                addTransactionSheetKey++
+            }
         )
     }
 

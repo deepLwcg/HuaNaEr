@@ -10,6 +10,8 @@ import cn.yajienet.huanaer.data.model.TransactionType
 import cn.yajienet.huanaer.data.repository.CategoryRepository
 import cn.yajienet.huanaer.data.repository.SettingsRepository
 import cn.yajienet.huanaer.data.repository.TransactionRepository
+import cn.yajienet.huanaer.util.CurrencyFormat
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,13 +40,15 @@ class TransactionViewModel(
     private val _uiState = MutableStateFlow(AddTransactionUiState())
     val uiState: StateFlow<AddTransactionUiState> = _uiState.asStateFlow()
 
+    private var categoriesJob: Job? = null
+
     init {
         loadCategories(TransactionType.EXPENSE)
     }
 
     fun loadCategories(type: TransactionType) {
-        viewModelScope.launch {
-            // 获取默认分类配置
+        categoriesJob?.cancel()
+        categoriesJob = viewModelScope.launch {
             val defaultCategoryId = if (type == TransactionType.EXPENSE) {
                 settingsRepository.defaultExpenseCategoryId.first()
             } else {
@@ -52,7 +56,6 @@ class TransactionViewModel(
             }
 
             categoryRepository.getByType(type).collect { categories ->
-                // 优先选择配置的默认分类，如果没有则选择第一个
                 val selectedId = if (defaultCategoryId > 0 && categories.any { it.id == defaultCategoryId }) {
                     defaultCategoryId
                 } else {
@@ -60,9 +63,9 @@ class TransactionViewModel(
                 }
 
                 _uiState.update { state ->
+                    if (state.type != type) return@update state
                     state.copy(
                         categories = categories,
-                        type = type,
                         selectedCategoryId = selectedId
                     )
                 }
@@ -71,15 +74,18 @@ class TransactionViewModel(
     }
 
     fun setAmount(amount: String) {
-        _uiState.update { it.copy(amount = amount) }
+        val sanitized = CurrencyFormat.sanitizeAmountInput(amount)
+        _uiState.update { it.copy(amount = sanitized, error = null) }
     }
 
     fun setType(type: TransactionType) {
+        if (_uiState.value.type == type) return
+        _uiState.update { it.copy(type = type, error = null) }
         loadCategories(type)
     }
 
     fun setCategory(categoryId: Long) {
-        _uiState.update { it.copy(selectedCategoryId = categoryId) }
+        _uiState.update { it.copy(selectedCategoryId = categoryId, error = null) }
     }
 
     fun setDate(date: Long) {
@@ -92,6 +98,8 @@ class TransactionViewModel(
 
     fun saveTransaction() {
         val state = _uiState.value
+        if (state.isSaving || state.saved) return
+
         val amount = state.amount.toDoubleOrNull()
         val categoryId = state.selectedCategoryId
 
@@ -123,9 +131,16 @@ class TransactionViewModel(
         }
     }
 
+    fun resetForm() {
+        categoriesJob?.cancel()
+        _uiState.value = AddTransactionUiState()
+        loadCategories(TransactionType.EXPENSE)
+    }
+
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
+
 }
 
 class TransactionViewModelFactory(private val application: Application) : ViewModelProvider.Factory {

@@ -3,25 +3,26 @@ package cn.yajienet.huanaer.ui.screens.transaction
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,34 +40,39 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cn.yajienet.huanaer.data.model.TransactionType
-import cn.yajienet.huanaer.ui.components.candy.CandyCard
+import cn.yajienet.huanaer.ui.components.AmountInputField
 import cn.yajienet.huanaer.ui.components.candy.ConfettiBurst
 import cn.yajienet.huanaer.ui.components.candy.EmojiCategoryChip
-import cn.yajienet.huanaer.ui.components.candy.GummyButton
-import cn.yajienet.huanaer.ui.components.candy.GummyNumberPad
 import cn.yajienet.huanaer.ui.components.candy.SegmentedGummy
 import cn.yajienet.huanaer.ui.theme.LocalAppShapes
-import cn.yajienet.huanaer.util.CategoryEmoji
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
-import java.text.SimpleDateFormat
-import java.util.Locale
+import cn.yajienet.huanaer.util.CategoryEmoji
+import cn.yajienet.huanaer.util.CurrencyFormat
+import cn.yajienet.huanaer.util.DateUtils
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,12 +86,13 @@ fun AddTransactionScreen(
     )
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val colors = extendedColorScheme()
+    val saveTint = if (uiState.type == TransactionType.EXPENSE) colors.expense else colors.income
 
-    LaunchedEffect(uiState.saved) {
-        if (uiState.saved) {
-            delay(800)
-            onNavigateBack()
-        }
+    LaunchedEffect(uiState.error) {
+        val message = uiState.error ?: return@LaunchedEffect
+        snackbarHostState.showSnackbar(message)
+        viewModel.clearError()
     }
 
     Scaffold(
@@ -94,7 +101,19 @@ fun AddTransactionScreen(
                 title = { Text("添加交易") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                    }
+                },
+                actions = {
+                    TextButton(
+                        onClick = { viewModel.saveTransaction() },
+                        enabled = !uiState.isSaving && !uiState.saved
+                    ) {
+                        Text(
+                            text = if (uiState.isSaving) "保存中" else "保存",
+                            color = saveTint,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
             )
@@ -103,7 +122,10 @@ fun AddTransactionScreen(
     ) { innerPadding ->
         AddTransactionContent(
             viewModel = viewModel,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+            compact = false,
+            showSaveAction = false,
+            onSaved = onNavigateBack
         )
     }
 }
@@ -113,80 +135,94 @@ fun AddTransactionScreen(
 fun AddTransactionContent(
     viewModel: TransactionViewModel,
     modifier: Modifier = Modifier,
+    compact: Boolean = false,
+    showSaveAction: Boolean = true,
     onSaved: (() -> Unit)? = null
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.CHINA)
     var showDatePicker by remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = uiState.date
-    )
     var showCelebration by remember { mutableStateOf(false) }
+    val amountFocusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+    val scrollState = rememberScrollState()
+    val colors = extendedColorScheme()
 
-    // 本地管理金额字符串，避免与 ViewModel 状态同步延迟
-    var amountText by remember { mutableStateOf("") }
-    // ViewModel 金额变化时同步到本地（如重置）
-    LaunchedEffect(uiState.amount) {
-        if (uiState.amount != amountText) {
-            amountText = uiState.amount
+    // 全屏页自动聚焦金额；弹窗不自动弹键盘，避免挡住底部保存按钮
+    LaunchedEffect(Unit) {
+        if (!compact && !uiState.saved) {
+            amountFocusRequester.requestFocus()
+            keyboardController?.show()
         }
     }
 
-    // 金额字符串由 ViewModel 管理，数字键盘直接操作
-    // 保存成功时触发庆祝动画
     LaunchedEffect(uiState.saved) {
         if (uiState.saved) {
+            keyboardController?.hide()
             showCelebration = true
         }
     }
 
-    Box(modifier = modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+    val amountColor = if (uiState.type == TransactionType.EXPENSE) colors.expense else colors.income
+    val errorMessage: @Composable () -> Unit = {
+        AnimatedVisibility(
+            visible = uiState.error != null,
+            enter = fadeIn(),
+            exit = fadeOut()
         ) {
-            // 类型切换 — SegmentedSwitch
-            val colors = extendedColorScheme()
-            SegmentedGummy(
+            uiState.error?.let { error ->
+                Text(
+                    text = error,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
+    }
+
+    val onSave = {
+        focusManager.clearFocus()
+        keyboardController?.hide()
+        viewModel.saveTransaction()
+    }
+
+    val saveAction: @Composable () -> Unit = {
+        if (showSaveAction) {
+            TextButton(
+                onClick = onSave,
+                enabled = !uiState.isSaving && !uiState.saved
+            ) {
+                Text(
+                    text = if (uiState.isSaving) "保存中" else "保存",
+                    color = amountColor,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    }
+
+    val formFields: @Composable () -> Unit = {
+        SegmentedGummy(
                 options = listOf("支出", "收入"),
                 selectedIndex = if (uiState.type == TransactionType.EXPENSE) 0 else 1,
                 onSelected = { index ->
                     viewModel.setType(if (index == 0) TransactionType.EXPENSE else TransactionType.INCOME)
                 },
-                selectedColor = if (uiState.type == TransactionType.EXPENSE) colors.expense else colors.income
+                selectedColor = amountColor
             )
 
-            CandyCard(
-                modifier = Modifier.fillMaxWidth(),
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "金额",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = if (amountText.isBlank()) "¥0.00"
-                               else "¥$amountText",
-                        style = MaterialTheme.typography.displayLarge.copy(
-                            fontSize = 40.sp,
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = if (uiState.type == TransactionType.EXPENSE)
-                            colors.expense
-                        else colors.income
-                    )
-                }
-            }
+            AmountInputField(
+                amount = uiState.amount,
+                onAmountChange = viewModel::setAmount,
+                accentColor = amountColor,
+                focusRequester = amountFocusRequester,
+                textStyle = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = if (compact) 28.sp else 32.sp
+                )
+            )
 
-            // 分类选择 — LazyRow + CategoryCircleButton
             Column {
                 Text(
                     "分类",
@@ -194,9 +230,7 @@ fun AddTransactionContent(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(Modifier.height(8.dp))
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(uiState.categories, key = { it.id }) { category ->
                         val selected = uiState.selectedCategoryId == category.id
                         val bgColor = try {
@@ -215,7 +249,6 @@ fun AddTransactionContent(
                 }
             }
 
-            // 日期选择
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -230,7 +263,7 @@ fun AddTransactionContent(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        dateFormat.format(uiState.date),
+                        DateUtils.formatDate(uiState.date),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -242,124 +275,109 @@ fun AddTransactionContent(
                 }
             }
 
-            // 备注输入
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh
             ) {
-                Box(modifier = Modifier.padding(16.dp)) {
-                    var noteText by remember(uiState.note) { mutableStateOf(uiState.note) }
-                    Column {
-                        Text(
-                            "备注",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        BasicTextField(
-                            value = noteText,
-                            onValueChange = { newText ->
-                                noteText = newText
-                                viewModel.setNote(newText)
-                            },
-                            textStyle = MaterialTheme.typography.bodyLarge.copy(
-                                color = MaterialTheme.colorScheme.onSurface
-                            ),
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            decorationBox = { innerTextField ->
-                                Box {
-                                    if (noteText.isEmpty()) {
-                                        Text(
-                                            "添加备注...",
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                                        )
-                                    }
-                                    innerTextField()
-                                }
-                            }
-                        )
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(4.dp))
-
-            // 数字键盘
-            GummyNumberPad(
-                onDigit = { digit ->
-                    val current = amountText
-                    // 限制小数点后两位
-                    if (current.contains(".")) {
-                        val afterDot = current.substringAfter(".")
-                        if (afterDot.length >= 2) return@GummyNumberPad
-                    }
-                    // 限制首位为0时只能输入小数点
-                    val newAmount = if (current == "0") {
-                        digit.toString()
-                    } else {
-                        current + digit.toString()
-                    }
-                    amountText = newAmount
-                    viewModel.setAmount(newAmount)
-                },
-                onDecimal = {
-                    val newAmount = when {
-                        amountText.isEmpty() -> "0."
-                        !amountText.contains(".") -> "$amountText."
-                        else -> return@GummyNumberPad
-                    }
-                    amountText = newAmount
-                    viewModel.setAmount(newAmount)
-                },
-                onDelete = {
-                    if (amountText.isNotEmpty()) {
-                        val newAmount = amountText.dropLast(1)
-                        amountText = newAmount
-                        viewModel.setAmount(newAmount)
-                    }
-                },
-                onDone = { viewModel.saveTransaction() }
-            )
-
-            // 错误提示
-            AnimatedVisibility(
-                visible = uiState.error != null,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                uiState.error?.let { error ->
+                Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = error,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
+                        "备注",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    BasicTextField(
+                        value = uiState.note,
+                        onValueChange = viewModel::setNote,
+                        textStyle = MaterialTheme.typography.bodyLarge.copy(
+                            color = MaterialTheme.colorScheme.onSurface
+                        ),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        decorationBox = { innerTextField ->
+                            Box {
+                                if (uiState.note.isEmpty()) {
+                                    Text(
+                                        "添加备注...",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                    )
+                                }
+                                innerTextField()
+                            }
+                        }
                     )
                 }
             }
+    }
+
+    Box(modifier = modifier) {
+        if (compact) {
+            BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                val sheetHeight = maxHeight * 0.88f
+                Column(
+                    modifier = Modifier
+                        .height(sheetHeight)
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .verticalScroll(scrollState)
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        formFields()
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .imePadding()
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(Modifier.weight(1f)) { errorMessage() }
+                        saveAction()
+                    }
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(scrollState)
+                    .imePadding()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                formFields()
+                errorMessage()
+            }
         }
 
-        // 庆祝动画 — CelebrationGlow
         ConfettiBurst(
             trigger = showCelebration,
             onFinished = {
                 showCelebration = false
+                if (compact) viewModel.resetForm()
                 onSaved?.invoke()
             }
         )
     }
 
-    // 日期选择对话框
     if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = uiState.date)
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        datePickerState.selectedDateMillis?.let { date ->
-                            viewModel.setDate(date)
-                        }
+                        datePickerState.selectedDateMillis?.let(viewModel::setDate)
                         showDatePicker = false
                     }
                 ) {
@@ -380,15 +398,20 @@ fun AddTransactionContent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionBottomSheet(
+    sheetKey: Int,
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
     val application = context.applicationContext as cn.yajienet.huanaer.HuaNaErApplication
     val viewModel: TransactionViewModel = viewModel(
+        key = "add_transaction_sheet_$sheetKey",
         factory = TransactionViewModelFactory(application)
     )
-
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    DisposableEffect(Unit) {
+        onDispose { viewModel.resetForm() }
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -398,10 +421,8 @@ fun AddTransactionBottomSheet(
     ) {
         AddTransactionContent(
             viewModel = viewModel,
-            onSaved = {
-                // 保存成功后关闭底部弹窗
-                onDismiss()
-            }
+            compact = true,
+            onSaved = onDismiss
         )
     }
 }

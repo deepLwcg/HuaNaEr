@@ -31,7 +31,7 @@ import kotlin.math.abs
 fun AnimatedNumber(
     targetValue: Double,
     modifier: Modifier = Modifier,
-    prefix: String = "¥",
+    prefix: String = CurrencyFormat.SYMBOL,
     color: Color = MaterialTheme.colorScheme.onSurface,
     style: TextStyle = MaterialTheme.typography.displayMedium
 ) {

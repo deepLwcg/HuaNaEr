@@ -301,7 +301,11 @@ fun SettingsScreen(
                         Column(modifier = Modifier.weight(1f)) {
                             Text("大额提醒阈值", style = MaterialTheme.typography.bodyLarge)
                             Text(
-                                if (uiState.largeAmountThreshold > 0) "¥${uiState.largeAmountThreshold.toInt()}" else "未启用",
+                                if (uiState.largeAmountThreshold > 0) {
+                                    "${CurrencyFormat.SYMBOL}${uiState.largeAmountThreshold.toInt()}"
+                                } else {
+                                    "未启用"
+                                },
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.primary
                             )

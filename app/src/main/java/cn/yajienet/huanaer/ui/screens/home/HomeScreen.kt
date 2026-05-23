@@ -111,7 +111,7 @@ fun HomeScreen(
                 if (uiState.recentTransactions.isEmpty()) {
                     EmptyState(
                         title = "记下第一笔，财富从这里开始～",
-                        subtitle = "点击底部 + 快速记账",
+                        subtitle = "点击右上角 + 快速记账",
                         emoji = "💰",
                         modifier = Modifier
                             .fillMaxSize()

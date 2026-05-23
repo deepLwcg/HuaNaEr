@@ -330,7 +330,11 @@ fun AddBudgetBottomSheet(
                     Text("预算金额", style = MaterialTheme.typography.labelMedium)
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        text = if (amountText.isBlank()) "¥0.00" else "¥$amountText",
+                        text = if (amountText.isBlank()) {
+                            "${CurrencyFormat.SYMBOL}0.00"
+                        } else {
+                            CurrencyFormat.SYMBOL + amountText
+                        },
                         style = MaterialTheme.typography.displayLarge.copy(
                             fontSize = 36.sp,
                             fontWeight = FontWeight.Black

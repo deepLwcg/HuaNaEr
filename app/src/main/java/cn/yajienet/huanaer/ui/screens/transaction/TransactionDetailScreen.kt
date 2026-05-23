@@ -73,6 +73,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cn.yajienet.huanaer.data.model.TransactionType
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
+import cn.yajienet.huanaer.ui.components.AmountInputField
 import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
 import cn.yajienet.huanaer.ui.components.glassmorphism.GlassCard
 import cn.yajienet.huanaer.ui.components.candy.CandyCard
@@ -220,22 +221,11 @@ fun TransactionDetailScreen(
                     }
                 }
 
-                // Amount input - 大号输入框
-                OutlinedTextField(
-                    value = uiState.amount,
-                    onValueChange = { viewModel.setAmount(it) },
-                    label = { Text("金额") },
-                    prefix = {
-                        Text(
-                            "¥",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = if (uiState.type == TransactionType.EXPENSE) colors.expense else colors.income
-                        )
-                    },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.fillMaxWidth(),
-                    isError = uiState.error != null && uiState.amount.isBlank(),
-                    textStyle = MaterialTheme.typography.titleMedium.copy(
+                AmountInputField(
+                    amount = uiState.amount,
+                    onAmountChange = viewModel::setAmount,
+                    accentColor = if (uiState.type == TransactionType.EXPENSE) colors.expense else colors.income,
+                    textStyle = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Medium
                     )
                 )
@@ -371,27 +361,18 @@ fun TransactionDetailScreen(
 
                         Spacer(Modifier.height(20.dp))
 
-                        // 金额显示（超大号，带符号）
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                text = if (isExpense) "-" else "+",
-                                style = MaterialTheme.typography.displaySmall,
-                                color = primaryColor,
+                        Text(
+                            text = CurrencyFormat.formatSigned(
+                                transaction.amount,
+                                isIncome = !isExpense
+                            ),
+                            style = MaterialTheme.typography.displayLarge.copy(
+                                fontSize = 48.sp,
                                 fontWeight = FontWeight.Bold
-                            )
-                            Spacer(Modifier.width(4.dp))
-                            Text(
-                                text = CurrencyFormat.format(transaction.amount).removePrefix("¥"),
-                                style = MaterialTheme.typography.displayLarge.copy(
-                                    fontSize = 48.sp,
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                color = primaryColor
-                            )
-                        }
+                            ),
+                            color = primaryColor,
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
                     }
                 }
 
