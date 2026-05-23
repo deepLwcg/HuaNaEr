@@ -81,7 +81,7 @@ import cn.yajienet.huanaer.data.model.Category
 import cn.yajienet.huanaer.data.model.TransactionType
 import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
 import cn.yajienet.huanaer.ui.components.DeleteConfirmationDialog
-import cn.yajienet.huanaer.ui.components.glassmorphism.NeumorphicCard
+import cn.yajienet.huanaer.ui.components.candy.CandyCard
 import cn.yajienet.huanaer.ui.components.glassmorphism.NeumorphicSwitch
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import cn.yajienet.huanaer.util.CurrencyFormat
@@ -148,7 +148,7 @@ fun SettingsScreen(
     ) {
         // === 主题风格 ===
         item {
-            NeumorphicCard(modifier = Modifier.fillMaxWidth()) {
+            CandyCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Filled.Palette, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
@@ -162,25 +162,25 @@ fun SettingsScreen(
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         ThemePreviewCard(
-                            themeStyle = ThemeStyle.MINT_MILK,
-                            label = "薄荷奶绿",
-                            primaryColor = Color(0xFFA8E6CF),
-                            selected = uiState.themeStyle == ThemeStyle.MINT_MILK,
-                            onClick = { viewModel.setThemeStyle(ThemeStyle.MINT_MILK) }
+                            themeStyle = ThemeStyle.STRAWBERRY_SHAKE,
+                            label = "草莓奶昔",
+                            primaryColor = Color(0xFFFF6B9D),
+                            selected = uiState.themeStyle == ThemeStyle.STRAWBERRY_SHAKE,
+                            onClick = { viewModel.setThemeStyle(ThemeStyle.STRAWBERRY_SHAKE) }
                         )
                         ThemePreviewCard(
-                            themeStyle = ThemeStyle.LAVENDER,
-                            label = "薰衣草紫",
-                            primaryColor = Color(0xFFDCD3FF),
-                            selected = uiState.themeStyle == ThemeStyle.LAVENDER,
-                            onClick = { viewModel.setThemeStyle(ThemeStyle.LAVENDER) }
+                            themeStyle = ThemeStyle.SEA_SALT_SODA,
+                            label = "海盐汽水",
+                            primaryColor = Color(0xFF4ECDC4),
+                            selected = uiState.themeStyle == ThemeStyle.SEA_SALT_SODA,
+                            onClick = { viewModel.setThemeStyle(ThemeStyle.SEA_SALT_SODA) }
                         )
                         ThemePreviewCard(
-                            themeStyle = ThemeStyle.WARM_PEACH,
-                            label = "暖阳蜜桃",
-                            primaryColor = Color(0xFFFFDFD3),
-                            selected = uiState.themeStyle == ThemeStyle.WARM_PEACH,
-                            onClick = { viewModel.setThemeStyle(ThemeStyle.WARM_PEACH) }
+                            themeStyle = ThemeStyle.GRAPE_BUBBLE,
+                            label = "葡萄泡泡",
+                            primaryColor = Color(0xFFC3B1E1),
+                            selected = uiState.themeStyle == ThemeStyle.GRAPE_BUBBLE,
+                            onClick = { viewModel.setThemeStyle(ThemeStyle.GRAPE_BUBBLE) }
                         )
                     }
                 }
@@ -189,7 +189,7 @@ fun SettingsScreen(
 
         // === 外观设置 ===
         item {
-            NeumorphicCard(modifier = Modifier.fillMaxWidth()) {
+            CandyCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Filled.BrightnessMedium, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
@@ -245,7 +245,7 @@ fun SettingsScreen(
 
         // === 记账设置 ===
         item {
-            NeumorphicCard(modifier = Modifier.fillMaxWidth()) {
+            CandyCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Filled.Settings, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
@@ -350,7 +350,7 @@ fun SettingsScreen(
 
         // === 数据管理 ===
         item {
-            NeumorphicCard(modifier = Modifier.fillMaxWidth()) {
+            CandyCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Filled.Storage, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
@@ -409,7 +409,7 @@ fun SettingsScreen(
             }
 
             items(uiState.backupFiles, key = { it.absolutePath }) { file ->
-                NeumorphicCard(modifier = Modifier.fillMaxWidth()) {
+                CandyCard(modifier = Modifier.fillMaxWidth()) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -445,7 +445,7 @@ fun SettingsScreen(
         // === 危险操作 ===
         item {
             Spacer(Modifier.height(16.dp))
-            NeumorphicCard(
+            CandyCard(
                 modifier = Modifier.fillMaxWidth(),
                 containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.15f)
             ) {
@@ -479,7 +479,7 @@ fun SettingsScreen(
         // === 关于 ===
         item {
             Spacer(Modifier.height(16.dp))
-            NeumorphicCard(modifier = Modifier.fillMaxWidth()) {
+            CandyCard(modifier = Modifier.fillMaxWidth()) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()

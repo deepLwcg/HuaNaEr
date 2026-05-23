@@ -77,6 +77,7 @@ import cn.yajienet.huanaer.ui.screens.transaction.AddTransactionBottomSheet
 import cn.yajienet.huanaer.ui.screens.transactionlist.TransactionListScreen
 import cn.yajienet.huanaer.ui.screens.transaction.TransactionDetailScreen
 import cn.yajienet.huanaer.ui.screens.settings.SettingsScreen
+import cn.yajienet.huanaer.ui.components.candy.CandyCard
 import cn.yajienet.huanaer.ui.components.glassmorphism.GlassCard
 import cn.yajienet.huanaer.ui.components.glassmorphism.GlowBackground
 import cn.yajienet.huanaer.ui.components.MonthYearPickerDialog
@@ -120,7 +121,7 @@ fun HuaNaErNavigation(
 
     val bottomNavItems = remember {
         listOf(
-            BottomNavItem(Screen.Home, Icons.Filled.Home, "首页", "花哪儿了"),
+            BottomNavItem(Screen.Home, Icons.Filled.Home, "首页", "花哪儿"),
             BottomNavItem(Screen.Statistics, Icons.Filled.BarChart, "统计", "统计分析"),
             BottomNavItem(Screen.BudgetList, Icons.Filled.AccountBalanceWallet, "预算", "预算管理"),
             BottomNavItem(Screen.Settings, Icons.Filled.Settings, "设置", "设置")
@@ -369,10 +370,10 @@ private fun BottomNavBar(
     onItemClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    GlassCard(
+    CandyCard(
         modifier = modifier.fillMaxWidth(),
-        glassAlpha = 0.85f,
-        blurRadius = 30.dp
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentPadding = 0.dp
     ) {
         Row(
             modifier = Modifier

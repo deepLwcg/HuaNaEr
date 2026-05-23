@@ -7,7 +7,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,11 +28,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cn.yajienet.huanaer.ui.components.glassmorphism.GlowBackground
 import cn.yajienet.huanaer.ui.theme.EaseInOutCubic
 import kotlinx.coroutines.delay
 
@@ -43,36 +39,27 @@ fun SplashScreen(
     onSplashComplete: () -> Unit
 ) {
     var startAnimation by remember { mutableStateOf(false) }
+    val colorScheme = MaterialTheme.colorScheme
 
     LaunchedEffect(Unit) {
         startAnimation = true
-        delay(1000)
+        delay(2000)
         onSplashComplete()
     }
 
-    // 柔和渐变色（柔光弥散风格）
-    val primaryColor = MaterialTheme.colorScheme.primary
-    val backgroundColor = MaterialTheme.colorScheme.background
-    val gradientColors = listOf(
-        backgroundColor,
-        backgroundColor.copy(alpha = 0.95f),
-        primaryColor.copy(alpha = 0.08f)
+    val backgroundGradient = Brush.verticalGradient(
+        colors = listOf(
+            colorScheme.background,
+            colorScheme.primary.copy(alpha = 0.12f),
+            colorScheme.secondary.copy(alpha = 0.08f)
+        )
     )
 
-    GlowBackground(
-        modifier = Modifier.fillMaxSize()
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundGradient)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = gradientColors,
-                        startY = 0f,
-                        endY = Float.POSITIVE_INFINITY
-                    )
-                )
-        ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -80,7 +67,6 @@ fun SplashScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Logo — 柔光弥散风格圆形（极细白色描边）
             AnimatedVisibility(
                 visible = startAnimation,
                 enter = scaleIn(
@@ -92,11 +78,10 @@ fun SplashScreen(
                     modifier = Modifier
                         .size(100.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surface)
-                        .border(
-                            width = 0.5.dp,
-                            color = Color.White.copy(alpha = 0.3f),
-                            shape = CircleShape
+                        .background(
+                            Brush.linearGradient(
+                                listOf(colorScheme.primary, colorScheme.secondary)
+                            )
                         ),
                     contentAlignment = Alignment.Center
                 ) {
@@ -104,7 +89,7 @@ fun SplashScreen(
                         text = "¥",
                         fontSize = 48.sp,
                         fontWeight = FontWeight.Bold,
-                        color = primaryColor
+                        color = colorScheme.onPrimary
                     )
                 }
             }
@@ -119,10 +104,10 @@ fun SplashScreen(
                 ) + fadeIn(tween(800, easing = LinearEasing))
             ) {
                 Text(
-                    text = "花哪儿了",
+                    text = "花哪儿",
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = colorScheme.onBackground
                 )
             }
 
@@ -133,10 +118,10 @@ fun SplashScreen(
                 enter = fadeIn(tween(1000, delayMillis = 400, easing = LinearEasing))
             ) {
                 Text(
-                    text = "轻松记账，掌控生活",
+                    text = "轻松记账，每天都甜甜的",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color.White.copy(alpha = 0.8f)
+                    color = colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -149,10 +134,9 @@ fun SplashScreen(
             Text(
                 text = "© YajieNet",
                 fontSize = 12.sp,
-                color = Color.White.copy(alpha = 0.5f),
+                color = colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                 modifier = Modifier.padding(bottom = 32.dp)
             )
-        }
         }
     }
 }

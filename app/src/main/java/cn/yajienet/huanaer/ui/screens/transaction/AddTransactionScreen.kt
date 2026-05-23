@@ -56,11 +56,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cn.yajienet.huanaer.data.model.TransactionType
-import cn.yajienet.huanaer.ui.components.glassmorphism.CategoryCircleButton
-import cn.yajienet.huanaer.ui.components.glassmorphism.CelebrationGlow
-import cn.yajienet.huanaer.ui.components.glassmorphism.GlassCard
-import cn.yajienet.huanaer.ui.components.glassmorphism.NeumorphicNumberPad
-import cn.yajienet.huanaer.ui.components.glassmorphism.SegmentedSwitch
+import cn.yajienet.huanaer.ui.components.candy.CandyCard
+import cn.yajienet.huanaer.ui.components.candy.ConfettiBurst
+import cn.yajienet.huanaer.ui.components.candy.EmojiCategoryChip
+import cn.yajienet.huanaer.ui.components.candy.GummyButton
+import cn.yajienet.huanaer.ui.components.candy.GummyNumberPad
+import cn.yajienet.huanaer.ui.components.candy.SegmentedGummy
+import cn.yajienet.huanaer.ui.theme.LocalAppShapes
+import cn.yajienet.huanaer.util.CategoryEmoji
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -146,20 +149,18 @@ fun AddTransactionContent(
         ) {
             // 类型切换 — SegmentedSwitch
             val colors = extendedColorScheme()
-            SegmentedSwitch(
-                selected = if (uiState.type == TransactionType.EXPENSE) 0 else 1,
-                onSelectedChange = { index ->
+            SegmentedGummy(
+                options = listOf("支出", "收入"),
+                selectedIndex = if (uiState.type == TransactionType.EXPENSE) 0 else 1,
+                onSelected = { index ->
                     viewModel.setType(if (index == 0) TransactionType.EXPENSE else TransactionType.INCOME)
                 },
-                leftText = "支出",
-                rightText = "收入",
                 selectedColor = if (uiState.type == TransactionType.EXPENSE) colors.expense else colors.income
             )
 
-            // 金额显示 — GlassCard 毛玻璃风格
-            GlassCard(
+            CandyCard(
                 modifier = Modifier.fillMaxWidth(),
-                glassAlpha = 0.7f
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -198,17 +199,17 @@ fun AddTransactionContent(
                 ) {
                     items(uiState.categories, key = { it.id }) { category ->
                         val selected = uiState.selectedCategoryId == category.id
-                        CategoryCircleButton(
-                            name = category.name,
-                            color = try {
-                                Color(category.color.removePrefix("#").toLong(16))
-                            } catch (e: Exception) {
-                                MaterialTheme.colorScheme.primary
-                            },
+                        val bgColor = try {
+                            Color(category.color.removePrefix("#").toLong(16) or 0xFF000000)
+                        } catch (_: Exception) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        }
+                        EmojiCategoryChip(
+                            emoji = CategoryEmoji.resolve(category.icon, category.name),
                             selected = selected,
                             onClick = { viewModel.setCategory(category.id) },
-                            size = 48.dp,
-                            hapticEnabled = true
+                            backgroundColor = bgColor.copy(alpha = if (selected) 0.5f else 0.25f),
+                            glowColor = bgColor
                         )
                     }
                 }
@@ -287,13 +288,13 @@ fun AddTransactionContent(
             Spacer(Modifier.height(4.dp))
 
             // 数字键盘
-            NeumorphicNumberPad(
+            GummyNumberPad(
                 onDigit = { digit ->
                     val current = amountText
                     // 限制小数点后两位
                     if (current.contains(".")) {
                         val afterDot = current.substringAfter(".")
-                        if (afterDot.length >= 2) return@NeumorphicNumberPad
+                        if (afterDot.length >= 2) return@GummyNumberPad
                     }
                     // 限制首位为0时只能输入小数点
                     val newAmount = if (current == "0") {
@@ -308,7 +309,7 @@ fun AddTransactionContent(
                     val newAmount = when {
                         amountText.isEmpty() -> "0."
                         !amountText.contains(".") -> "$amountText."
-                        else -> return@NeumorphicNumberPad // 已有小数点
+                        else -> return@GummyNumberPad
                     }
                     amountText = newAmount
                     viewModel.setAmount(newAmount)
@@ -340,7 +341,7 @@ fun AddTransactionContent(
         }
 
         // 庆祝动画 — CelebrationGlow
-        CelebrationGlow(
+        ConfettiBurst(
             trigger = showCelebration,
             onFinished = {
                 showCelebration = false
@@ -392,8 +393,8 @@ fun AddTransactionBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+        shape = LocalAppShapes.current.bottomSheet,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
     ) {
         AddTransactionContent(
             viewModel = viewModel,

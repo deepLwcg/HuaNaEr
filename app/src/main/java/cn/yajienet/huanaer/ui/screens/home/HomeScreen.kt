@@ -3,9 +3,7 @@ package cn.yajienet.huanaer.ui.screens.home
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,11 +11,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -28,9 +27,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cn.yajienet.huanaer.ui.components.EmptyState
@@ -53,6 +54,8 @@ fun HomeScreen(
     var expandedItemId by remember { mutableStateOf<Long?>(null) }
     val lazyListState = rememberLazyListState()
 
+    val layoutDirection = LocalLayoutDirection.current
+
     LaunchedEffect(lazyListState) {
         snapshotFlow { lazyListState.isScrollInProgress }
             .collect { if (it) expandedItemId = null }
@@ -65,14 +68,18 @@ fun HomeScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(contentPadding)
-                    .background(MaterialTheme.colorScheme.background)
+                    .padding(
+                        top = contentPadding.calculateTopPadding(),
+                        bottom = contentPadding.calculateBottomPadding(),
+                        start = contentPadding.calculateStartPadding(layoutDirection) + 16.dp,
+                        end = contentPadding.calculateEndPadding(layoutDirection) + 16.dp
+                    )
             ) {
                 AnimatedVisibility(
                     visible = !uiState.isLoading,
                     enter = fadeIn() + slideInVertically()
                 ) {
-                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    Column(modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)) {
                         SummaryCard(
                             totalBalance = uiState.balance,
                             totalIncome = uiState.totalIncome,
@@ -82,12 +89,10 @@ fun HomeScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -101,12 +106,13 @@ fun HomeScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 if (uiState.recentTransactions.isEmpty()) {
                     EmptyState(
-                        title = "还没有记录，开始记一笔吧～",
-                        subtitle = "点击下方按钮快速记账",
+                        title = "记下第一笔，财富从这里开始～",
+                        subtitle = "点击底部 + 快速记账",
+                        emoji = "💰",
                         modifier = Modifier
                             .fillMaxSize()
                             .weight(1f)
@@ -115,11 +121,10 @@ fun HomeScreen(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
-                            .weight(1f)
-                            .padding(horizontal = 16.dp),
+                            .weight(1f),
                         state = lazyListState,
                         contentPadding = PaddingValues(vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(
                             items = uiState.recentTransactions,

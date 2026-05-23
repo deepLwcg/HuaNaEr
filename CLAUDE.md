@@ -38,11 +38,14 @@ gradlew.bat connectedAndroidTest
 
 ### Navigation Structure
 The app uses a hybrid navigation approach:
-- **Main screens** (Home, Statistics, Budget, Settings) are managed by `HorizontalPager` for swipe navigation
+- **Main screens** (Home, Statistics, Budget, Settings) are managed by `HorizontalPager` for swipe navigation — they share a single `"main"` NavHost route, with page switching via `pagerState.animateScrollToPage()`
 - **Detail screens** (AddTransaction, TransactionDetail, BudgetDetail, TransactionList, CategoryManage) use `NavHost` with slide transitions
-- See `HuaNaErNavigation.kt` for the navigation graph and `Screen.kt` for route definitions
-- Bottom navigation bar uses `GlassCard` with spring-animated `NavBarItem`s
-- AddTransaction has two entry points: full screen via NavHost, and `AddTransactionBottomSheet` (ModalBottomSheet from Home)
+- Route definitions in `Screen.kt`:
+  - `home`, `statistics`, `budgets`, `settings` — tab identifiers (used by `BottomNavItem`, not NavHost)
+  - Detail routes: `transactions/add`, `transactions/{id}`, `budgets/{id}`, `categories`
+- Bottom navigation bar uses `CandyCard` with spring-animated `NavBarItem`s (scale bounce on selection)
+- AddTransaction has two entry points: full screen via NavHost (`Screen.AddTransaction`), and `AddTransactionBottomSheet` (ModalBottomSheet from Home)
+- `StatisticsViewModel` is shared in TopAppBar to enable month/year picker across the Statistics screen
 
 ### Dependency Injection
 Manual DI via `HuaNaErApplication` class:
@@ -72,44 +75,68 @@ val uiState: StateFlow<UiState> = dateRange.flatMapLatest { (startTime, endTime)
 }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UiState(isLoading = true))
 ```
 
+### UiState Convention
+All ViewModels expose a single `uiState: StateFlow<UiState>` property. The `UiState` data class typically contains:
+- `isLoading: Boolean` — initial true, false after first data load
+- `data: List<T>` or specific fields — the actual display data
+- `error: String?` — error message if any
+
 ### Default Categories
 On first launch, the app seeds 8 expense and 5 income categories with Chinese names. See `HuaNaErApplication.initDefaultCategories()`.
 
 ## Theme and Styling
 
-### Multi-Theme Style System
-The app supports 3 theme styles selectable via `ThemeStyle` enum, persisted in DataStore:
+### Multi-Theme Style System (多巴胺糖果)
+The app supports 3 candy theme styles selectable via `ThemeStyle` enum, persisted in DataStore:
 
 | Style | Key | Description |
 |-------|-----|-------------|
-| 薄荷清风 (Mint Breeze) | `MINT_BREEZE` | Green primary (#00C896), gold accent — default |
-| 落日余晖 (Sunset Glow) | `SUNSET_GLOW` | Coral primary (#FF6B6B), amber accent |
-| 午夜霓虹 (Midnight Neon) | `MIDNIGHT_NEON` | Purple primary (#7B2FFF), cyan accent (#00E5FF) |
+| 草莓奶昔 | `STRAWBERRY_SHAKE` | Pink #FF6B9D + yellow #FFE66D — default |
+| 海盐汽水 | `SEA_SALT_SODA` | Cyan #4ECDC4 + yellow #FFE66D |
+| 葡萄泡泡 | `GRAPE_BUBBLE` | Purple #C3B1E1 + orange #FFA07A |
 
-Each style defines a complete M3 `ColorScheme` (light + dark) and an `ExtendedColorScheme` (financial colors). The old blue-purple scheme exists in `Color.kt` for backward compatibility but is not selectable via `ThemeStyle`.
+Each style defines a complete M3 `ColorScheme` (light + dark) and an `ExtendedColorScheme` (financial colors: income #00E5A0, expense #FF6B6B). `HuaNaErTheme` always uses brand colors (ignores Material You dynamic color).
 
-Theme is applied in `HuaNaErTheme()` composable, which selects color schemes based on `themeStyle + darkTheme + dynamicColor`. Access extended colors via:
+> ⚠️ README.md uses outdated Chinese theme names (MintMilk, Lavender, WarmPeach) and incorrectly claims Material You support. The code's `ThemeStyle` enum values (STRAWBERRY_SHAKE, SEA_SALT_SODA, GRAPE_BUBBLE) are authoritative.
+
+Access extended colors via:
 ```kotlin
 val colors = extendedColorScheme()
 Text(text = amount, color = colors.income)
 ```
 
-### Neubru UI Component Library
-Custom "Neo-brutalist" design system in `ui/components/neubru/`:
+### Candy UI Component Library
+多巴胺糖果设计系统 in `ui/components/candy/` (legacy `glassmorphism/` retained until full migration):
 
 | Component | Purpose |
 |-----------|---------|
-| `NeubruCard` | Card with offset shadow + thick border (default container: `surfaceContainerHigh`) |
-| `GlassCard` | Semi-transparent surface with white border overlay (used for nav bar, balance display) |
-| `NeubruNumberPad` | Circular-key number pad with bounce animation + haptic feedback (for transaction amounts) |
-| `NeubruFab` | FAB with offset shadow + bounce animation + haptic feedback |
-| `NeubruSwitch` | Custom switch with bouncy thumb offset + thick borders |
-| `PillChip` | Pill-shaped chip with animated color/border transitions (type toggle, time range selector) |
-| `BouncyIconButton` | Press-to-shrink icon button with spring animation (category selection) |
-| `AnimatedCounter` | Smoothly animated number counter (cents-based for precision) |
-| `ShimmerPlaceholder` | Loading shimmer effects (ShimmerLine, ShimmerCircle, ShimmerCard) |
-| `CelebrationOverlay` | Confetti particle animation on transaction save |
-| `NeubruTheme` | `NeubruElevation` composition local for customizing shadow offsets |
+| `CandyCard` | Large-radius card with colored shadow + optional gradient |
+| `CandyFab` | 68dp candy-ball FAB with gradient + bounce |
+| `GummyButton` | Gummy press scale animation button |
+| `EmojiCategoryChip` | Circular emoji category picker with glow |
+| `BouncyNumber` | Per-digit bounce number display |
+| `GummyNumberPad` | Fruit-candy number pad with haptics |
+| `SegmentedGummy` | Income/expense segmented control |
+| `PillChip` | Candy pill filter chips |
+| `ProgressRing` | Canvas ring progress with gradient |
+| `ConfettiBurst` | Candy bean particle celebration |
+| `EmptyStateSticker` | Floating emoji empty state |
+| `ShimmerCandy` | Candy-colored skeleton loaders |
+
+### Glassmorphism UI Component Library
+Legacy 柔光弥散风格组件 in `ui/components/glassmorphism/`:
+
+| Component | Purpose |
+|-----------|---------|
+| `GlassCard` | Frosted glass card — semi-transparent bg + white border + subtle inner gradient |
+| `NeumorphicCard` | Soft UI card with inset/outset shadow |
+| `NeumorphicFab` | Bounce-animated FAB |
+| `NeumorphicNumberPad` | Circular haptic number pad with bounce |
+| `NeumorphicSwitch` | Bouncy thumb-offset toggle |
+| `PillFilter` | Pill-shaped filter with color/border animation |
+| `BudgetRing` | Budget progress ring indicator |
+| `GlowBackground` | Diffused glow background effect |
+| `ShimmerBox` | Loading skeleton shimmer |
 
 ### Animation Convention
 Use `FastOutSlowInEasing` with 300ms duration for screen transitions:
@@ -154,8 +181,8 @@ Dependencies managed via Gradle Version Catalog (`gradle/libs.versions.toml`):
 
 User preferences stored in `SettingsDataStore`:
 - `themeMode` - Light/Dark/System theme (`ThemeMode` enum)
-- `themeStyle` - Visual theme style (`ThemeStyle` enum: MINT_BREEZE, SUNSET_GLOW, MIDNIGHT_NEON)
-- `dynamicColorEnabled` - Material You dynamic colors
+- `themeStyle` - Visual theme style (`ThemeStyle`: STRAWBERRY_SHAKE, SEA_SALT_SODA, GRAPE_BUBBLE)
+- `dynamicColorEnabled` - Stored but ignored; candy themes always use brand colors
 - `monthStartDay` - Custom month start day for accounting
 - `defaultExpenseCategoryId` / `defaultIncomeCategoryId` - Quick add defaults
 - `largeAmountThreshold` - Threshold for large amount warnings

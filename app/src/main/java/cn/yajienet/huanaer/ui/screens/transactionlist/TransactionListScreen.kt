@@ -54,7 +54,7 @@ import cn.yajienet.huanaer.ui.components.EmptyState
 import cn.yajienet.huanaer.ui.components.LoadingState
 import cn.yajienet.huanaer.ui.components.MonthYearSelector
 import cn.yajienet.huanaer.ui.components.TransactionListItem
-import cn.yajienet.huanaer.ui.components.glassmorphism.NeumorphicCard
+import cn.yajienet.huanaer.ui.components.candy.CandyCard
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import cn.yajienet.huanaer.util.CurrencyFormat
 import cn.yajienet.huanaer.util.DateUtils
@@ -194,7 +194,7 @@ fun TransactionListScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                NeumorphicCard(
+                CandyCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(

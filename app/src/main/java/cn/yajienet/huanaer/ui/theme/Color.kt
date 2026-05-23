@@ -3,10 +3,23 @@ package cn.yajienet.huanaer.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // ============================================================
-// Default Theme Colors (蓝紫色品牌系) — 保留作为 fallback
+// 多巴胺糖果基准色 (Dopamine Candy Palette)
 // ============================================================
 
-// Light Theme Colors
+val CandyPink = Color(0xFFFF6B9D)       // 泡泡糖粉
+val CandyBlue = Color(0xFF4ECDC4)       // 汽水蓝
+val CandyYellow = Color(0xFFFFE66D)     // 阳光黄
+val CandyPurple = Color(0xFFC3B1E1)     // 香芋紫
+val CandyOrange = Color(0xFFFFA07A)     // 蜜瓜橙
+val CandyCream = Color(0xFFFFFBF5)      // 奶油白
+val CandyDarkBg = Color(0xFF1A1025)     // 黑加仑紫
+val CandyIncome = Color(0xFF00E5A0)     // 薄荷跳跳糖绿
+val CandyExpense = Color(0xFFFF6B6B)    // 西瓜泡泡糖粉
+
+// ============================================================
+// Default Theme Colors (蓝紫色 fallback)
+// ============================================================
+
 val LightPrimary = Color(0xFF5A67D8)
 val LightOnPrimary = Color(0xFFFFFFFF)
 val LightPrimaryContainer = Color(0xFFE8EBFA)
@@ -40,7 +53,6 @@ val LightInversePrimary = Color(0xFFB8C1F5)
 val LightSurfaceTint = Color(0xFF5A67D8)
 val LightScrim = Color(0xFF000000)
 
-// Dark Theme Colors
 val DarkPrimary = Color(0xFFB8C1F5)
 val DarkOnPrimary = Color(0xFF262E5E)
 val DarkPrimaryContainer = Color(0xFF3D4478)
@@ -74,7 +86,6 @@ val DarkInversePrimary = Color(0xFF5A67D8)
 val DarkSurfaceTint = Color(0xFFB8C1F5)
 val DarkScrim = Color(0xFF000000)
 
-// Default Financial Colors - Light Theme
 val LightIncome = Color(0xFF2E7D32)
 val LightIncomeContainer = Color(0xFFC8E6C9)
 val LightOnIncomeContainer = Color(0xFF1B5E20)
@@ -86,7 +97,6 @@ val LightBudgetWarningContainer = Color(0xFFFFE0B2)
 val LightBudgetDanger = Color(0xFFD32F2F)
 val LightBudgetDangerContainer = Color(0xFFFFCDD2)
 
-// Default Financial Colors - Dark Theme
 val DarkIncome = Color(0xFF81C784)
 val DarkIncomeContainer = Color(0xFF388E3C)
 val DarkOnIncomeContainer = Color(0xFFC8E6C9)
@@ -99,313 +109,354 @@ val DarkBudgetDanger = Color(0xFFEF5350)
 val DarkBudgetDangerContainer = Color(0xFFC62828)
 
 // ============================================================
-// 薄荷奶绿 Theme (Mint Milk) — 马卡龙色系
-// primary=#A8E6CF, secondary=#DCEDC1, tertiary=#FFD3B6
+// 共享糖果浅色 / 深色表面
 // ============================================================
 
-// Light — 奶油背景 #FBF9F6
-val MintMilkLightPrimary = Color(0xFFA8E6CF)
-val MintMilkLightOnPrimary = Color(0xFF003D2E)
-val MintMilkLightPrimaryContainer = Color(0xFFD4F5E8)
-val MintMilkLightOnPrimaryContainer = Color(0xFF003D2E)
-val MintMilkLightSecondary = Color(0xFFDCEDC1)
-val MintMilkLightOnSecondary = Color(0xFF2D3A00)
-val MintMilkLightSecondaryContainer = Color(0xFFF0F8E0)
-val MintMilkLightOnSecondaryContainer = Color(0xFF1A2500)
-val MintMilkLightTertiary = Color(0xFFFFD3B6)
-val MintMilkLightOnTertiary = Color(0xFF3D2A10)
-val MintMilkLightTertiaryContainer = Color(0xFFFFF0E0)
-val MintMilkLightOnTertiaryContainer = Color(0xFF2D1A08)
-val MintMilkLightError = Color(0xFFE57373)
-val MintMilkLightOnError = Color(0xFFFFFFFF)
-val MintMilkLightErrorContainer = Color(0xFFFFEBEE)
-val MintMilkLightOnErrorContainer = Color(0xFF5C1313)
-val MintMilkLightBackground = Color(0xFFFBF9F6)  // 奶油色
-val MintMilkLightOnBackground = Color(0xFF2D2D2D)
-val MintMilkLightSurface = Color(0xFFFFFFFF)  // 纯白
-val MintMilkLightOnSurface = Color(0xFF2D2D2D)
-val MintMilkLightSurfaceContainer = Color(0xFFF5F3F0)
-val MintMilkLightSurfaceContainerHigh = Color(0xFFEFECE8)
-val MintMilkLightSurfaceContainerHighest = Color(0xFFE8E5E0)
-val MintMilkLightSurfaceVariant = Color(0xFFE8E5E0)
-val MintMilkLightOnSurfaceVariant = Color(0xFF4A4A4A)
-val MintMilkLightOutline = Color(0xFF7A7A7A)
-val MintMilkLightOutlineVariant = Color(0xFFC8C8C8)
-val MintMilkLightInverseSurface = Color(0xFF2D2D2D)
-val MintMilkLightInverseOnSurface = Color(0xFFF5F3F0)
-val MintMilkLightInversePrimary = Color(0xFFA8E6CF)
-val MintMilkLightSurfaceTint = Color(0xFFA8E6CF)
-val MintMilkLightScrim = Color(0xFF000000)
+private val CandyLightBackground = CandyCream
+private val CandyLightOnBackground = Color(0xFF2D1A24)
+private val CandyLightSurface = Color(0xFFFFFFFF)
+private val CandyLightOnSurface = Color(0xFF2D1A24)
+private val CandyLightSurfaceContainer = Color(0xFFFFF5F0)
+private val CandyLightSurfaceContainerHigh = Color(0xFFFFEFE8)
+private val CandyLightSurfaceContainerHighest = Color(0xFFFFE8DE)
+private val CandyLightSurfaceVariant = Color(0xFFFFE8DE)
+private val CandyLightOnSurfaceVariant = Color(0xFF6B4A5A)
+private val CandyLightOutline = Color(0xFFB89AA8)
+private val CandyLightOutlineVariant = Color(0xFFE8D0DA)
+private val CandyLightError = Color(0xFFE53935)
+private val CandyLightOnError = Color(0xFFFFFFFF)
+private val CandyLightErrorContainer = Color(0xFFFFEBEE)
+private val CandyLightOnErrorContainer = Color(0xFF5C1313)
 
-// Dark — 深灰蓝背景 #111318
-val MintMilkDarkPrimary = Color(0xFF80D4B0)
-val MintMilkDarkOnPrimary = Color(0xFF003D2E)
-val MintMilkDarkPrimaryContainer = Color(0xFF005540)
-val MintMilkDarkOnPrimaryContainer = Color(0xFFD4F5E8)
-val MintMilkDarkSecondary = Color(0xFFB8D4A0)
-val MintMilkDarkOnSecondary = Color(0xFF2D3A00)
-val MintMilkDarkSecondaryContainer = Color(0xFF3D4A20)
-val MintMilkDarkOnSecondaryContainer = Color(0xFFF0F8E0)
-val MintMilkDarkTertiary = Color(0xFFE8C4A8)
-val MintMilkDarkOnTertiary = Color(0xFF3D2A10)
-val MintMilkDarkTertiaryContainer = Color(0xFF4D3A20)
-val MintMilkDarkOnTertiaryContainer = Color(0xFFFFF0E0)
-val MintMilkDarkError = Color(0xFFCF7A7A)
-val MintMilkDarkOnError = Color(0xFF5C1313)
-val MintMilkDarkErrorContainer = Color(0xFF8C2525)
-val MintMilkDarkOnErrorContainer = Color(0xFFFFDAD6)
-val MintMilkDarkBackground = Color(0xFF111318)  // 深灰蓝
-val MintMilkDarkOnBackground = Color(0xFFE4E4E4)
-val MintMilkDarkSurface = Color(0xFF1A1C22)  // 深灰
-val MintMilkDarkOnSurface = Color(0xFFE4E4E4)
-val MintMilkDarkSurfaceContainer = Color(0xFF1E2028)  // 半透明深灰
-val MintMilkDarkSurfaceContainerHigh = Color(0xFF282A32)
-val MintMilkDarkSurfaceContainerHighest = Color(0xFF36383E)
-val MintMilkDarkSurfaceVariant = Color(0xFF36383E)
-val MintMilkDarkOnSurfaceVariant = Color(0xFFC4C4C4)
-val MintMilkDarkOutline = Color(0xFF8E8E8E)
-val MintMilkDarkOutlineVariant = Color(0xFF4A4A4A)
-val MintMilkDarkInverseSurface = Color(0xFFE4E4E4)
-val MintMilkDarkInverseOnSurface = Color(0xFF2D2D2D)
-val MintMilkDarkInversePrimary = Color(0xFFA8E6CF)
-val MintMilkDarkSurfaceTint = Color(0xFF80D4B0)
-val MintMilkDarkScrim = Color(0xFF000000)
+private val CandyDarkBackground = CandyDarkBg
+private val CandyDarkOnBackground = Color(0xFFF5E8FF)
+private val CandyDarkSurface = Color(0xFF251832)
+private val CandyDarkOnSurface = Color(0xFFF5E8FF)
+private val CandyDarkSurfaceContainer = Color(0xFF2D1E3C)
+private val CandyDarkSurfaceContainerHigh = Color(0xFF382848)
+private val CandyDarkSurfaceContainerHighest = Color(0xFF443254)
+private val CandyDarkSurfaceVariant = Color(0xFF443254)
+private val CandyDarkOnSurfaceVariant = Color(0xFFD4B8CC)
+private val CandyDarkOutline = Color(0xFF9A7A8E)
+private val CandyDarkOutlineVariant = Color(0xFF5A3A50)
+private val CandyDarkError = Color(0xFFFF8A80)
+private val CandyDarkOnError = Color(0xFF5C1313)
+private val CandyDarkErrorContainer = Color(0xFF8C2525)
+private val CandyDarkOnErrorContainer = Color(0xFFFFDAD6)
 
-// MintMilk Financial Colors — 柔和版本
-val MintMilkLightIncome = Color(0xFF7BC8A4)
-val MintMilkLightIncomeContainer = Color(0xFFD8F5E8)
-val MintMilkLightOnIncomeContainer = Color(0xFF004D38)
-val MintMilkLightExpense = Color(0xFFE57373)
-val MintMilkLightExpenseContainer = Color(0xFFFFDAD6)
-val MintMilkLightOnExpenseContainer = Color(0xFF5C2020)
-val MintMilkLightBudgetWarning = Color(0xFFFFB74D)
-val MintMilkLightBudgetWarningContainer = Color(0xFFFFF0C2)
-val MintMilkLightBudgetDanger = Color(0xFFE56565)
-val MintMilkLightBudgetDangerContainer = Color(0xFFFFCDD2)
+// 共享金融语义色
+private val CandyLightIncome = CandyIncome
+private val CandyLightIncomeContainer = Color(0xFFB8FFE8)
+private val CandyLightOnIncomeContainer = Color(0xFF004D30)
+private val CandyLightExpense = CandyExpense
+private val CandyLightExpenseContainer = Color(0xFFFFD6D6)
+private val CandyLightOnExpenseContainer = Color(0xFF5C2020)
+private val CandyLightBudgetWarning = CandyYellow
+private val CandyLightBudgetWarningContainer = Color(0xFFFFF8D6)
+private val CandyLightBudgetDanger = CandyExpense
+private val CandyLightBudgetDangerContainer = Color(0xFFFFCDD2)
 
-val MintMilkDarkIncome = Color(0xFF80C8A8)
-val MintMilkDarkIncomeContainer = Color(0xFF005540)
-val MintMilkDarkOnIncomeContainer = Color(0xFFD8F5E8)
-val MintMilkDarkExpense = Color(0xFFCF7A7A)
-val MintMilkDarkExpenseContainer = Color(0xFF8C2525)
-val MintMilkDarkOnExpenseContainer = Color(0xFFFFDAD6)
-val MintMilkDarkBudgetWarning = Color(0xFFE8B860)
-val MintMilkDarkBudgetWarningContainer = Color(0xFF5C4A20)
-val MintMilkDarkBudgetDanger = Color(0xFFCF6565)
-val MintMilkDarkBudgetDangerContainer = Color(0xFF8C2020)
-
-// MintMilk Glow Colors — 弥散光斑
-val MintMilkLightGlowPrimary = Color(0x1AA8E6CF)  // alpha 0.10
-val MintMilkLightGlowSecondary = Color(0x18DCEDC1)  // alpha 0.09
-val MintMilkLightGlowAccent = Color(0x1AFFD3B6)  // alpha 0.10
-val MintMilkDarkGlowPrimary = Color(0x0D80D4B0)  // alpha 0.05 (深色更低)
-val MintMilkDarkGlowSecondary = Color(0x0AB8D4A0)  // alpha 0.04
-val MintMilkDarkGlowAccent = Color(0x0CE8C4A8)  // alpha 0.05
+private val CandyDarkIncome = Color(0xFF4DFFBE)
+private val CandyDarkIncomeContainer = Color(0xFF005538)
+private val CandyDarkOnIncomeContainer = Color(0xFFB8FFE8)
+private val CandyDarkExpense = Color(0xFFFF8A8A)
+private val CandyDarkExpenseContainer = Color(0xFF8C3030)
+private val CandyDarkOnExpenseContainer = Color(0xFFFFD6D6)
+private val CandyDarkBudgetWarning = Color(0xFFFFE066)
+private val CandyDarkBudgetWarningContainer = Color(0xFF5C4A20)
+private val CandyDarkBudgetDanger = Color(0xFFFF7070)
+private val CandyDarkBudgetDangerContainer = Color(0xFF8C2020)
 
 // ============================================================
-// 薰衣草紫 Theme (Lavender) — 马卡龙色系
-// primary=#DCD3FF, secondary=#C4FAF8, tertiary=#FFDFD3
+// 草莓奶昔 (Strawberry Shake) — 粉红 + 奶油黄
 // ============================================================
 
-// Light
-val LavenderLightPrimary = Color(0xFFDCD3FF)
-val LavenderLightOnPrimary = Color(0xFF3D2A60)
-val LavenderLightPrimaryContainer = Color(0xFFF0E8FF)
-val LavenderLightOnPrimaryContainer = Color(0xFF2D1A4D)
-val LavenderLightSecondary = Color(0xFFC4FAF8)
-val LavenderLightOnSecondary = Color(0xFF003544)
-val LavenderLightSecondaryContainer = Color(0xFFE0F8F8)
-val LavenderLightOnSecondaryContainer = Color(0xFF001E28)
-val LavenderLightTertiary = Color(0xFFFFDFD3)
-val LavenderLightOnTertiary = Color(0xFF3D2A20)
-val LavenderLightTertiaryContainer = Color(0xFFFFF0E8)
-val LavenderLightOnTertiaryContainer = Color(0xFF2D1A15)
-val LavenderLightError = Color(0xFFE57373)
-val LavenderLightOnError = Color(0xFFFFFFFF)
-val LavenderLightErrorContainer = Color(0xFFFFEBEE)
-val LavenderLightOnErrorContainer = Color(0xFF5C1313)
-val LavenderLightBackground = Color(0xFFFBF9F6)
-val LavenderLightOnBackground = Color(0xFF2D2D2D)
-val LavenderLightSurface = Color(0xFFFFFFFF)
-val LavenderLightOnSurface = Color(0xFF2D2D2D)
-val LavenderLightSurfaceContainer = Color(0xFFF5F3F0)
-val LavenderLightSurfaceContainerHigh = Color(0xFFEFECE8)
-val LavenderLightSurfaceContainerHighest = Color(0xFFE8E5E0)
-val LavenderLightSurfaceVariant = Color(0xFFE8E5E0)
-val LavenderLightOnSurfaceVariant = Color(0xFF4A4A4A)
-val LavenderLightOutline = Color(0xFF7A7A7A)
-val LavenderLightOutlineVariant = Color(0xFFC8C8C8)
-val LavenderLightInverseSurface = Color(0xFF2D2D2D)
-val LavenderLightInverseOnSurface = Color(0xFFF5F3F0)
-val LavenderLightInversePrimary = Color(0xFFDCD3FF)
-val LavenderLightSurfaceTint = Color(0xFFDCD3FF)
-val LavenderLightScrim = Color(0xFF000000)
+val StrawberryShakeLightPrimary = CandyPink
+val StrawberryShakeLightOnPrimary = Color(0xFFFFFFFF)
+val StrawberryShakeLightPrimaryContainer = Color(0xFFFFD6E8)
+val StrawberryShakeLightOnPrimaryContainer = Color(0xFF5C1030)
+val StrawberryShakeLightSecondary = CandyYellow
+val StrawberryShakeLightOnSecondary = Color(0xFF3D3000)
+val StrawberryShakeLightSecondaryContainer = Color(0xFFFFF8D6)
+val StrawberryShakeLightOnSecondaryContainer = Color(0xFF2D2000)
+val StrawberryShakeLightTertiary = Color(0xFFFFB8D0)
+val StrawberryShakeLightOnTertiary = Color(0xFF5C2040)
+val StrawberryShakeLightTertiaryContainer = Color(0xFFFFE8F0)
+val StrawberryShakeLightOnTertiaryContainer = Color(0xFF3D1030)
+val StrawberryShakeLightBackground = CandyLightBackground
+val StrawberryShakeLightOnBackground = CandyLightOnBackground
+val StrawberryShakeLightSurface = CandyLightSurface
+val StrawberryShakeLightOnSurface = CandyLightOnSurface
+val StrawberryShakeLightSurfaceContainer = CandyLightSurfaceContainer
+val StrawberryShakeLightSurfaceContainerHigh = CandyLightSurfaceContainerHigh
+val StrawberryShakeLightSurfaceContainerHighest = CandyLightSurfaceContainerHighest
+val StrawberryShakeLightSurfaceVariant = CandyLightSurfaceVariant
+val StrawberryShakeLightOnSurfaceVariant = CandyLightOnSurfaceVariant
+val StrawberryShakeLightOutline = CandyLightOutline
+val StrawberryShakeLightOutlineVariant = CandyLightOutlineVariant
+val StrawberryShakeLightError = CandyLightError
+val StrawberryShakeLightOnError = CandyLightOnError
+val StrawberryShakeLightErrorContainer = CandyLightErrorContainer
+val StrawberryShakeLightOnErrorContainer = CandyLightOnErrorContainer
+val StrawberryShakeLightInverseSurface = Color(0xFF2D1A24)
+val StrawberryShakeLightInverseOnSurface = Color(0xFFFFF5F0)
+val StrawberryShakeLightInversePrimary = Color(0xFFFFB8D0)
+val StrawberryShakeLightSurfaceTint = CandyPink
+val StrawberryShakeLightScrim = Color(0xFF000000)
 
-// Dark
-val LavenderDarkPrimary = Color(0xFFB8A8E8)
-val LavenderDarkOnPrimary = Color(0xFF3D2A60)
-val LavenderDarkPrimaryContainer = Color(0xFF5D4A80)
-val LavenderDarkOnPrimaryContainer = Color(0xFFF0E8FF)
-val LavenderDarkSecondary = Color(0xFF80D8D4)
-val LavenderDarkOnSecondary = Color(0xFF003544)
-val LavenderDarkSecondaryContainer = Color(0xFF004D5A)
-val LavenderDarkOnSecondaryContainer = Color(0xFFE0F8F8)
-val LavenderDarkTertiary = Color(0xFFE8C4B8)
-val LavenderDarkOnTertiary = Color(0xFF3D2A20)
-val LavenderDarkTertiaryContainer = Color(0xFF5D4A40)
-val LavenderDarkOnTertiaryContainer = Color(0xFFFFF0E8)
-val LavenderDarkError = Color(0xFFCF7A7A)
-val LavenderDarkOnError = Color(0xFF5C1313)
-val LavenderDarkErrorContainer = Color(0xFF8C2525)
-val LavenderDarkOnErrorContainer = Color(0xFFFFDAD6)
-val LavenderDarkBackground = Color(0xFF111318)
-val LavenderDarkOnBackground = Color(0xFFE4E4E4)
-val LavenderDarkSurface = Color(0xFF1A1C22)
-val LavenderDarkOnSurface = Color(0xFFE4E4E4)
-val LavenderDarkSurfaceContainer = Color(0xFF1E2028)
-val LavenderDarkSurfaceContainerHigh = Color(0xFF282A32)
-val LavenderDarkSurfaceContainerHighest = Color(0xFF36383E)
-val LavenderDarkSurfaceVariant = Color(0xFF36383E)
-val LavenderDarkOnSurfaceVariant = Color(0xFFC4C4C4)
-val LavenderDarkOutline = Color(0xFF8E8E8E)
-val LavenderDarkOutlineVariant = Color(0xFF4A4A4A)
-val LavenderDarkInverseSurface = Color(0xFFE4E4E4)
-val LavenderDarkInverseOnSurface = Color(0xFF2D2D2D)
-val LavenderDarkInversePrimary = Color(0xFFDCD3FF)
-val LavenderDarkSurfaceTint = Color(0xFFB8A8E8)
-val LavenderDarkScrim = Color(0xFF000000)
+val StrawberryShakeDarkPrimary = Color(0xFFFF8AB8)
+val StrawberryShakeDarkOnPrimary = Color(0xFF5C1030)
+val StrawberryShakeDarkPrimaryContainer = Color(0xFF8C3058)
+val StrawberryShakeDarkOnPrimaryContainer = Color(0xFFFFD6E8)
+val StrawberryShakeDarkSecondary = Color(0xFFFFE066)
+val StrawberryShakeDarkOnSecondary = Color(0xFF3D3000)
+val StrawberryShakeDarkSecondaryContainer = Color(0xFF5C4A20)
+val StrawberryShakeDarkOnSecondaryContainer = Color(0xFFFFF8D6)
+val StrawberryShakeDarkTertiary = Color(0xFFE8A0C0)
+val StrawberryShakeDarkOnTertiary = Color(0xFF3D1030)
+val StrawberryShakeDarkTertiaryContainer = Color(0xFF5C3050)
+val StrawberryShakeDarkOnTertiaryContainer = Color(0xFFFFE8F0)
+val StrawberryShakeDarkBackground = CandyDarkBackground
+val StrawberryShakeDarkOnBackground = CandyDarkOnBackground
+val StrawberryShakeDarkSurface = CandyDarkSurface
+val StrawberryShakeDarkOnSurface = CandyDarkOnSurface
+val StrawberryShakeDarkSurfaceContainer = CandyDarkSurfaceContainer
+val StrawberryShakeDarkSurfaceContainerHigh = CandyDarkSurfaceContainerHigh
+val StrawberryShakeDarkSurfaceContainerHighest = CandyDarkSurfaceContainerHighest
+val StrawberryShakeDarkSurfaceVariant = CandyDarkSurfaceVariant
+val StrawberryShakeDarkOnSurfaceVariant = CandyDarkOnSurfaceVariant
+val StrawberryShakeDarkOutline = CandyDarkOutline
+val StrawberryShakeDarkOutlineVariant = CandyDarkOutlineVariant
+val StrawberryShakeDarkError = CandyDarkError
+val StrawberryShakeDarkOnError = CandyDarkOnError
+val StrawberryShakeDarkErrorContainer = CandyDarkErrorContainer
+val StrawberryShakeDarkOnErrorContainer = CandyDarkOnErrorContainer
+val StrawberryShakeDarkInverseSurface = Color(0xFFF5E8FF)
+val StrawberryShakeDarkInverseOnSurface = Color(0xFF2D1A24)
+val StrawberryShakeDarkInversePrimary = CandyPink
+val StrawberryShakeDarkSurfaceTint = Color(0xFFFF8AB8)
+val StrawberryShakeDarkScrim = Color(0xFF000000)
 
-// Lavender Financial Colors
-val LavenderLightIncome = Color(0xFF81C784)
-val LavenderLightIncomeContainer = Color(0xFFC8E6C9)
-val LavenderLightOnIncomeContainer = Color(0xFF1B5E20)
-val LavenderLightExpense = Color(0xFFCE93D8)
-val LavenderLightExpenseContainer = Color(0xFFF3E5F5)
-val LavenderLightOnExpenseContainer = Color(0xFF4A148C)
-val LavenderLightBudgetWarning = Color(0xFFFFE082)
-val LavenderLightBudgetWarningContainer = Color(0xFFFFF8E0)
-val LavenderLightBudgetDanger = Color(0xFFE56565)
-val LavenderLightBudgetDangerContainer = Color(0xFFFFCDD2)
+val StrawberryShakeLightIncome = CandyLightIncome
+val StrawberryShakeLightIncomeContainer = CandyLightIncomeContainer
+val StrawberryShakeLightOnIncomeContainer = CandyLightOnIncomeContainer
+val StrawberryShakeLightExpense = CandyLightExpense
+val StrawberryShakeLightExpenseContainer = CandyLightExpenseContainer
+val StrawberryShakeLightOnExpenseContainer = CandyLightOnExpenseContainer
+val StrawberryShakeLightBudgetWarning = CandyLightBudgetWarning
+val StrawberryShakeLightBudgetWarningContainer = CandyLightBudgetWarningContainer
+val StrawberryShakeLightBudgetDanger = CandyLightBudgetDanger
+val StrawberryShakeLightBudgetDangerContainer = CandyLightBudgetDangerContainer
+val StrawberryShakeLightGlowPrimary = Color(0x26FF6B9D)
+val StrawberryShakeLightGlowSecondary = Color(0x24FFE66D)
+val StrawberryShakeLightGlowAccent = Color(0x22FFB8D0)
 
-val LavenderDarkIncome = Color(0xFF80C880)
-val LavenderDarkIncomeContainer = Color(0xFF388E3C)
-val LavenderDarkOnIncomeContainer = Color(0xFFC8E6C9)
-val LavenderDarkExpense = Color(0xFFB8A0C8)
-val LavenderDarkExpenseContainer = Color(0xFF6A4A80)
-val LavenderDarkOnExpenseContainer = Color(0xFFF3E5F5)
-val LavenderDarkBudgetWarning = Color(0xFFE8C860)
-val LavenderDarkBudgetWarningContainer = Color(0xFF5C4A20)
-val LavenderDarkBudgetDanger = Color(0xFFCF6565)
-val LavenderDarkBudgetDangerContainer = Color(0xFF8C2020)
-
-// Lavender Glow Colors
-val LavenderLightGlowPrimary = Color(0x1ADCD3FF)
-val LavenderLightGlowSecondary = Color(0x15C4FAF8)
-val LavenderLightGlowAccent = Color(0x1AFFDFD3)
-val LavenderDarkGlowPrimary = Color(0x0DB8A8E8)
-val LavenderDarkGlowSecondary = Color(0x0880D8D4)
-val LavenderDarkGlowAccent = Color(0x0CE8C4B8)
+val StrawberryShakeDarkIncome = CandyDarkIncome
+val StrawberryShakeDarkIncomeContainer = CandyDarkIncomeContainer
+val StrawberryShakeDarkOnIncomeContainer = CandyDarkOnIncomeContainer
+val StrawberryShakeDarkExpense = CandyDarkExpense
+val StrawberryShakeDarkExpenseContainer = CandyDarkExpenseContainer
+val StrawberryShakeDarkOnExpenseContainer = CandyDarkOnExpenseContainer
+val StrawberryShakeDarkBudgetWarning = CandyDarkBudgetWarning
+val StrawberryShakeDarkBudgetWarningContainer = CandyDarkBudgetWarningContainer
+val StrawberryShakeDarkBudgetDanger = CandyDarkBudgetDanger
+val StrawberryShakeDarkBudgetDangerContainer = CandyDarkBudgetDangerContainer
+val StrawberryShakeDarkGlowPrimary = Color(0x14FF8AB8)
+val StrawberryShakeDarkGlowSecondary = Color(0x12FFE066)
+val StrawberryShakeDarkGlowAccent = Color(0x10E8A0C0)
 
 // ============================================================
-// 暖阳蜜桃 Theme (Warm Peach) — 马卡龙色系
-// primary=#FFDFD3, secondary=#FFE0B2, tertiary=#B5EAD7
+// 海盐汽水 (Sea Salt Soda) — 汽水蓝 + 柠檬黄
 // ============================================================
 
-// Light
-val WarmPeachLightPrimary = Color(0xFFFFDFD3)
-val WarmPeachLightOnPrimary = Color(0xFF3D2A20)
-val WarmPeachLightPrimaryContainer = Color(0xFFFFF0E8)
-val WarmPeachLightOnPrimaryContainer = Color(0xFF2D1A15)
-val WarmPeachLightSecondary = Color(0xFFFFE0B2)
-val WarmPeachLightOnSecondary = Color(0xFF3D2A00)
-val WarmPeachLightSecondaryContainer = Color(0xFFFFF8E8)
-val WarmPeachLightOnSecondaryContainer = Color(0xFF2D1A00)
-val WarmPeachLightTertiary = Color(0xFFB5EAD7)
-val WarmPeachLightOnTertiary = Color(0xFF003828)
-val WarmPeachLightTertiaryContainer = Color(0xFFE0F5E8)
-val WarmPeachLightOnTertiaryContainer = Color(0xFF002818)
-val WarmPeachLightError = Color(0xFFE57373)
-val WarmPeachLightOnError = Color(0xFFFFFFFF)
-val WarmPeachLightErrorContainer = Color(0xFFFFEBEE)
-val WarmPeachLightOnErrorContainer = Color(0xFF5C1313)
-val WarmPeachLightBackground = Color(0xFFFBF9F6)
-val WarmPeachLightOnBackground = Color(0xFF2D2D2D)
-val WarmPeachLightSurface = Color(0xFFFFFFFF)
-val WarmPeachLightOnSurface = Color(0xFF2D2D2D)
-val WarmPeachLightSurfaceContainer = Color(0xFFF5F3F0)
-val WarmPeachLightSurfaceContainerHigh = Color(0xFFEFECE8)
-val WarmPeachLightSurfaceContainerHighest = Color(0xFFE8E5E0)
-val WarmPeachLightSurfaceVariant = Color(0xFFE8E5E0)
-val WarmPeachLightOnSurfaceVariant = Color(0xFF4A4A4A)
-val WarmPeachLightOutline = Color(0xFF7A7A7A)
-val WarmPeachLightOutlineVariant = Color(0xFFC8C8C8)
-val WarmPeachLightInverseSurface = Color(0xFF2D2D2D)
-val WarmPeachLightInverseOnSurface = Color(0xFFF5F3F0)
-val WarmPeachLightInversePrimary = Color(0xFFFFDFD3)
-val WarmPeachLightSurfaceTint = Color(0xFFFFDFD3)
-val WarmPeachLightScrim = Color(0xFF000000)
+val SeaSaltSodaLightPrimary = CandyBlue
+val SeaSaltSodaLightOnPrimary = Color(0xFFFFFFFF)
+val SeaSaltSodaLightPrimaryContainer = Color(0xFFB8F5F0)
+val SeaSaltSodaLightOnPrimaryContainer = Color(0xFF003D38)
+val SeaSaltSodaLightSecondary = CandyYellow
+val SeaSaltSodaLightOnSecondary = Color(0xFF3D3000)
+val SeaSaltSodaLightSecondaryContainer = Color(0xFFFFF8D6)
+val SeaSaltSodaLightOnSecondaryContainer = Color(0xFF2D2000)
+val SeaSaltSodaLightTertiary = Color(0xFF80E8E0)
+val SeaSaltSodaLightOnTertiary = Color(0xFF003830)
+val SeaSaltSodaLightTertiaryContainer = Color(0xFFD8F8F5)
+val SeaSaltSodaLightOnTertiaryContainer = Color(0xFF002820)
+val SeaSaltSodaLightBackground = CandyLightBackground
+val SeaSaltSodaLightOnBackground = CandyLightOnBackground
+val SeaSaltSodaLightSurface = CandyLightSurface
+val SeaSaltSodaLightOnSurface = CandyLightOnSurface
+val SeaSaltSodaLightSurfaceContainer = CandyLightSurfaceContainer
+val SeaSaltSodaLightSurfaceContainerHigh = CandyLightSurfaceContainerHigh
+val SeaSaltSodaLightSurfaceContainerHighest = CandyLightSurfaceContainerHighest
+val SeaSaltSodaLightSurfaceVariant = CandyLightSurfaceVariant
+val SeaSaltSodaLightOnSurfaceVariant = CandyLightOnSurfaceVariant
+val SeaSaltSodaLightOutline = CandyLightOutline
+val SeaSaltSodaLightOutlineVariant = CandyLightOutlineVariant
+val SeaSaltSodaLightError = CandyLightError
+val SeaSaltSodaLightOnError = CandyLightOnError
+val SeaSaltSodaLightErrorContainer = CandyLightErrorContainer
+val SeaSaltSodaLightOnErrorContainer = CandyLightOnErrorContainer
+val SeaSaltSodaLightInverseSurface = Color(0xFF2D1A24)
+val SeaSaltSodaLightInverseOnSurface = Color(0xFFFFF5F0)
+val SeaSaltSodaLightInversePrimary = Color(0xFF80E8E0)
+val SeaSaltSodaLightSurfaceTint = CandyBlue
+val SeaSaltSodaLightScrim = Color(0xFF000000)
 
-// Dark
-val WarmPeachDarkPrimary = Color(0xFFE8C4B8)
-val WarmPeachDarkOnPrimary = Color(0xFF3D2A20)
-val WarmPeachDarkPrimaryContainer = Color(0xFF5D4A40)
-val WarmPeachDarkOnPrimaryContainer = Color(0xFFFFF0E8)
-val WarmPeachDarkSecondary = Color(0xFFE8C890)
-val WarmPeachDarkOnSecondary = Color(0xFF3D2A00)
-val WarmPeachDarkSecondaryContainer = Color(0xFF5D4A20)
-val WarmPeachDarkOnSecondaryContainer = Color(0xFFFFF8E8)
-val WarmPeachDarkTertiary = Color(0xFF80C8A8)
-val WarmPeachDarkOnTertiary = Color(0xFF003828)
-val WarmPeachDarkTertiaryContainer = Color(0xFF004D38)
-val WarmPeachDarkOnTertiaryContainer = Color(0xFFE0F5E8)
-val WarmPeachDarkError = Color(0xFFCF7A7A)
-val WarmPeachDarkOnError = Color(0xFF5C1313)
-val WarmPeachDarkErrorContainer = Color(0xFF8C2525)
-val WarmPeachDarkOnErrorContainer = Color(0xFFFFDAD6)
-val WarmPeachDarkBackground = Color(0xFF111318)
-val WarmPeachDarkOnBackground = Color(0xFFE4E4E4)
-val WarmPeachDarkSurface = Color(0xFF1A1C22)
-val WarmPeachDarkOnSurface = Color(0xFFE4E4E4)
-val WarmPeachDarkSurfaceContainer = Color(0xFF1E2028)
-val WarmPeachDarkSurfaceContainerHigh = Color(0xFF282A32)
-val WarmPeachDarkSurfaceContainerHighest = Color(0xFF36383E)
-val WarmPeachDarkSurfaceVariant = Color(0xFF36383E)
-val WarmPeachDarkOnSurfaceVariant = Color(0xFFC4C4C4)
-val WarmPeachDarkOutline = Color(0xFF8E8E8E)
-val WarmPeachDarkOutlineVariant = Color(0xFF4A4A4A)
-val WarmPeachDarkInverseSurface = Color(0xFFE4E4E4)
-val WarmPeachDarkInverseOnSurface = Color(0xFF2D2D2D)
-val WarmPeachDarkInversePrimary = Color(0xFFFFDFD3)
-val WarmPeachDarkSurfaceTint = Color(0xFFE8C4B8)
-val WarmPeachDarkScrim = Color(0xFF000000)
+val SeaSaltSodaDarkPrimary = Color(0xFF6EEDE4)
+val SeaSaltSodaDarkOnPrimary = Color(0xFF003D38)
+val SeaSaltSodaDarkPrimaryContainer = Color(0xFF006058)
+val SeaSaltSodaDarkOnPrimaryContainer = Color(0xFFB8F5F0)
+val SeaSaltSodaDarkSecondary = Color(0xFFFFE066)
+val SeaSaltSodaDarkOnSecondary = Color(0xFF3D3000)
+val SeaSaltSodaDarkSecondaryContainer = Color(0xFF5C4A20)
+val SeaSaltSodaDarkOnSecondaryContainer = Color(0xFFFFF8D6)
+val SeaSaltSodaDarkTertiary = Color(0xFF60D8D0)
+val SeaSaltSodaDarkOnTertiary = Color(0xFF002820)
+val SeaSaltSodaDarkTertiaryContainer = Color(0xFF004840)
+val SeaSaltSodaDarkOnTertiaryContainer = Color(0xFFD8F8F5)
+val SeaSaltSodaDarkBackground = CandyDarkBackground
+val SeaSaltSodaDarkOnBackground = CandyDarkOnBackground
+val SeaSaltSodaDarkSurface = CandyDarkSurface
+val SeaSaltSodaDarkOnSurface = CandyDarkOnSurface
+val SeaSaltSodaDarkSurfaceContainer = CandyDarkSurfaceContainer
+val SeaSaltSodaDarkSurfaceContainerHigh = CandyDarkSurfaceContainerHigh
+val SeaSaltSodaDarkSurfaceContainerHighest = CandyDarkSurfaceContainerHighest
+val SeaSaltSodaDarkSurfaceVariant = CandyDarkSurfaceVariant
+val SeaSaltSodaDarkOnSurfaceVariant = CandyDarkOnSurfaceVariant
+val SeaSaltSodaDarkOutline = CandyDarkOutline
+val SeaSaltSodaDarkOutlineVariant = CandyDarkOutlineVariant
+val SeaSaltSodaDarkError = CandyDarkError
+val SeaSaltSodaDarkOnError = CandyDarkOnError
+val SeaSaltSodaDarkErrorContainer = CandyDarkErrorContainer
+val SeaSaltSodaDarkOnErrorContainer = CandyDarkOnErrorContainer
+val SeaSaltSodaDarkInverseSurface = Color(0xFFF5E8FF)
+val SeaSaltSodaDarkInverseOnSurface = Color(0xFF2D1A24)
+val SeaSaltSodaDarkInversePrimary = CandyBlue
+val SeaSaltSodaDarkSurfaceTint = Color(0xFF6EEDE4)
+val SeaSaltSodaDarkScrim = Color(0xFF000000)
 
-// WarmPeach Financial Colors
-val WarmPeachLightIncome = Color(0xFFB5EAD7)
-val WarmPeachLightIncomeContainer = Color(0xFFE0F5E8)
-val WarmPeachLightOnIncomeContainer = Color(0xFF004D38)
-val WarmPeachLightExpense = Color(0xFFFF8A65)
-val WarmPeachLightExpenseContainer = Color(0xFFFFE0D8)
-val WarmPeachLightOnExpenseContainer = Color(0xFF5C3020)
-val WarmPeachLightBudgetWarning = Color(0xFFFFE0B2)
-val WarmPeachLightBudgetWarningContainer = Color(0xFFFFF8E8)
-val WarmPeachLightBudgetDanger = Color(0xFFE56565)
-val WarmPeachLightBudgetDangerContainer = Color(0xFFFFCDD2)
+val SeaSaltSodaLightIncome = CandyLightIncome
+val SeaSaltSodaLightIncomeContainer = CandyLightIncomeContainer
+val SeaSaltSodaLightOnIncomeContainer = CandyLightOnIncomeContainer
+val SeaSaltSodaLightExpense = CandyLightExpense
+val SeaSaltSodaLightExpenseContainer = CandyLightExpenseContainer
+val SeaSaltSodaLightOnExpenseContainer = CandyLightOnExpenseContainer
+val SeaSaltSodaLightBudgetWarning = CandyLightBudgetWarning
+val SeaSaltSodaLightBudgetWarningContainer = CandyLightBudgetWarningContainer
+val SeaSaltSodaLightBudgetDanger = CandyLightBudgetDanger
+val SeaSaltSodaLightBudgetDangerContainer = CandyLightBudgetDangerContainer
+val SeaSaltSodaLightGlowPrimary = Color(0x264ECDC4)
+val SeaSaltSodaLightGlowSecondary = Color(0x24FFE66D)
+val SeaSaltSodaLightGlowAccent = Color(0x2280E8E0)
 
-val WarmPeachDarkIncome = Color(0xFF80C8A8)
-val WarmPeachDarkIncomeContainer = Color(0xFF004D38)
-val WarmPeachDarkOnIncomeContainer = Color(0xFFE0F5E8)
-val WarmPeachDarkExpense = Color(0xFFCF8A65)
-val WarmPeachDarkExpenseContainer = Color(0xFF8C4020)
-val WarmPeachDarkOnExpenseContainer = Color(0xFFFFE0D8)
-val WarmPeachDarkBudgetWarning = Color(0xFFE8C890)
-val WarmPeachDarkBudgetWarningContainer = Color(0xFF5D4A20)
-val WarmPeachDarkBudgetDanger = Color(0xFFCF6565)
-val WarmPeachDarkBudgetDangerContainer = Color(0xFF8C2020)
+val SeaSaltSodaDarkIncome = CandyDarkIncome
+val SeaSaltSodaDarkIncomeContainer = CandyDarkIncomeContainer
+val SeaSaltSodaDarkOnIncomeContainer = CandyDarkOnIncomeContainer
+val SeaSaltSodaDarkExpense = CandyDarkExpense
+val SeaSaltSodaDarkExpenseContainer = CandyDarkExpenseContainer
+val SeaSaltSodaDarkOnExpenseContainer = CandyDarkOnExpenseContainer
+val SeaSaltSodaDarkBudgetWarning = CandyDarkBudgetWarning
+val SeaSaltSodaDarkBudgetWarningContainer = CandyDarkBudgetWarningContainer
+val SeaSaltSodaDarkBudgetDanger = CandyDarkBudgetDanger
+val SeaSaltSodaDarkBudgetDangerContainer = CandyDarkBudgetDangerContainer
+val SeaSaltSodaDarkGlowPrimary = Color(0x146EEDE4)
+val SeaSaltSodaDarkGlowSecondary = Color(0x12FFE066)
+val SeaSaltSodaDarkGlowAccent = Color(0x1060D8D0)
 
-// WarmPeach Glow Colors
-val WarmPeachLightGlowPrimary = Color(0x1AFFDFD3)
-val WarmPeachLightGlowSecondary = Color(0x18FFE0B2)
-val WarmPeachLightGlowAccent = Color(0x15B5EAD7)
-val WarmPeachDarkGlowPrimary = Color(0x0DE8C4B8)
-val WarmPeachDarkGlowSecondary = Color(0x0AE8C890)
-val WarmPeachDarkGlowAccent = Color(0x0880C8A8)
+// ============================================================
+// 葡萄泡泡 (Grape Bubble) — 香芋紫 + 蜜瓜橙
+// ============================================================
+
+val GrapeBubbleLightPrimary = CandyPurple
+val GrapeBubbleLightOnPrimary = Color(0xFFFFFFFF)
+val GrapeBubbleLightPrimaryContainer = Color(0xFFE8D8F8)
+val GrapeBubbleLightOnPrimaryContainer = Color(0xFF3D2060)
+val GrapeBubbleLightSecondary = CandyOrange
+val GrapeBubbleLightOnSecondary = Color(0xFF3D2010)
+val GrapeBubbleLightSecondaryContainer = Color(0xFFFFE8D8)
+val GrapeBubbleLightOnSecondaryContainer = Color(0xFF2D1008)
+val GrapeBubbleLightTertiary = Color(0xFFD8C0F0)
+val GrapeBubbleLightOnTertiary = Color(0xFF3D2060)
+val GrapeBubbleLightTertiaryContainer = Color(0xFFF0E8FF)
+val GrapeBubbleLightOnTertiaryContainer = Color(0xFF2D1040)
+val GrapeBubbleLightBackground = CandyLightBackground
+val GrapeBubbleLightOnBackground = CandyLightOnBackground
+val GrapeBubbleLightSurface = CandyLightSurface
+val GrapeBubbleLightOnSurface = CandyLightOnSurface
+val GrapeBubbleLightSurfaceContainer = CandyLightSurfaceContainer
+val GrapeBubbleLightSurfaceContainerHigh = CandyLightSurfaceContainerHigh
+val GrapeBubbleLightSurfaceContainerHighest = CandyLightSurfaceContainerHighest
+val GrapeBubbleLightSurfaceVariant = CandyLightSurfaceVariant
+val GrapeBubbleLightOnSurfaceVariant = CandyLightOnSurfaceVariant
+val GrapeBubbleLightOutline = CandyLightOutline
+val GrapeBubbleLightOutlineVariant = CandyLightOutlineVariant
+val GrapeBubbleLightError = CandyLightError
+val GrapeBubbleLightOnError = CandyLightOnError
+val GrapeBubbleLightErrorContainer = CandyLightErrorContainer
+val GrapeBubbleLightOnErrorContainer = CandyLightOnErrorContainer
+val GrapeBubbleLightInverseSurface = Color(0xFF2D1A24)
+val GrapeBubbleLightInverseOnSurface = Color(0xFFFFF5F0)
+val GrapeBubbleLightInversePrimary = Color(0xFFD8C0F0)
+val GrapeBubbleLightSurfaceTint = CandyPurple
+val GrapeBubbleLightScrim = Color(0xFF000000)
+
+val GrapeBubbleDarkPrimary = Color(0xFFD8C0F0)
+val GrapeBubbleDarkOnPrimary = Color(0xFF3D2060)
+val GrapeBubbleDarkPrimaryContainer = Color(0xFF5C4080)
+val GrapeBubbleDarkOnPrimaryContainer = Color(0xFFE8D8F8)
+val GrapeBubbleDarkSecondary = Color(0xFFFFB890)
+val GrapeBubbleDarkOnSecondary = Color(0xFF3D2010)
+val GrapeBubbleDarkSecondaryContainer = Color(0xFF5C4030)
+val GrapeBubbleDarkOnSecondaryContainer = Color(0xFFFFE8D8)
+val GrapeBubbleDarkTertiary = Color(0xFFB8A0E0)
+val GrapeBubbleDarkOnTertiary = Color(0xFF2D1040)
+val GrapeBubbleDarkTertiaryContainer = Color(0xFF443060)
+val GrapeBubbleDarkOnTertiaryContainer = Color(0xFFF0E8FF)
+val GrapeBubbleDarkBackground = CandyDarkBackground
+val GrapeBubbleDarkOnBackground = CandyDarkOnBackground
+val GrapeBubbleDarkSurface = CandyDarkSurface
+val GrapeBubbleDarkOnSurface = CandyDarkOnSurface
+val GrapeBubbleDarkSurfaceContainer = CandyDarkSurfaceContainer
+val GrapeBubbleDarkSurfaceContainerHigh = CandyDarkSurfaceContainerHigh
+val GrapeBubbleDarkSurfaceContainerHighest = CandyDarkSurfaceContainerHighest
+val GrapeBubbleDarkSurfaceVariant = CandyDarkSurfaceVariant
+val GrapeBubbleDarkOnSurfaceVariant = CandyDarkOnSurfaceVariant
+val GrapeBubbleDarkOutline = CandyDarkOutline
+val GrapeBubbleDarkOutlineVariant = CandyDarkOutlineVariant
+val GrapeBubbleDarkError = CandyDarkError
+val GrapeBubbleDarkOnError = CandyDarkOnError
+val GrapeBubbleDarkErrorContainer = CandyDarkErrorContainer
+val GrapeBubbleDarkOnErrorContainer = CandyDarkOnErrorContainer
+val GrapeBubbleDarkInverseSurface = Color(0xFFF5E8FF)
+val GrapeBubbleDarkInverseOnSurface = Color(0xFF2D1A24)
+val GrapeBubbleDarkInversePrimary = CandyPurple
+val GrapeBubbleDarkSurfaceTint = Color(0xFFD8C0F0)
+val GrapeBubbleDarkScrim = Color(0xFF000000)
+
+val GrapeBubbleLightIncome = CandyLightIncome
+val GrapeBubbleLightIncomeContainer = CandyLightIncomeContainer
+val GrapeBubbleLightOnIncomeContainer = CandyLightOnIncomeContainer
+val GrapeBubbleLightExpense = CandyLightExpense
+val GrapeBubbleLightExpenseContainer = CandyLightExpenseContainer
+val GrapeBubbleLightOnExpenseContainer = CandyLightOnExpenseContainer
+val GrapeBubbleLightBudgetWarning = CandyLightBudgetWarning
+val GrapeBubbleLightBudgetWarningContainer = CandyLightBudgetWarningContainer
+val GrapeBubbleLightBudgetDanger = CandyLightBudgetDanger
+val GrapeBubbleLightBudgetDangerContainer = CandyLightBudgetDangerContainer
+val GrapeBubbleLightGlowPrimary = Color(0x26C3B1E1)
+val GrapeBubbleLightGlowSecondary = Color(0x24FFA07A)
+val GrapeBubbleLightGlowAccent = Color(0x22D8C0F0)
+
+val GrapeBubbleDarkIncome = CandyDarkIncome
+val GrapeBubbleDarkIncomeContainer = CandyDarkIncomeContainer
+val GrapeBubbleDarkOnIncomeContainer = CandyDarkOnIncomeContainer
+val GrapeBubbleDarkExpense = CandyDarkExpense
+val GrapeBubbleDarkExpenseContainer = CandyDarkExpenseContainer
+val GrapeBubbleDarkOnExpenseContainer = CandyDarkOnExpenseContainer
+val GrapeBubbleDarkBudgetWarning = CandyDarkBudgetWarning
+val GrapeBubbleDarkBudgetWarningContainer = CandyDarkBudgetWarningContainer
+val GrapeBubbleDarkBudgetDanger = CandyDarkBudgetDanger
+val GrapeBubbleDarkBudgetDangerContainer = CandyDarkBudgetDangerContainer
+val GrapeBubbleDarkGlowPrimary = Color(0x14D8C0F0)
+val GrapeBubbleDarkGlowSecondary = Color(0x12FFB890)
+val GrapeBubbleDarkGlowAccent = Color(0x10B8A0E0)

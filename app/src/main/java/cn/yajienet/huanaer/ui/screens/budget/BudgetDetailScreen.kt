@@ -45,9 +45,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
-import cn.yajienet.huanaer.ui.components.glassmorphism.BudgetRing
-import cn.yajienet.huanaer.ui.components.glassmorphism.GlassCard
-import cn.yajienet.huanaer.ui.components.glassmorphism.NeumorphicCard
+import cn.yajienet.huanaer.ui.components.candy.CandyCard
+import cn.yajienet.huanaer.ui.components.candy.ProgressRing
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import cn.yajienet.huanaer.util.CurrencyFormat
 
@@ -100,8 +99,8 @@ fun BudgetDetailScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // 头部 GlassCard + 大型环形进度
-                GlassCard(
+                // 头部 CandyCard + 大型环形进度
+                CandyCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
@@ -123,7 +122,7 @@ fun BudgetDetailScreen(
                         Spacer(Modifier.height(16.dp))
 
                         // 大型环形进度
-                        BudgetRing(
+                        ProgressRing(
                             progress = progress,
                             color = when {
                                 isOverBudget -> colors.budgetDanger
@@ -174,7 +173,7 @@ fun BudgetDetailScreen(
                 }
 
                 // 快捷操作
-                NeumorphicCard(modifier = Modifier.fillMaxWidth()) {
+                CandyCard(modifier = Modifier.fillMaxWidth()) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()

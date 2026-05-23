@@ -69,9 +69,10 @@ import cn.yajienet.huanaer.data.model.Category
 import cn.yajienet.huanaer.data.model.TransactionType
 import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
 import cn.yajienet.huanaer.ui.components.LoadingState
-import cn.yajienet.huanaer.ui.components.glassmorphism.CategoryCircleButton
-import cn.yajienet.huanaer.ui.components.glassmorphism.NeumorphicCard
-import cn.yajienet.huanaer.ui.components.glassmorphism.SegmentedSwitch
+import cn.yajienet.huanaer.ui.components.candy.CandyCard
+import cn.yajienet.huanaer.ui.components.candy.EmojiCategoryChip
+import cn.yajienet.huanaer.ui.components.candy.SegmentedGummy
+import cn.yajienet.huanaer.util.CategoryEmoji
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import kotlin.math.roundToInt
 
@@ -188,12 +189,12 @@ fun CategoryManageScreen(
             ) {
                 // SegmentedSwitch 切换支出/收入
                 val colors = extendedColorScheme()
-                SegmentedSwitch(
-                    selected = uiState.selectedTab,
-                    onSelectedChange = { viewModel.selectTab(it) },
-                    leftText = "支出分类",
-                    rightText = "收入分类",
-                    selectedColor = if (uiState.selectedTab == 0) colors.expense else colors.income
+                SegmentedGummy(
+                    options = listOf("支出分类", "收入分类"),
+                    selectedIndex = uiState.selectedTab,
+                    onSelected = { viewModel.selectTab(it) },
+                    selectedColor = if (uiState.selectedTab == 0) colors.expense else colors.income,
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(Modifier.height(8.dp))
@@ -422,7 +423,7 @@ private fun CategoryListItem(
         label = "elevation"
     )
 
-    NeumorphicCard(
+    CandyCard(
         modifier = modifier
             .fillMaxWidth()
             .offset { IntOffset(0, dragOffset.roundToInt()) }

@@ -75,7 +75,7 @@ import cn.yajienet.huanaer.data.model.TransactionType
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
 import cn.yajienet.huanaer.ui.components.glassmorphism.GlassCard
-import cn.yajienet.huanaer.ui.components.glassmorphism.NeumorphicCard
+import cn.yajienet.huanaer.ui.components.candy.CandyCard
 import cn.yajienet.huanaer.util.CurrencyFormat
 import cn.yajienet.huanaer.util.DateUtils
 
@@ -445,12 +445,12 @@ fun TransactionDetailScreen(
 
                 Spacer(Modifier.height(16.dp))
 
-                // === 详情信息卡片（NeumorphicCard）===
+                // === 详情信息卡片（CandyCard）===
                 AnimatedVisibility(
                     visible = true,
                     enter = fadeIn() + slideInVertically { it / 3 }
                 ) {
-                    NeumorphicCard(
+                    CandyCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)

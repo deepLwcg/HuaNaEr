@@ -50,10 +50,11 @@ import cn.yajienet.huanaer.data.model.Budget
 import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
 import cn.yajienet.huanaer.ui.components.EmptyState
 import cn.yajienet.huanaer.ui.components.LoadingState
-import cn.yajienet.huanaer.ui.components.glassmorphism.BudgetRing
-import cn.yajienet.huanaer.ui.components.glassmorphism.NeumorphicCard
-import cn.yajienet.huanaer.ui.components.glassmorphism.NeumorphicNumberPad
-import cn.yajienet.huanaer.ui.components.glassmorphism.CategoryCircleButton
+import cn.yajienet.huanaer.ui.components.candy.CandyCard
+import cn.yajienet.huanaer.ui.components.candy.EmojiCategoryChip
+import cn.yajienet.huanaer.ui.components.candy.GummyNumberPad
+import cn.yajienet.huanaer.ui.components.candy.ProgressRing
+import cn.yajienet.huanaer.util.CategoryEmoji
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import cn.yajienet.huanaer.util.CurrencyFormat
 
@@ -84,7 +85,8 @@ fun BudgetListScreen(
         LoadingState()
     } else if (uiState.budgets.isEmpty()) {
         EmptyState(
-            title = "暂无预算",
+            emoji = "🎯",
+            title = "设个预算，花钱不慌～",
             subtitle = "点击右上角添加预算",
             modifier = Modifier
                 .fillMaxSize()
@@ -102,7 +104,7 @@ fun BudgetListScreen(
         ) {
             // 月度概览
             item {
-                NeumorphicCard(modifier = Modifier.fillMaxWidth()) {
+                CandyCard(modifier = Modifier.fillMaxWidth()) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -201,7 +203,7 @@ fun BudgetCard(
         MaterialTheme.colorScheme.surfaceContainerHigh
     }
 
-    NeumorphicCard(
+    CandyCard(
         modifier = modifier.fillMaxWidth(),
         containerColor = cardColor,
         contentPadding = 16.dp
@@ -211,7 +213,7 @@ fun BudgetCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 环形进度
-            BudgetRing(
+            ProgressRing(
                 progress = progress,
                 color = when {
                     isOverBudget -> colors.budgetDanger
@@ -300,17 +302,17 @@ fun AddBudgetBottomSheet(
             ) {
                 items(uiState.categories, key = { it.id }) { category ->
                     val selected = selectedCategoryId == category.id
-                    CategoryCircleButton(
-                        name = category.name,
-                        color = try {
-                            Color(category.color.removePrefix("#").toLong(16))
-                        } catch (e: Exception) {
-                            MaterialTheme.colorScheme.primary
-                        },
+                    val bgColor = try {
+                        Color(category.color.removePrefix("#").toLong(16) or 0xFF000000)
+                    } catch (_: Exception) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    }
+                    EmojiCategoryChip(
+                        emoji = CategoryEmoji.resolve(category.icon, category.name),
                         selected = selected,
                         onClick = { selectedCategoryId = category.id },
-                        size = 48.dp,
-                        hapticEnabled = true
+                        backgroundColor = bgColor.copy(alpha = if (selected) 0.5f else 0.25f),
+                        glowColor = bgColor
                     )
                 }
             }
@@ -339,16 +341,16 @@ fun AddBudgetBottomSheet(
             }
 
             // 数字键盘
-            NeumorphicNumberPad(
+            GummyNumberPad(
                 onDigit = { digit ->
                     val current = amountText
                     if (current.contains(".")) {
                         val afterDot = current.substringAfter(".")
-                        if (afterDot.length >= 2) return@NeumorphicNumberPad
+                        if (afterDot.length >= 2) return@GummyNumberPad
                     }
                     if (current == "0") {
                         amountText = digit.toString()
-                        return@NeumorphicNumberPad
+                        return@GummyNumberPad
                     }
                     amountText = current + digit.toString()
                 },

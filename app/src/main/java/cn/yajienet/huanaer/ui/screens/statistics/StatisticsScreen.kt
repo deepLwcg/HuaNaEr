@@ -45,10 +45,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
 import cn.yajienet.huanaer.ui.components.EmptyState
 import cn.yajienet.huanaer.ui.components.LoadingState
-import cn.yajienet.huanaer.ui.components.glassmorphism.AnimatedNumber
+import cn.yajienet.huanaer.ui.components.candy.BouncyNumber
+import cn.yajienet.huanaer.ui.components.candy.CandyCard
+import cn.yajienet.huanaer.ui.components.candy.PillChip
 import cn.yajienet.huanaer.ui.components.glassmorphism.GlowBackground
-import cn.yajienet.huanaer.ui.components.glassmorphism.NeumorphicCard
-import cn.yajienet.huanaer.ui.components.glassmorphism.PillFilter
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import cn.yajienet.huanaer.util.CurrencyFormat
 
@@ -69,7 +69,8 @@ fun StatisticsScreen(
         LoadingState()
     } else if (uiState.expenseByCategory.isEmpty() && uiState.incomeByCategory.isEmpty()) {
         EmptyState(
-            title = "本月暂无数据",
+            emoji = "📈",
+            title = "再记几笔，好看的分析就来啦～",
             subtitle = "开始记账后可查看统计",
             modifier = Modifier
                 .fillMaxSize()
@@ -98,8 +99,8 @@ fun StatisticsScreen(
                         TimeRange.THIS_YEAR to "今年"
                     )
                     items(ranges, key = { it.first }) { (range, label) ->
-                        PillFilter(
-                            text = label,
+                        PillChip(
+                            label = label,
                             selected = uiState.selectedTimeRange == range,
                             onClick = { statsViewModel.setTimeRange(range) },
                             selectedColor = MaterialTheme.colorScheme.primary
@@ -108,9 +109,9 @@ fun StatisticsScreen(
                 }
             }
 
-            // 收入支出汇总 — NeumorphicCard
+            // 收入支出汇总 — CandyCard
             item {
-                NeumorphicCard(
+                CandyCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -129,7 +130,7 @@ fun StatisticsScreen(
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            AnimatedNumber(
+                            BouncyNumber(
                                 targetValue = uiState.totalIncome,
                                 style = MaterialTheme.typography.titleLarge,
                                 color = colors.income
@@ -150,7 +151,7 @@ fun StatisticsScreen(
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            AnimatedNumber(
+                            BouncyNumber(
                                 targetValue = uiState.totalExpense,
                                 style = MaterialTheme.typography.titleLarge,
                                 color = colors.expense
@@ -163,7 +164,7 @@ fun StatisticsScreen(
             // 环形图
             if (uiState.expenseByCategory.isNotEmpty()) {
                 item {
-                    NeumorphicCard(
+                    CandyCard(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(
@@ -198,7 +199,7 @@ fun StatisticsScreen(
                 }
 
                 items(uiState.expenseByCategory, key = { it.categoryId }) { stat ->
-                    NeumorphicCard(
+                    CandyCard(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         CategoryStatRow(
@@ -223,7 +224,7 @@ fun StatisticsScreen(
                 }
 
                 items(uiState.incomeByCategory, key = { it.categoryId }) { stat ->
-                    NeumorphicCard(
+                    CandyCard(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         CategoryStatRow(
@@ -266,7 +267,7 @@ fun DonutChart(
         )
     }
 
-    val strokeWidth = 24.dp
+    val strokeWidth = 6.dp
     val backgroundColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.3f)
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
 
@@ -309,8 +310,9 @@ fun DonutChart(
 
         // 中心总额
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = "📊", style = MaterialTheme.typography.titleLarge)
             Text(
-                text = CurrencyFormat.format(totalAmount),
+                text = CurrencyFormat.formatWithPrefix(totalAmount),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.ExtraBold
                 ),
@@ -378,7 +380,7 @@ fun CategoryStatRow(
 
         Spacer(modifier = Modifier.width(10.dp))
 
-        AnimatedNumber(
+        BouncyNumber(
             targetValue = stat.amount,
             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
             color = progressColor
