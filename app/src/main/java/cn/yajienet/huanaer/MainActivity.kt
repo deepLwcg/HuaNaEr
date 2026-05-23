@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val themeMode by app.settingsRepository.themeMode.collectAsState(initial = ThemeMode.SYSTEM)
-            val themeStyle by app.settingsRepository.themeStyle.collectAsState(initial = ThemeStyle.MINT_BREEZE)
+            val themeStyle by app.settingsRepository.themeStyle.collectAsState(initial = ThemeStyle.MINT_MILK)
             val dynamicColor by app.settingsRepository.dynamicColor.collectAsState(initial = true)
             var showSplash by remember { mutableStateOf(!isAddTransactionAction) }
 

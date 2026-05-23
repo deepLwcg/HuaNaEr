@@ -20,9 +20,39 @@ enum class ThemeMode {
 }
 
 enum class ThemeStyle {
-    MINT_BREEZE,
-    SUNSET_GLOW,
-    MIDNIGHT_NEON
+    // 新枚举值（马卡龙色系）
+    MINT_MILK,     // 薄荷奶绿
+    LAVENDER,      // 薰衣草紫
+    WARM_PEACH,    // 暖阳蜜桃
+
+    // 旧枚举值（保留向后兼容，映射到新色系）
+    MINT_BREEZE,   // → MINT_MILK
+    SUNSET_GLOW,   // → LAVENDER
+    MIDNIGHT_NEON  // → WARM_PEACH
+}
+
+/**
+ * 将旧枚举名映射到新枚举
+ */
+private fun mapLegacyThemeStyle(name: String): ThemeStyle? {
+    return when (name) {
+        "MINT_BREEZE" -> ThemeStyle.MINT_MILK
+        "SUNSET_GLOW" -> ThemeStyle.LAVENDER
+        "MIDNIGHT_NEON" -> ThemeStyle.WARM_PEACH
+        else -> null
+    }
+}
+
+/**
+ * 将旧 ordinal 映射到新枚举
+ */
+private fun mapLegacyThemeStyleOrdinal(ordinal: Int): ThemeStyle? {
+    return when (ordinal) {
+        0 -> ThemeStyle.MINT_MILK    // 原 MINT_BREEZE ordinal=0
+        1 -> ThemeStyle.LAVENDER     // 原 SUNSET_GLOW ordinal=1
+        2 -> ThemeStyle.WARM_PEACH   // 原 MIDNIGHT_NEON ordinal=2
+        else -> null
+    }
 }
 
 class SettingsDataStore(private val context: Context) {
@@ -45,11 +75,18 @@ class SettingsDataStore(private val context: Context) {
     val themeStyle: Flow<ThemeStyle> = context.dataStore.data.map { preferences ->
         val name = preferences[THEME_STYLE_KEY]
         if (name != null) {
-            ThemeStyle.entries.find { it.name == name } ?: ThemeStyle.MINT_BREEZE
+            // 先尝试匹配新枚举
+            ThemeStyle.entries.find { it.name == name }
+            // 如果是旧枚举名，映射到新枚举
+            ?: mapLegacyThemeStyle(name)
+            // fallback
+            ?: ThemeStyle.MINT_MILK
         } else {
+            // 旧版 ordinal key fallback
             val ordinal = preferences[THEME_STYLE_KEY_LEGACY]
-            if (ordinal != null) ThemeStyle.entries.getOrElse(ordinal) { ThemeStyle.MINT_BREEZE }
-            else ThemeStyle.MINT_BREEZE
+            if (ordinal != null) {
+                mapLegacyThemeStyleOrdinal(ordinal) ?: ThemeStyle.MINT_MILK
+            } else ThemeStyle.MINT_MILK
         }
     }
 

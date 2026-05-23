@@ -1,7 +1,6 @@
 package cn.yajienet.huanaer.ui.screens.budget
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,9 +45,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
-import cn.yajienet.huanaer.ui.components.neubru.BouncyIconButton
-import cn.yajienet.huanaer.ui.components.neubru.GlassCard
-import cn.yajienet.huanaer.ui.components.neubru.NeubruCard
+import cn.yajienet.huanaer.ui.components.glassmorphism.BudgetRing
+import cn.yajienet.huanaer.ui.components.glassmorphism.GlassCard
+import cn.yajienet.huanaer.ui.components.glassmorphism.NeumorphicCard
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import cn.yajienet.huanaer.util.CurrencyFormat
 
@@ -124,14 +123,15 @@ fun BudgetDetailScreen(
                         Spacer(Modifier.height(16.dp))
 
                         // 大型环形进度
-                        RingProgressIndicator(
+                        BudgetRing(
                             progress = progress,
                             color = when {
                                 isOverBudget -> colors.budgetDanger
                                 isWarning -> colors.budgetWarning
                                 else -> MaterialTheme.colorScheme.primary
                             },
-                            modifier = Modifier.size(160.dp)
+                            size = 160.dp,
+                            strokeWidth = 10.dp
                         )
 
                         Spacer(Modifier.height(16.dp))
@@ -174,33 +174,39 @@ fun BudgetDetailScreen(
                 }
 
                 // 快捷操作
-                NeubruCard(modifier = Modifier.fillMaxWidth()) {
+                NeumorphicCard(modifier = Modifier.fillMaxWidth()) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        BouncyIconButton(
-                            onClick = { viewModel.startEditing() },
-                            size = 48.dp,
-                            hapticEnabled = true
+                        // 编辑按钮
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clickable { viewModel.startEditing() },
+                            contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 Icons.Filled.Edit,
                                 contentDescription = "编辑",
-                                tint = MaterialTheme.colorScheme.primary
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
                             )
                         }
-                        BouncyIconButton(
-                            onClick = { showDeleteDialog = true },
-                            size = 48.dp,
-                            hapticEnabled = true
+                        // 删除按钮
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clickable { showDeleteDialog = true },
+                            contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 Icons.Filled.Delete,
                                 contentDescription = "删除",
-                                tint = MaterialTheme.colorScheme.error
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(24.dp)
                             )
                         }
                     }

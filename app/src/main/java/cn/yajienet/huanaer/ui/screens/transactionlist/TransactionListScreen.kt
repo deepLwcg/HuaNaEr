@@ -54,6 +54,7 @@ import cn.yajienet.huanaer.ui.components.EmptyState
 import cn.yajienet.huanaer.ui.components.LoadingState
 import cn.yajienet.huanaer.ui.components.MonthYearSelector
 import cn.yajienet.huanaer.ui.components.TransactionListItem
+import cn.yajienet.huanaer.ui.components.glassmorphism.NeumorphicCard
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import cn.yajienet.huanaer.util.CurrencyFormat
 import cn.yajienet.huanaer.util.DateUtils
@@ -89,7 +90,7 @@ fun TransactionListScreen(
         LoadingState()
     } else {
         Scaffold(
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = MaterialTheme.colorScheme.background,
             topBar = {
                 TopAppBar(
                     title = { Text("交易记录") },
@@ -193,12 +194,8 @@ fun TransactionListScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer
-                    )
+                NeumorphicCard(
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
                         modifier = Modifier

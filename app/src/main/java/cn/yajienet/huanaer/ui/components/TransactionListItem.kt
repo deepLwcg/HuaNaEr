@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import cn.yajienet.huanaer.data.model.Transaction
 import cn.yajienet.huanaer.data.model.TransactionType
+import cn.yajienet.huanaer.ui.theme.LocalAppShapes
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import cn.yajienet.huanaer.util.CurrencyFormat
 import cn.yajienet.huanaer.util.DateUtils
@@ -59,6 +60,7 @@ fun TransactionListItem(
     onExpand: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val shapes = LocalAppShapes.current
     val colors = extendedColorScheme()
     val amountColor = when (transaction.type) {
         TransactionType.INCOME -> colors.income
@@ -93,16 +95,16 @@ fun TransactionListItem(
         modifier = modifier
             .fillMaxWidth()
     ) {
-        // 删除按钮背景层 - 高度与内容卡片匹配
+        // 删除按钮背景层 - 柔和 expense 色背景
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(with(LocalDensity.current) { contentHeight.toDp() })
                 .background(
-                    color = MaterialTheme.colorScheme.errorContainer,
-                    shape = RoundedCornerShape(16.dp)
+                    color = colors.expense.copy(alpha = 0.1f),
+                    shape = shapes.cardMedium
                 )
-                .clip(RoundedCornerShape(16.dp)),
+                .clip(shapes.cardMedium),
             contentAlignment = Alignment.CenterEnd
         ) {
             IconButton(
@@ -112,7 +114,7 @@ fun TransactionListItem(
                 Icon(
                     imageVector = Icons.Filled.Delete,
                     contentDescription = "删除",
-                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                    tint = colors.expense,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -161,11 +163,11 @@ fun TransactionListItem(
                     )
                 }
                 .clickable(enabled = offsetX.value == 0f) { onClick() },
-            shape = RoundedCornerShape(16.dp),
+            shape = shapes.cardMedium,
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer
+                containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.7f)
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Row(
                 modifier = Modifier

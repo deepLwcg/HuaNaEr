@@ -37,6 +37,7 @@ import cn.yajienet.huanaer.ui.components.EmptyState
 import cn.yajienet.huanaer.ui.components.LoadingState
 import cn.yajienet.huanaer.ui.components.SummaryCard
 import cn.yajienet.huanaer.ui.components.TransactionListItem
+import cn.yajienet.huanaer.ui.components.glassmorphism.GlowBackground
 
 @Composable
 fun HomeScreen(
@@ -57,7 +58,7 @@ fun HomeScreen(
             .collect { if (it) expandedItemId = null }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    GlowBackground(modifier = Modifier.fillMaxSize()) {
         if (uiState.isLoading) {
             LoadingState()
         } else {
@@ -65,7 +66,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(contentPadding)
-                    .background(MaterialTheme.colorScheme.surface)
+                    .background(MaterialTheme.colorScheme.background)
             ) {
                 AnimatedVisibility(
                     visible = !uiState.isLoading,
@@ -135,7 +136,6 @@ fun HomeScreen(
                     }
                 }
             }
-
         }
     }
 }

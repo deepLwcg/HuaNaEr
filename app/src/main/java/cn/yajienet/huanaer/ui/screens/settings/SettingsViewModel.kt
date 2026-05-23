@@ -25,7 +25,7 @@ import java.io.File
 
 data class SettingsUiState(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
-    val themeStyle: ThemeStyle = ThemeStyle.MINT_BREEZE,
+    val themeStyle: ThemeStyle = ThemeStyle.MINT_MILK,
     val dynamicColorEnabled: Boolean = true,
 
     // 记账设置

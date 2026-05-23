@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -57,12 +56,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cn.yajienet.huanaer.data.model.TransactionType
-import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
-import cn.yajienet.huanaer.ui.components.neubru.BouncyIconButton
-import cn.yajienet.huanaer.ui.components.neubru.CelebrationOverlay
-import cn.yajienet.huanaer.ui.components.neubru.NeubruNumberPad
-import cn.yajienet.huanaer.ui.components.neubru.PillChip
-import cn.yajienet.huanaer.util.CurrencyFormat
+import cn.yajienet.huanaer.ui.components.glassmorphism.CategoryCircleButton
+import cn.yajienet.huanaer.ui.components.glassmorphism.CelebrationGlow
+import cn.yajienet.huanaer.ui.components.glassmorphism.GlassCard
+import cn.yajienet.huanaer.ui.components.glassmorphism.NeumorphicNumberPad
+import cn.yajienet.huanaer.ui.components.glassmorphism.SegmentedSwitch
+import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -145,43 +144,22 @@ fun AddTransactionContent(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // 类型切换 — PillChip
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                PillChip(
-                    text = {
-                        Text(
-                            "支出",
-                            color = if (uiState.type == TransactionType.EXPENSE)
-                                MaterialTheme.colorScheme.onPrimary
-                            else MaterialTheme.colorScheme.onSurface
-                        )
-                    },
-                    selected = uiState.type == TransactionType.EXPENSE,
-                    onClick = { viewModel.setType(TransactionType.EXPENSE) },
-                    selectedColor = MaterialTheme.colorScheme.error
-                )
-                PillChip(
-                    text = {
-                        Text(
-                            "收入",
-                            color = if (uiState.type == TransactionType.INCOME)
-                                MaterialTheme.colorScheme.onPrimary
-                            else MaterialTheme.colorScheme.onSurface
-                        )
-                    },
-                    selected = uiState.type == TransactionType.INCOME,
-                    onClick = { viewModel.setType(TransactionType.INCOME) },
-                    selectedColor = MaterialTheme.colorScheme.primary
-                )
-            }
+            // 类型切换 — SegmentedSwitch
+            val colors = extendedColorScheme()
+            SegmentedSwitch(
+                selected = if (uiState.type == TransactionType.EXPENSE) 0 else 1,
+                onSelectedChange = { index ->
+                    viewModel.setType(if (index == 0) TransactionType.EXPENSE else TransactionType.INCOME)
+                },
+                leftText = "支出",
+                rightText = "收入",
+                selectedColor = if (uiState.type == TransactionType.EXPENSE) colors.expense else colors.income
+            )
 
-            // 金额显示 — 大字
-            Surface(
+            // 金额显示 — GlassCard 毛玻璃风格
+            GlassCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh
+                glassAlpha = 0.7f
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -198,16 +176,16 @@ fun AddTransactionContent(
                                else "¥$amountText",
                         style = MaterialTheme.typography.displayLarge.copy(
                             fontSize = 40.sp,
-                            fontWeight = FontWeight.Black
+                            fontWeight = FontWeight.Bold
                         ),
                         color = if (uiState.type == TransactionType.EXPENSE)
-                            MaterialTheme.colorScheme.error
-                        else MaterialTheme.colorScheme.primary
+                            colors.expense
+                        else colors.income
                     )
                 }
             }
 
-            // 分类选择 — LazyRow + BouncyIconButton
+            // 分类选择 — LazyRow + CategoryCircleButton
             Column {
                 Text(
                     "分类",
@@ -220,30 +198,18 @@ fun AddTransactionContent(
                 ) {
                     items(uiState.categories, key = { it.id }) { category ->
                         val selected = uiState.selectedCategoryId == category.id
-                        BouncyIconButton(
+                        CategoryCircleButton(
+                            name = category.name,
+                            color = try {
+                                Color(category.color.removePrefix("#").toLong(16))
+                            } catch (e: Exception) {
+                                MaterialTheme.colorScheme.primary
+                            },
+                            selected = selected,
                             onClick = { viewModel.setCategory(category.id) },
-                            size = 56.dp,
+                            size = 48.dp,
                             hapticEnabled = true
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                CategoryCircleIcon(
-                                    name = category.name,
-                                    color = category.color,
-                                    size = if (selected) 52.dp else 44.dp
-                                )
-                                if (selected) {
-                                    Surface(
-                                        modifier = Modifier.size(56.dp),
-                                        shape = RoundedCornerShape(28.dp),
-                                        color = Color.Transparent,
-                                        border = BorderStroke(
-                                            2.5.dp,
-                                            MaterialTheme.colorScheme.primary
-                                        )
-                                    ) {}
-                                }
-                            }
-                        }
+                        )
                     }
                 }
             }
@@ -321,19 +287,19 @@ fun AddTransactionContent(
             Spacer(Modifier.height(4.dp))
 
             // 数字键盘
-            NeubruNumberPad(
+            NeumorphicNumberPad(
                 onDigit = { digit ->
                     val current = amountText
                     // 限制小数点后两位
                     if (current.contains(".")) {
                         val afterDot = current.substringAfter(".")
-                        if (afterDot.length >= 2) return@NeubruNumberPad
+                        if (afterDot.length >= 2) return@NeumorphicNumberPad
                     }
                     // 限制首位为0时只能输入小数点
-                    val newAmount = if (current == "0" && digit != ".") {
-                        digit
+                    val newAmount = if (current == "0") {
+                        digit.toString()
                     } else {
-                        current + digit
+                        current + digit.toString()
                     }
                     amountText = newAmount
                     viewModel.setAmount(newAmount)
@@ -342,7 +308,7 @@ fun AddTransactionContent(
                     val newAmount = when {
                         amountText.isEmpty() -> "0."
                         !amountText.contains(".") -> "$amountText."
-                        else -> return@NeubruNumberPad // 已有小数点
+                        else -> return@NeumorphicNumberPad // 已有小数点
                     }
                     amountText = newAmount
                     viewModel.setAmount(newAmount)
@@ -373,8 +339,8 @@ fun AddTransactionContent(
             }
         }
 
-        // 庆祝动画
-        CelebrationOverlay(
+        // 庆祝动画 — CelebrationGlow
+        CelebrationGlow(
             trigger = showCelebration,
             onFinished = {
                 showCelebration = false

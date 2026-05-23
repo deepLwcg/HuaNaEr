@@ -5,7 +5,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -78,8 +77,10 @@ import cn.yajienet.huanaer.ui.screens.transaction.AddTransactionBottomSheet
 import cn.yajienet.huanaer.ui.screens.transactionlist.TransactionListScreen
 import cn.yajienet.huanaer.ui.screens.transaction.TransactionDetailScreen
 import cn.yajienet.huanaer.ui.screens.settings.SettingsScreen
-import cn.yajienet.huanaer.ui.components.neubru.GlassCard
+import cn.yajienet.huanaer.ui.components.glassmorphism.GlassCard
+import cn.yajienet.huanaer.ui.components.glassmorphism.GlowBackground
 import cn.yajienet.huanaer.ui.components.MonthYearPickerDialog
+import cn.yajienet.huanaer.ui.theme.EaseInOutCubic
 import cn.yajienet.huanaer.util.DateUtils
 import kotlinx.coroutines.launch
 
@@ -137,21 +138,21 @@ fun HuaNaErNavigation(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             AnimatedVisibility(
                 visible = isMainScreen,
                 enter = fadeIn(
-                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                    animationSpec = tween(300, easing = EaseInOutCubic)
                 ) + slideInVertically(
                     initialOffsetY = { -it },
-                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                    animationSpec = tween(300, easing = EaseInOutCubic)
                 ),
                 exit = fadeOut(
-                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                    animationSpec = tween(300, easing = EaseInOutCubic)
                 ) + slideOutVertically(
                     targetOffsetY = { -it },
-                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                    animationSpec = tween(300, easing = EaseInOutCubic)
                 )
             ) {
                 TopAppBar(
@@ -205,16 +206,16 @@ fun HuaNaErNavigation(
             AnimatedVisibility(
                 visible = isMainScreen,
                 enter = fadeIn(
-                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                    animationSpec = tween(300, easing = EaseInOutCubic)
                 ) + slideInVertically(
                     initialOffsetY = { it },
-                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                    animationSpec = tween(300, easing = EaseInOutCubic)
                 ),
                 exit = fadeOut(
-                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                    animationSpec = tween(300, easing = EaseInOutCubic)
                 ) + slideOutVertically(
                     targetOffsetY = { it },
-                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                    animationSpec = tween(300, easing = EaseInOutCubic)
                 )
             ) {
                 BottomNavBar(
@@ -236,25 +237,25 @@ fun HuaNaErNavigation(
             enterTransition = {
                 slideIntoContainer(
                     AnimatedContentTransitionScope.SlideDirection.Start,
-                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                    animationSpec = tween(300, easing = EaseInOutCubic)
                 )
             },
             exitTransition = {
                 slideOutOfContainer(
                     AnimatedContentTransitionScope.SlideDirection.Start,
-                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                    animationSpec = tween(300, easing = EaseInOutCubic)
                 )
             },
             popEnterTransition = {
                 slideIntoContainer(
                     AnimatedContentTransitionScope.SlideDirection.End,
-                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                    animationSpec = tween(300, easing = EaseInOutCubic)
                 )
             },
             popExitTransition = {
                 slideOutOfContainer(
                     AnimatedContentTransitionScope.SlideDirection.End,
-                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                    animationSpec = tween(300, easing = EaseInOutCubic)
                 )
             }
         ) {
@@ -369,7 +370,9 @@ private fun BottomNavBar(
     modifier: Modifier = Modifier
 ) {
     GlassCard(
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
+        glassAlpha = 0.85f,
+        blurRadius = 30.dp
     ) {
         Row(
             modifier = Modifier
@@ -420,7 +423,7 @@ private fun NavBarItem(
             color = if (selected) MaterialTheme.colorScheme.primaryContainer
                     else Color.Transparent,
             shape = RoundedCornerShape(16.dp),
-            border = if (selected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
+            border = if (selected) BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)) else null,
             modifier = Modifier
                 .size(32.dp)
                 .scale(scale)

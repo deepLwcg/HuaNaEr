@@ -74,6 +74,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import cn.yajienet.huanaer.data.model.TransactionType
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
+import cn.yajienet.huanaer.ui.components.glassmorphism.GlassCard
+import cn.yajienet.huanaer.ui.components.glassmorphism.NeumorphicCard
 import cn.yajienet.huanaer.util.CurrencyFormat
 import cn.yajienet.huanaer.util.DateUtils
 
@@ -329,19 +331,19 @@ fun TransactionDetailScreen(
                     .padding(innerPadding)
                     .verticalScroll(rememberScrollState())
             ) {
-                // === 顶部金额展示区域 ===
+                // === 顶部金额展示区域（柔和渐变）===
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
                             Brush.verticalGradient(
                                 colors = listOf(
-                                    backgroundColor,
-                                    backgroundColor.copy(alpha = 0.3f),
+                                    backgroundColor.copy(alpha = 0.15f),
+                                    backgroundColor.copy(alpha = 0.08f),
                                     Color.Transparent
                                 ),
                                 startY = 0f,
-                                endY = 300f
+                                endY = 200f
                             )
                         )
                         .padding(top = 24.dp, bottom = 32.dp)
@@ -393,19 +395,15 @@ fun TransactionDetailScreen(
                     }
                 }
 
-                // === 分类卡片 ===
+                // === 分类卡片（GlassCard）===
                 AnimatedVisibility(
                     visible = true,
                     enter = fadeIn() + slideInVertically { it / 2 }
                 ) {
-                    Card(
+                    GlassCard(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
-                        )
+                            .padding(horizontal = 16.dp)
                     ) {
                         Row(
                             modifier = Modifier
@@ -447,19 +445,15 @@ fun TransactionDetailScreen(
 
                 Spacer(Modifier.height(16.dp))
 
-                // === 详情信息卡片 ===
+                // === 详情信息卡片（NeumorphicCard）===
                 AnimatedVisibility(
                     visible = true,
                     enter = fadeIn() + slideInVertically { it / 3 }
                 ) {
-                    Card(
+                    NeumorphicCard(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer
-                        )
+                            .padding(horizontal = 16.dp)
                     ) {
                         Column(
                             modifier = Modifier.padding(20.dp)

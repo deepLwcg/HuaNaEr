@@ -45,6 +45,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -80,9 +81,8 @@ import cn.yajienet.huanaer.data.model.Category
 import cn.yajienet.huanaer.data.model.TransactionType
 import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
 import cn.yajienet.huanaer.ui.components.DeleteConfirmationDialog
-import cn.yajienet.huanaer.ui.components.neubru.BouncyIconButton
-import cn.yajienet.huanaer.ui.components.neubru.NeubruCard
-import cn.yajienet.huanaer.ui.components.neubru.NeubruSwitch
+import cn.yajienet.huanaer.ui.components.glassmorphism.NeumorphicCard
+import cn.yajienet.huanaer.ui.components.glassmorphism.NeumorphicSwitch
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import cn.yajienet.huanaer.util.CurrencyFormat
 import java.io.File
@@ -148,13 +148,11 @@ fun SettingsScreen(
     ) {
         // === 主题风格 ===
         item {
-            NeubruCard(modifier = Modifier.fillMaxWidth()) {
+            NeumorphicCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        BouncyIconButton(onClick = {}, size = 36.dp) {
-                            Icon(Icons.Filled.Palette, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-                        }
-                        Spacer(Modifier.width(8.dp))
+                        Icon(Icons.Filled.Palette, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(12.dp))
                         Text("主题风格", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                     }
                     Spacer(Modifier.height(12.dp))
@@ -164,25 +162,25 @@ fun SettingsScreen(
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         ThemePreviewCard(
-                            themeStyle = ThemeStyle.MINT_BREEZE,
-                            label = "薄荷清风",
-                            primaryColor = Color(0xFF00C896),
-                            selected = uiState.themeStyle == ThemeStyle.MINT_BREEZE,
-                            onClick = { viewModel.setThemeStyle(ThemeStyle.MINT_BREEZE) }
+                            themeStyle = ThemeStyle.MINT_MILK,
+                            label = "薄荷奶绿",
+                            primaryColor = Color(0xFFA8E6CF),
+                            selected = uiState.themeStyle == ThemeStyle.MINT_MILK,
+                            onClick = { viewModel.setThemeStyle(ThemeStyle.MINT_MILK) }
                         )
                         ThemePreviewCard(
-                            themeStyle = ThemeStyle.SUNSET_GLOW,
-                            label = "落日余晖",
-                            primaryColor = Color(0xFFFF6B6B),
-                            selected = uiState.themeStyle == ThemeStyle.SUNSET_GLOW,
-                            onClick = { viewModel.setThemeStyle(ThemeStyle.SUNSET_GLOW) }
+                            themeStyle = ThemeStyle.LAVENDER,
+                            label = "薰衣草紫",
+                            primaryColor = Color(0xFFDCD3FF),
+                            selected = uiState.themeStyle == ThemeStyle.LAVENDER,
+                            onClick = { viewModel.setThemeStyle(ThemeStyle.LAVENDER) }
                         )
                         ThemePreviewCard(
-                            themeStyle = ThemeStyle.MIDNIGHT_NEON,
-                            label = "午夜霓虹",
-                            primaryColor = Color(0xFF7B2FFF),
-                            selected = uiState.themeStyle == ThemeStyle.MIDNIGHT_NEON,
-                            onClick = { viewModel.setThemeStyle(ThemeStyle.MIDNIGHT_NEON) }
+                            themeStyle = ThemeStyle.WARM_PEACH,
+                            label = "暖阳蜜桃",
+                            primaryColor = Color(0xFFFFDFD3),
+                            selected = uiState.themeStyle == ThemeStyle.WARM_PEACH,
+                            onClick = { viewModel.setThemeStyle(ThemeStyle.WARM_PEACH) }
                         )
                     }
                 }
@@ -191,13 +189,11 @@ fun SettingsScreen(
 
         // === 外观设置 ===
         item {
-            NeubruCard(modifier = Modifier.fillMaxWidth()) {
+            NeumorphicCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        BouncyIconButton(onClick = {}, size = 36.dp) {
-                            Icon(Icons.Filled.BrightnessMedium, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-                        }
-                        Spacer(Modifier.width(8.dp))
+                        Icon(Icons.Filled.BrightnessMedium, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(12.dp))
                         Text("外观", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                     }
                     Spacer(Modifier.height(12.dp))
@@ -238,7 +234,7 @@ fun SettingsScreen(
                                 Text("根据壁纸调整颜色（Android 12+）", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
-                        NeubruSwitch(
+                        NeumorphicSwitch(
                             checked = uiState.dynamicColorEnabled,
                             onCheckedChange = { viewModel.setDynamicColorEnabled(it) }
                         )
@@ -249,13 +245,11 @@ fun SettingsScreen(
 
         // === 记账设置 ===
         item {
-            NeubruCard(modifier = Modifier.fillMaxWidth()) {
+            NeumorphicCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        BouncyIconButton(onClick = {}, size = 36.dp) {
-                            Icon(Icons.Filled.Settings, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-                        }
-                        Spacer(Modifier.width(8.dp))
+                        Icon(Icons.Filled.Settings, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(12.dp))
                         Text("记账", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                     }
                     Spacer(Modifier.height(12.dp))
@@ -356,13 +350,11 @@ fun SettingsScreen(
 
         // === 数据管理 ===
         item {
-            NeubruCard(modifier = Modifier.fillMaxWidth()) {
+            NeumorphicCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        BouncyIconButton(onClick = {}, size = 36.dp) {
-                            Icon(Icons.Filled.Storage, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-                        }
-                        Spacer(Modifier.width(8.dp))
+                        Icon(Icons.Filled.Storage, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(12.dp))
                         Text("数据备份", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                     }
                     Spacer(Modifier.height(12.dp))
@@ -417,7 +409,7 @@ fun SettingsScreen(
             }
 
             items(uiState.backupFiles, key = { it.absolutePath }) { file ->
-                NeubruCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 12.dp) {
+                NeumorphicCard(modifier = Modifier.fillMaxWidth()) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -436,11 +428,11 @@ fun SettingsScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        BouncyIconButton(onClick = { viewModel.shareBackupFile(file) }, size = 32.dp) {
-                            Icon(Icons.Filled.Share, "分享", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                        IconButton(onClick = { viewModel.shareBackupFile(file) }) {
+                            Icon(Icons.Filled.Share, "分享", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
                         }
-                        BouncyIconButton(onClick = { viewModel.showDeleteFileDialog(file, "backup") }, size = 32.dp) {
-                            Icon(Icons.Filled.Delete, "删除", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp))
+                        IconButton(onClick = { viewModel.showDeleteFileDialog(file, "backup") }) {
+                            Icon(Icons.Filled.Delete, "删除", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
                         }
                         TextButton(onClick = { viewModel.showRestoreDialog(file) }, enabled = !uiState.isRestoring) {
                             Text("恢复")
@@ -453,10 +445,9 @@ fun SettingsScreen(
         // === 危险操作 ===
         item {
             Spacer(Modifier.height(16.dp))
-            NeubruCard(
+            NeumorphicCard(
                 modifier = Modifier.fillMaxWidth(),
-                borderColor = MaterialTheme.colorScheme.error.copy(alpha = 0.3f),
-                backgroundColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.15f)
+                containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.15f)
             ) {
                 Row(
                     modifier = Modifier
@@ -464,10 +455,8 @@ fun SettingsScreen(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    BouncyIconButton(onClick = {}, size = 36.dp) {
-                        Icon(Icons.Filled.DeleteForever, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
-                    }
-                    Spacer(Modifier.width(8.dp))
+                    Icon(Icons.Filled.DeleteForever, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text("清除所有数据", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.error)
                         Text("删除所有交易记录、分类和预算", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onErrorContainer)
@@ -490,18 +479,14 @@ fun SettingsScreen(
         // === 关于 ===
         item {
             Spacer(Modifier.height(16.dp))
-            NeubruCard(modifier = Modifier.fillMaxWidth()) {
+            NeumorphicCard(modifier = Modifier.fillMaxWidth()) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    BouncyIconButton(onClick = {}, size = 64.dp, hapticEnabled = false) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(Icons.Filled.Palette, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))
-                        }
-                    }
+                    Icon(Icons.Filled.Palette, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(48.dp))
                     Spacer(Modifier.height(12.dp))
                     Text("花哪儿了", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
                     Spacer(Modifier.height(4.dp))
@@ -701,39 +686,45 @@ private fun ThemePreviewCard(
             onClick = onClick
         )
     ) {
-        Box(modifier = Modifier.size(72.dp).scale(scale)) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                drawRoundRect(
-                    color = Color.White,
-                    cornerRadius = CornerRadius(8.dp.toPx())
-                )
-                drawRoundRect(
-                    color = primaryColor.copy(alpha = 0.1f),
-                    topLeft = Offset(0f, 0f),
-                    size = Size(size.width, size.height * 0.15f),
-                    cornerRadius = CornerRadius(8.dp.toPx())
-                )
-                drawRoundRect(
-                    color = primaryColor.copy(alpha = 0.3f),
-                    topLeft = Offset(8.dp.toPx(), size.height * 0.2f),
-                    size = Size(size.width - 16.dp.toPx(), size.height * 0.35f),
-                    cornerRadius = CornerRadius(6.dp.toPx())
-                )
-                drawRoundRect(
-                    color = primaryColor.copy(alpha = 0.08f),
-                    topLeft = Offset(0f, size.height * 0.82f),
-                    size = Size(size.width, size.height * 0.18f),
-                    cornerRadius = CornerRadius(8.dp.toPx())
-                )
-                drawRoundRect(
-                    color = if (selected) primaryColor else Color.LightGray,
-                    topLeft = Offset.Zero,
-                    size = Size(size.width, size.height),
-                    cornerRadius = CornerRadius(8.dp.toPx()),
-                    style = Stroke(width = if (selected) 3.dp.toPx() else 1.dp.toPx())
-                )
+        // 主题预览卡片 Canvas 改为柔和毛玻璃风格
+            Box(modifier = Modifier.size(72.dp).scale(scale)) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    // 奶油色背景
+                    drawRoundRect(
+                        color = Color(0xFFFBF9F6),
+                        cornerRadius = CornerRadius(12.dp.toPx())
+                    )
+                    // 半透明顶部
+                    drawRoundRect(
+                        color = primaryColor.copy(alpha = 0.08f),
+                        topLeft = Offset(0f, 0f),
+                        size = Size(size.width, size.height * 0.15f),
+                        cornerRadius = CornerRadius(12.dp.toPx())
+                    )
+                    // 柔和卡片
+                    drawRoundRect(
+                        color = primaryColor.copy(alpha = 0.15f),
+                        topLeft = Offset(6.dp.toPx(), size.height * 0.2f),
+                        size = Size(size.width - 12.dp.toPx(), size.height * 0.35f),
+                        cornerRadius = CornerRadius(8.dp.toPx())
+                    )
+                    // 柔和底部栏
+                    drawRoundRect(
+                        color = primaryColor.copy(alpha = 0.06f),
+                        topLeft = Offset(0f, size.height * 0.82f),
+                        size = Size(size.width, size.height * 0.18f),
+                        cornerRadius = CornerRadius(12.dp.toPx())
+                    )
+                    // 极细描边（选中时 1dp，未选中时 0.5dp）
+                    drawRoundRect(
+                        color = if (selected) primaryColor.copy(alpha = 0.4f) else Color.LightGray.copy(alpha = 0.3f),
+                        topLeft = Offset.Zero,
+                        size = Size(size.width, size.height),
+                        cornerRadius = CornerRadius(12.dp.toPx()),
+                        style = Stroke(width = if (selected) 1.dp.toPx() else 0.5.dp.toPx())
+                    )
+                }
             }
-        }
         Spacer(Modifier.height(4.dp))
         Text(
             label,

@@ -1,29 +1,24 @@
 package cn.yajienet.huanaer.ui.components
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import cn.yajienet.huanaer.ui.components.glassmorphism.EmptyStateIllustration
 
+/**
+ * 空状态组件
+ * @deprecated 使用 [EmptyStateIllustration] 替代，支持柔光弥散风格
+ */
+@Deprecated(
+    message = "使用 EmptyStateIllustration 替代，支持柔光弥散风格",
+    replaceWith = ReplaceWith(
+        "EmptyStateIllustration(title, modifier, subtitle, icon)",
+        "cn.yajienet.huanaer.ui.components.glassmorphism.EmptyStateIllustration"
+    )
+)
 @Composable
 fun EmptyState(
     title: String,
@@ -31,46 +26,12 @@ fun EmptyState(
     icon: ImageVector? = null,
     modifier: Modifier = Modifier
 ) {
-    // 轻微浮动动画
-    val infiniteTransition = rememberInfiniteTransition(label = "emptyFloat")
-    val floatOffset by infiniteTransition.animateFloat(
-        initialValue = -4f,
-        targetValue = 4f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "floatOffset"
+    // 桥接到 EmptyStateIllustration，将 ImageVector 转换为 Painter
+    val painter: Painter? = icon?.let { rememberVectorPainter(it) }
+    EmptyStateIllustration(
+        title = title,
+        modifier = modifier,
+        subtitle = subtitle,
+        icon = painter
     )
-
-    Column(
-        modifier = modifier.padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        if (icon != null) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                modifier = Modifier
-                    .size(64.dp)
-                    .offset(y = floatOffset.dp)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        if (subtitle != null) {
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-        }
-    }
 }

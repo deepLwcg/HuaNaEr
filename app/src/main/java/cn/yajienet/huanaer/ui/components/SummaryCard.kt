@@ -21,12 +21,13 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import cn.yajienet.huanaer.ui.components.neubru.AnimatedCounter
-import cn.yajienet.huanaer.ui.components.neubru.GlassCard
-import cn.yajienet.huanaer.ui.components.neubru.NeubruCard
+import cn.yajienet.huanaer.ui.components.glassmorphism.AnimatedNumber
+import cn.yajienet.huanaer.ui.components.glassmorphism.GlassCard
+import cn.yajienet.huanaer.ui.components.glassmorphism.NeumorphicCard
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import cn.yajienet.huanaer.util.CurrencyFormat
 
@@ -41,8 +42,11 @@ fun SummaryCard(
     val extendedColors = extendedColorScheme()
 
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        // Total Balance - GlassCard
-        GlassCard {
+        // Total Balance - GlassCard (毛玻璃效果)
+        GlassCard(
+            glassAlpha = 0.8f,
+            blurRadius = 25.dp
+        ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -55,10 +59,10 @@ fun SummaryCard(
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    AnimatedCounter(
+                    AnimatedNumber(
                         targetValue = totalBalance,
                         style = MaterialTheme.typography.displaySmall.copy(
-                            fontWeight = FontWeight.Black
+                            fontWeight = FontWeight.Bold
                         ),
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -81,12 +85,12 @@ fun SummaryCard(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            NeubruCard(
+            NeumorphicCard(
                 modifier = Modifier.weight(1f),
-                backgroundColor = extendedColors.incomeContainer.copy(alpha = 0.3f),
-                borderColor = extendedColors.income.copy(alpha = 0.5f)
+                containerColor = extendedColors.incomeContainer.copy(alpha = 0.15f),
+                contentPadding = 16.dp
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column {
                     Text(
                         text = "收入",
                         style = MaterialTheme.typography.titleSmall,
@@ -100,12 +104,12 @@ fun SummaryCard(
                     )
                 }
             }
-            NeubruCard(
+            NeumorphicCard(
                 modifier = Modifier.weight(1f),
-                backgroundColor = extendedColors.expenseContainer.copy(alpha = 0.3f),
-                borderColor = extendedColors.expense.copy(alpha = 0.5f)
+                containerColor = extendedColors.expenseContainer.copy(alpha = 0.15f),
+                contentPadding = 16.dp
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column {
                     Text(
                         text = "支出",
                         style = MaterialTheme.typography.titleSmall,
@@ -174,7 +178,7 @@ private fun SparkLine(
         drawPath(
             path = linePath,
             color = color,
-            style = Stroke(width = 2.dp.toPx())
+            style = Stroke(width = 1.5.dp.toPx(), cap = StrokeCap.Round)
         )
 
         // End dot

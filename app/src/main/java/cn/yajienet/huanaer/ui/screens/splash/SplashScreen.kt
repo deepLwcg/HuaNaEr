@@ -1,7 +1,6 @@
 package cn.yajienet.huanaer.ui.screens.splash
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -35,6 +34,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cn.yajienet.huanaer.ui.components.glassmorphism.GlowBackground
+import cn.yajienet.huanaer.ui.theme.EaseInOutCubic
 import kotlinx.coroutines.delay
 
 @Composable
@@ -49,25 +50,29 @@ fun SplashScreen(
         onSplashComplete()
     }
 
-    // 根据主题获取渐变色
+    // 柔和渐变色（柔光弥散风格）
     val primaryColor = MaterialTheme.colorScheme.primary
+    val backgroundColor = MaterialTheme.colorScheme.background
     val gradientColors = listOf(
-        primaryColor,
-        primaryColor.copy(alpha = 0.8f),
-        primaryColor.copy(alpha = 0.6f)
+        backgroundColor,
+        backgroundColor.copy(alpha = 0.95f),
+        primaryColor.copy(alpha = 0.08f)
     )
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = gradientColors,
-                    startY = 0f,
-                    endY = Float.POSITIVE_INFINITY
-                )
-            )
+    GlowBackground(
+        modifier = Modifier.fillMaxSize()
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = gradientColors,
+                        startY = 0f,
+                        endY = Float.POSITIVE_INFINITY
+                    )
+                )
+        ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -75,11 +80,11 @@ fun SplashScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Logo — NeubruCard 风格圆形
+            // Logo — 柔光弥散风格圆形（极细白色描边）
             AnimatedVisibility(
                 visible = startAnimation,
                 enter = scaleIn(
-                    animationSpec = tween(600, easing = FastOutSlowInEasing),
+                    animationSpec = tween(600, easing = EaseInOutCubic),
                     initialScale = 0.3f
                 ) + fadeIn(tween(600, easing = LinearEasing))
             ) {
@@ -89,8 +94,8 @@ fun SplashScreen(
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.surface)
                         .border(
-                            width = 2.dp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+                            width = 0.5.dp,
+                            color = Color.White.copy(alpha = 0.3f),
                             shape = CircleShape
                         ),
                     contentAlignment = Alignment.Center
@@ -109,7 +114,7 @@ fun SplashScreen(
             AnimatedVisibility(
                 visible = startAnimation,
                 enter = slideInVertically(
-                    animationSpec = tween(800, easing = FastOutSlowInEasing),
+                    animationSpec = tween(800, easing = EaseInOutCubic),
                     initialOffsetY = { it / 2 }
                 ) + fadeIn(tween(800, easing = LinearEasing))
             ) {
@@ -147,6 +152,7 @@ fun SplashScreen(
                 color = Color.White.copy(alpha = 0.5f),
                 modifier = Modifier.padding(bottom = 32.dp)
             )
+        }
         }
     }
 }

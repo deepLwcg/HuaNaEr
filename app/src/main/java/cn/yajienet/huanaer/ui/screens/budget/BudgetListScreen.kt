@@ -2,12 +2,10 @@ package cn.yajienet.huanaer.ui.screens.budget
 
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,11 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -56,9 +50,10 @@ import cn.yajienet.huanaer.data.model.Budget
 import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
 import cn.yajienet.huanaer.ui.components.EmptyState
 import cn.yajienet.huanaer.ui.components.LoadingState
-import cn.yajienet.huanaer.ui.components.neubru.BouncyIconButton
-import cn.yajienet.huanaer.ui.components.neubru.NeubruCard
-import cn.yajienet.huanaer.ui.components.neubru.NeubruNumberPad
+import cn.yajienet.huanaer.ui.components.glassmorphism.BudgetRing
+import cn.yajienet.huanaer.ui.components.glassmorphism.NeumorphicCard
+import cn.yajienet.huanaer.ui.components.glassmorphism.NeumorphicNumberPad
+import cn.yajienet.huanaer.ui.components.glassmorphism.CategoryCircleButton
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import cn.yajienet.huanaer.util.CurrencyFormat
 
@@ -107,7 +102,7 @@ fun BudgetListScreen(
         ) {
             // 月度概览
             item {
-                NeubruCard(modifier = Modifier.fillMaxWidth()) {
+                NeumorphicCard(modifier = Modifier.fillMaxWidth()) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -206,26 +201,25 @@ fun BudgetCard(
         MaterialTheme.colorScheme.surfaceContainerHigh
     }
 
-    NeubruCard(
+    NeumorphicCard(
         modifier = modifier.fillMaxWidth(),
-        borderColor = borderColor,
-        backgroundColor = cardColor,
-        cornerRadius = 16.dp
+        containerColor = cardColor,
+        contentPadding = 16.dp
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 环形进度
-            RingProgressIndicator(
+            BudgetRing(
                 progress = progress,
                 color = when {
                     isOverBudget -> colors.budgetDanger
                     isWarning -> colors.budgetWarning
                     else -> MaterialTheme.colorScheme.primary
                 },
+                size = 64.dp,
+                strokeWidth = 6.dp,
                 modifier = Modifier.size(64.dp)
             )
 
@@ -253,9 +247,12 @@ fun BudgetCard(
                 )
             }
 
-            BouncyIconButton(
-                onClick = onDelete,
-                size = 36.dp
+            // 删除按钮 - 柔光弥散风格小型圆形按钮
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clickable(onClick = onDelete),
+                contentAlignment = Alignment.Center
             ) {
                 Icon(
                     Icons.Filled.Delete,
@@ -265,56 +262,6 @@ fun BudgetCard(
                 )
             }
         }
-    }
-}
-
-@Composable
-fun RingProgressIndicator(
-    progress: Float,
-    color: Color,
-    modifier: Modifier = Modifier
-) {
-    val animatedProgress by animateFloatAsState(
-        targetValue = progress,
-        animationSpec = tween(800, easing = androidx.compose.animation.core.FastOutSlowInEasing),
-        label = "ringProgress"
-    )
-    val backgroundColor = MaterialTheme.colorScheme.surfaceVariant
-
-    Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        Canvas(modifier = modifier) {
-            val stroke = 6.dp.toPx()
-            val diameter = minOf(size.width, size.height) - stroke
-            val radius = diameter / 2f
-            val center = Offset(size.width / 2f, size.height / 2f)
-
-            // 背景环
-            drawCircle(
-                color = backgroundColor,
-                radius = radius,
-                center = center,
-                style = Stroke(width = stroke)
-            )
-
-            // 进度环
-            val sweepAngle = animatedProgress * 360f
-            drawArc(
-                color = color,
-                startAngle = -90f,
-                sweepAngle = sweepAngle,
-                useCenter = false,
-                topLeft = Offset(center.x - radius, center.y - radius),
-                size = Size(radius * 2, radius * 2),
-                style = Stroke(width = stroke, cap = StrokeCap.Round)
-            )
-        }
-
-        // 中心百分比
-        Text(
-            text = "${(animatedProgress * 100).toInt()}%",
-            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.ExtraBold),
-            color = color
-        )
     }
 }
 
@@ -353,27 +300,18 @@ fun AddBudgetBottomSheet(
             ) {
                 items(uiState.categories, key = { it.id }) { category ->
                     val selected = selectedCategoryId == category.id
-                    BouncyIconButton(
+                    CategoryCircleButton(
+                        name = category.name,
+                        color = try {
+                            Color(category.color.removePrefix("#").toLong(16))
+                        } catch (e: Exception) {
+                            MaterialTheme.colorScheme.primary
+                        },
+                        selected = selected,
                         onClick = { selectedCategoryId = category.id },
-                        size = 56.dp,
+                        size = 48.dp,
                         hapticEnabled = true
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            CategoryCircleIcon(
-                                name = category.name,
-                                color = category.color,
-                                size = if (selected) 52.dp else 44.dp
-                            )
-                            if (selected) {
-                                androidx.compose.material3.Surface(
-                                    modifier = Modifier.size(56.dp),
-                                    shape = RoundedCornerShape(28.dp),
-                                    color = Color.Transparent,
-                                    border = BorderStroke(2.5.dp, MaterialTheme.colorScheme.primary)
-                                ) {}
-                            }
-                        }
-                    }
+                    )
                 }
             }
 
@@ -401,18 +339,18 @@ fun AddBudgetBottomSheet(
             }
 
             // 数字键盘
-            NeubruNumberPad(
+            NeumorphicNumberPad(
                 onDigit = { digit ->
                     val current = amountText
                     if (current.contains(".")) {
                         val afterDot = current.substringAfter(".")
-                        if (afterDot.length >= 2) return@NeubruNumberPad
+                        if (afterDot.length >= 2) return@NeumorphicNumberPad
                     }
-                    if (current == "0" && digit != ".") {
-                        amountText = digit
-                        return@NeubruNumberPad
+                    if (current == "0") {
+                        amountText = digit.toString()
+                        return@NeumorphicNumberPad
                     }
-                    amountText = current + digit
+                    amountText = current + digit.toString()
                 },
                 onDecimal = {
                     if (amountText.isEmpty()) {

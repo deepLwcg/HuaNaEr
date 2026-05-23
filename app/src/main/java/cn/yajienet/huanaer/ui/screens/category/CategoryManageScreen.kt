@@ -69,9 +69,10 @@ import cn.yajienet.huanaer.data.model.Category
 import cn.yajienet.huanaer.data.model.TransactionType
 import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
 import cn.yajienet.huanaer.ui.components.LoadingState
-import cn.yajienet.huanaer.ui.components.neubru.BouncyIconButton
-import cn.yajienet.huanaer.ui.components.neubru.NeubruCard
-import cn.yajienet.huanaer.ui.components.neubru.PillChip
+import cn.yajienet.huanaer.ui.components.glassmorphism.CategoryCircleButton
+import cn.yajienet.huanaer.ui.components.glassmorphism.NeumorphicCard
+import cn.yajienet.huanaer.ui.components.glassmorphism.SegmentedSwitch
+import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -185,38 +186,15 @@ fun CategoryManageScreen(
                     .padding(innerPadding)
                     .padding(horizontal = 16.dp)
             ) {
-                // PillChip 切换支出/收入
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    PillChip(
-                        text = {
-                            Text(
-                                "支出分类",
-                                color = if (uiState.selectedTab == 0)
-                                    MaterialTheme.colorScheme.onPrimary
-                                else MaterialTheme.colorScheme.onSurface
-                            )
-                        },
-                        selected = uiState.selectedTab == 0,
-                        onClick = { viewModel.selectTab(0) },
-                        selectedColor = MaterialTheme.colorScheme.error
-                    )
-                    PillChip(
-                        text = {
-                            Text(
-                                "收入分类",
-                                color = if (uiState.selectedTab == 1)
-                                    MaterialTheme.colorScheme.onPrimary
-                                else MaterialTheme.colorScheme.onSurface
-                            )
-                        },
-                        selected = uiState.selectedTab == 1,
-                        onClick = { viewModel.selectTab(1) },
-                        selectedColor = MaterialTheme.colorScheme.primary
-                    )
-                }
+                // SegmentedSwitch 切换支出/收入
+                val colors = extendedColorScheme()
+                SegmentedSwitch(
+                    selected = uiState.selectedTab,
+                    onSelectedChange = { viewModel.selectTab(it) },
+                    leftText = "支出分类",
+                    rightText = "收入分类",
+                    selectedColor = if (uiState.selectedTab == 0) colors.expense else colors.income
+                )
 
                 Spacer(Modifier.height(8.dp))
 
@@ -444,7 +422,7 @@ private fun CategoryListItem(
         label = "elevation"
     )
 
-    NeubruCard(
+    NeumorphicCard(
         modifier = modifier
             .fillMaxWidth()
             .offset { IntOffset(0, dragOffset.roundToInt()) }
@@ -458,8 +436,7 @@ private fun CategoryListItem(
                         onDragChange(offset.y)
                     }
                 )
-            },
-        cornerRadius = 12.dp
+            }
     ) {
         Row(
             modifier = Modifier
@@ -489,11 +466,23 @@ private fun CategoryListItem(
                 Icon(Icons.Filled.Reorder, "拖拽", tint = MaterialTheme.colorScheme.primary)
             }
 
-            BouncyIconButton(onClick = onEdit, size = 36.dp) {
+            // 编辑按钮
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clickable(onClick = onEdit),
+                contentAlignment = Alignment.Center
+            ) {
                 Icon(Icons.Filled.Edit, "编辑", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
             }
 
-            BouncyIconButton(onClick = onDelete, size = 36.dp) {
+            // 删除按钮
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clickable(onClick = onDelete),
+                contentAlignment = Alignment.Center
+            ) {
                 Icon(Icons.Filled.Delete, "删除", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
             }
         }

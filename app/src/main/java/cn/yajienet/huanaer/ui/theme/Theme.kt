@@ -16,7 +16,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import cn.yajienet.huanaer.data.datastore.ThemeStyle
 
-// Extended color scheme for financial-specific colors
+// ============================================================
+// Extended Color Scheme — 金融语义色 + 弥散光斑色
+// ============================================================
+
 data class ExtendedColorScheme(
     val income: Color,
     val incomeContainer: Color,
@@ -27,86 +30,100 @@ data class ExtendedColorScheme(
     val budgetWarning: Color,
     val budgetWarningContainer: Color,
     val budgetDanger: Color,
-    val budgetDangerContainer: Color
+    val budgetDangerContainer: Color,
+    // 新增弥散光斑色
+    val glowPrimary: Color,
+    val glowSecondary: Color,
+    val glowAccent: Color
 )
 
-// CompositionLocal for extended colors
-val LocalExtendedColorScheme = staticCompositionLocalOf { MintLightExtendedColorScheme }
+val LocalExtendedColorScheme = staticCompositionLocalOf { MintMilkLightExtendedColorScheme }
+
+@Composable
+fun extendedColorScheme(): ExtendedColorScheme = LocalExtendedColorScheme.current
 
 // ============================================================
-// Default Extended Color Schemes (保留向后兼容)
+// Default Extended Color Schemes (保留向后兼容 fallback)
 // ============================================================
 
 private val LightExtendedColorScheme = ExtendedColorScheme(
     income = LightIncome, incomeContainer = LightIncomeContainer, onIncomeContainer = LightOnIncomeContainer,
     expense = LightExpense, expenseContainer = LightExpenseContainer, onExpenseContainer = LightOnExpenseContainer,
     budgetWarning = LightBudgetWarning, budgetWarningContainer = LightBudgetWarningContainer,
-    budgetDanger = LightBudgetDanger, budgetDangerContainer = LightBudgetDangerContainer
+    budgetDanger = LightBudgetDanger, budgetDangerContainer = LightBudgetDangerContainer,
+    glowPrimary = Color(0x1A5A67D8), glowSecondary = Color(0x15667EEA), glowAccent = Color(0x154C51BF)
 )
 
 private val DarkExtendedColorScheme = ExtendedColorScheme(
     income = DarkIncome, incomeContainer = DarkIncomeContainer, onIncomeContainer = DarkOnIncomeContainer,
     expense = DarkExpense, expenseContainer = DarkExpenseContainer, onExpenseContainer = DarkOnExpenseContainer,
     budgetWarning = DarkBudgetWarning, budgetWarningContainer = DarkBudgetWarningContainer,
-    budgetDanger = DarkBudgetDanger, budgetDangerContainer = DarkBudgetDangerContainer
+    budgetDanger = DarkBudgetDanger, budgetDangerContainer = DarkBudgetDangerContainer,
+    glowPrimary = Color(0x0DB8C1F5), glowSecondary = Color(0x08A0B0E8), glowAccent = Color(0x089AA8E0)
 )
 
 // ============================================================
-// Mint Breeze Extended Color Schemes
+// 薄荷奶绿 Extended Color Schemes (MintMilk)
 // ============================================================
 
-private val MintLightExtendedColorScheme = ExtendedColorScheme(
-    income = MintLightIncome, incomeContainer = MintLightIncomeContainer, onIncomeContainer = MintLightOnIncomeContainer,
-    expense = MintLightExpense, expenseContainer = MintLightExpenseContainer, onExpenseContainer = MintLightOnExpenseContainer,
-    budgetWarning = MintLightBudgetWarning, budgetWarningContainer = MintLightBudgetWarningContainer,
-    budgetDanger = MintLightBudgetDanger, budgetDangerContainer = MintLightBudgetDangerContainer
+private val MintMilkLightExtendedColorScheme = ExtendedColorScheme(
+    income = MintMilkLightIncome, incomeContainer = MintMilkLightIncomeContainer, onIncomeContainer = MintMilkLightOnIncomeContainer,
+    expense = MintMilkLightExpense, expenseContainer = MintMilkLightExpenseContainer, onExpenseContainer = MintMilkLightOnExpenseContainer,
+    budgetWarning = MintMilkLightBudgetWarning, budgetWarningContainer = MintMilkLightBudgetWarningContainer,
+    budgetDanger = MintMilkLightBudgetDanger, budgetDangerContainer = MintMilkLightBudgetDangerContainer,
+    glowPrimary = MintMilkLightGlowPrimary, glowSecondary = MintMilkLightGlowSecondary, glowAccent = MintMilkLightGlowAccent
 )
 
-private val MintDarkExtendedColorScheme = ExtendedColorScheme(
-    income = MintDarkIncome, incomeContainer = MintDarkIncomeContainer, onIncomeContainer = MintDarkOnIncomeContainer,
-    expense = MintDarkExpense, expenseContainer = MintDarkExpenseContainer, onExpenseContainer = MintDarkOnExpenseContainer,
-    budgetWarning = MintDarkBudgetWarning, budgetWarningContainer = MintDarkBudgetWarningContainer,
-    budgetDanger = MintDarkBudgetDanger, budgetDangerContainer = MintDarkBudgetDangerContainer
-)
-
-// ============================================================
-// Sunset Glow Extended Color Schemes
-// ============================================================
-
-private val SunsetLightExtendedColorScheme = ExtendedColorScheme(
-    income = SunsetLightIncome, incomeContainer = SunsetLightIncomeContainer, onIncomeContainer = SunsetLightOnIncomeContainer,
-    expense = SunsetLightExpense, expenseContainer = SunsetLightExpenseContainer, onExpenseContainer = SunsetLightOnExpenseContainer,
-    budgetWarning = SunsetLightBudgetWarning, budgetWarningContainer = SunsetLightBudgetWarningContainer,
-    budgetDanger = SunsetLightBudgetDanger, budgetDangerContainer = SunsetLightBudgetDangerContainer
-)
-
-private val SunsetDarkExtendedColorScheme = ExtendedColorScheme(
-    income = SunsetDarkIncome, incomeContainer = SunsetDarkIncomeContainer, onIncomeContainer = SunsetDarkOnIncomeContainer,
-    expense = SunsetDarkExpense, expenseContainer = SunsetDarkExpenseContainer, onExpenseContainer = SunsetDarkOnExpenseContainer,
-    budgetWarning = SunsetDarkBudgetWarning, budgetWarningContainer = SunsetDarkBudgetWarningContainer,
-    budgetDanger = SunsetDarkBudgetDanger, budgetDangerContainer = SunsetDarkBudgetDangerContainer
+private val MintMilkDarkExtendedColorScheme = ExtendedColorScheme(
+    income = MintMilkDarkIncome, incomeContainer = MintMilkDarkIncomeContainer, onIncomeContainer = MintMilkDarkOnIncomeContainer,
+    expense = MintMilkDarkExpense, expenseContainer = MintMilkDarkExpenseContainer, onExpenseContainer = MintMilkDarkOnExpenseContainer,
+    budgetWarning = MintMilkDarkBudgetWarning, budgetWarningContainer = MintMilkDarkBudgetWarningContainer,
+    budgetDanger = MintMilkDarkBudgetDanger, budgetDangerContainer = MintMilkDarkBudgetDangerContainer,
+    glowPrimary = MintMilkDarkGlowPrimary, glowSecondary = MintMilkDarkGlowSecondary, glowAccent = MintMilkDarkGlowAccent
 )
 
 // ============================================================
-// Midnight Neon Extended Color Schemes
+// 薰衣草紫 Extended Color Schemes (Lavender)
 // ============================================================
 
-private val NeonLightExtendedColorScheme = ExtendedColorScheme(
-    income = NeonLightIncome, incomeContainer = NeonLightIncomeContainer, onIncomeContainer = NeonLightOnIncomeContainer,
-    expense = NeonLightExpense, expenseContainer = NeonLightExpenseContainer, onExpenseContainer = NeonLightOnExpenseContainer,
-    budgetWarning = NeonLightBudgetWarning, budgetWarningContainer = NeonLightBudgetWarningContainer,
-    budgetDanger = NeonLightBudgetDanger, budgetDangerContainer = NeonLightBudgetDangerContainer
+private val LavenderLightExtendedColorScheme = ExtendedColorScheme(
+    income = LavenderLightIncome, incomeContainer = LavenderLightIncomeContainer, onIncomeContainer = LavenderLightOnIncomeContainer,
+    expense = LavenderLightExpense, expenseContainer = LavenderLightExpenseContainer, onExpenseContainer = LavenderLightOnExpenseContainer,
+    budgetWarning = LavenderLightBudgetWarning, budgetWarningContainer = LavenderLightBudgetWarningContainer,
+    budgetDanger = LavenderLightBudgetDanger, budgetDangerContainer = LavenderLightBudgetDangerContainer,
+    glowPrimary = LavenderLightGlowPrimary, glowSecondary = LavenderLightGlowSecondary, glowAccent = LavenderLightGlowAccent
 )
 
-private val NeonDarkExtendedColorScheme = ExtendedColorScheme(
-    income = NeonDarkIncome, incomeContainer = NeonDarkIncomeContainer, onIncomeContainer = NeonDarkOnIncomeContainer,
-    expense = NeonDarkExpense, expenseContainer = NeonDarkExpenseContainer, onExpenseContainer = NeonDarkOnExpenseContainer,
-    budgetWarning = NeonDarkBudgetWarning, budgetWarningContainer = NeonDarkBudgetWarningContainer,
-    budgetDanger = NeonDarkBudgetDanger, budgetDangerContainer = NeonDarkBudgetDangerContainer
+private val LavenderDarkExtendedColorScheme = ExtendedColorScheme(
+    income = LavenderDarkIncome, incomeContainer = LavenderDarkIncomeContainer, onIncomeContainer = LavenderDarkOnIncomeContainer,
+    expense = LavenderDarkExpense, expenseContainer = LavenderDarkExpenseContainer, onExpenseContainer = LavenderDarkOnExpenseContainer,
+    budgetWarning = LavenderDarkBudgetWarning, budgetWarningContainer = LavenderDarkBudgetWarningContainer,
+    budgetDanger = LavenderDarkBudgetDanger, budgetDangerContainer = LavenderDarkBudgetDangerContainer,
+    glowPrimary = LavenderDarkGlowPrimary, glowSecondary = LavenderDarkGlowSecondary, glowAccent = LavenderDarkGlowAccent
 )
 
 // ============================================================
-// Default Color Schemes (保留向后兼容)
+// 暖阳蜜桃 Extended Color Schemes (WarmPeach)
+// ============================================================
+
+private val WarmPeachLightExtendedColorScheme = ExtendedColorScheme(
+    income = WarmPeachLightIncome, incomeContainer = WarmPeachLightIncomeContainer, onIncomeContainer = WarmPeachLightOnIncomeContainer,
+    expense = WarmPeachLightExpense, expenseContainer = WarmPeachLightExpenseContainer, onExpenseContainer = WarmPeachLightOnExpenseContainer,
+    budgetWarning = WarmPeachLightBudgetWarning, budgetWarningContainer = WarmPeachLightBudgetWarningContainer,
+    budgetDanger = WarmPeachLightBudgetDanger, budgetDangerContainer = WarmPeachLightBudgetDangerContainer,
+    glowPrimary = WarmPeachLightGlowPrimary, glowSecondary = WarmPeachLightGlowSecondary, glowAccent = WarmPeachLightGlowAccent
+)
+
+private val WarmPeachDarkExtendedColorScheme = ExtendedColorScheme(
+    income = WarmPeachDarkIncome, incomeContainer = WarmPeachDarkIncomeContainer, onIncomeContainer = WarmPeachDarkOnIncomeContainer,
+    expense = WarmPeachDarkExpense, expenseContainer = WarmPeachDarkExpenseContainer, onExpenseContainer = WarmPeachDarkOnExpenseContainer,
+    budgetWarning = WarmPeachDarkBudgetWarning, budgetWarningContainer = WarmPeachDarkBudgetWarningContainer,
+    budgetDanger = WarmPeachDarkBudgetDanger, budgetDangerContainer = WarmPeachDarkBudgetDangerContainer,
+    glowPrimary = WarmPeachDarkGlowPrimary, glowSecondary = WarmPeachDarkGlowSecondary, glowAccent = WarmPeachDarkGlowAccent
+)
+
+// ============================================================
+// Default Color Schemes (保留向后兼容 fallback)
 // ============================================================
 
 private val DefaultLightColorScheme = lightColorScheme(
@@ -136,124 +153,132 @@ private val DefaultDarkColorScheme = darkColorScheme(
 )
 
 // ============================================================
-// Mint Breeze Color Schemes
+// 薄荷奶绿 Color Schemes (MintMilk)
 // ============================================================
 
-private val MintLightColorScheme = lightColorScheme(
-    primary = MintLightPrimary, onPrimary = MintLightOnPrimary, primaryContainer = MintLightPrimaryContainer, onPrimaryContainer = MintLightOnPrimaryContainer,
-    secondary = MintLightSecondary, onSecondary = MintLightOnSecondary, secondaryContainer = MintLightSecondaryContainer, onSecondaryContainer = MintLightOnSecondaryContainer,
-    tertiary = MintLightTertiary, onTertiary = MintLightOnTertiary, tertiaryContainer = MintLightTertiaryContainer, onTertiaryContainer = MintLightOnTertiaryContainer,
-    error = MintLightError, onError = MintLightOnError, errorContainer = MintLightErrorContainer, onErrorContainer = MintLightOnErrorContainer,
-    background = MintLightBackground, onBackground = MintLightOnBackground, surface = MintLightSurface, onSurface = MintLightOnSurface,
-    surfaceVariant = MintLightSurfaceVariant, onSurfaceVariant = MintLightOnSurfaceVariant,
-    surfaceContainer = MintLightSurfaceContainer, surfaceContainerHigh = MintLightSurfaceContainerHigh, surfaceContainerHighest = MintLightSurfaceContainerHighest,
-    outline = MintLightOutline, outlineVariant = MintLightOutlineVariant,
-    inverseSurface = MintLightInverseSurface, inverseOnSurface = MintLightInverseOnSurface, inversePrimary = MintLightInversePrimary,
-    surfaceTint = MintLightSurfaceTint, scrim = MintLightScrim
+private val MintMilkLightColorScheme = lightColorScheme(
+    primary = MintMilkLightPrimary, onPrimary = MintMilkLightOnPrimary, primaryContainer = MintMilkLightPrimaryContainer, onPrimaryContainer = MintMilkLightOnPrimaryContainer,
+    secondary = MintMilkLightSecondary, onSecondary = MintMilkLightOnSecondary, secondaryContainer = MintMilkLightSecondaryContainer, onSecondaryContainer = MintMilkLightOnSecondaryContainer,
+    tertiary = MintMilkLightTertiary, onTertiary = MintMilkLightOnTertiary, tertiaryContainer = MintMilkLightTertiaryContainer, onTertiaryContainer = MintMilkLightOnTertiaryContainer,
+    error = MintMilkLightError, onError = MintMilkLightOnError, errorContainer = MintMilkLightErrorContainer, onErrorContainer = MintMilkLightOnErrorContainer,
+    background = MintMilkLightBackground, onBackground = MintMilkLightOnBackground, surface = MintMilkLightSurface, onSurface = MintMilkLightOnSurface,
+    surfaceVariant = MintMilkLightSurfaceVariant, onSurfaceVariant = MintMilkLightOnSurfaceVariant,
+    surfaceContainer = MintMilkLightSurfaceContainer, surfaceContainerHigh = MintMilkLightSurfaceContainerHigh, surfaceContainerHighest = MintMilkLightSurfaceContainerHighest,
+    outline = MintMilkLightOutline, outlineVariant = MintMilkLightOutlineVariant,
+    inverseSurface = MintMilkLightInverseSurface, inverseOnSurface = MintMilkLightInverseOnSurface, inversePrimary = MintMilkLightInversePrimary,
+    surfaceTint = MintMilkLightSurfaceTint, scrim = MintMilkLightScrim
 )
 
-private val MintDarkColorScheme = darkColorScheme(
-    primary = MintDarkPrimary, onPrimary = MintDarkOnPrimary, primaryContainer = MintDarkPrimaryContainer, onPrimaryContainer = MintDarkOnPrimaryContainer,
-    secondary = MintDarkSecondary, onSecondary = MintDarkOnSecondary, secondaryContainer = MintDarkSecondaryContainer, onSecondaryContainer = MintDarkOnSecondaryContainer,
-    tertiary = MintDarkTertiary, onTertiary = MintDarkOnTertiary, tertiaryContainer = MintDarkTertiaryContainer, onTertiaryContainer = MintDarkOnTertiaryContainer,
-    error = MintDarkError, onError = MintDarkOnError, errorContainer = MintDarkErrorContainer, onErrorContainer = MintDarkOnErrorContainer,
-    background = MintDarkBackground, onBackground = MintDarkOnBackground, surface = MintDarkSurface, onSurface = MintDarkOnSurface,
-    surfaceVariant = MintDarkSurfaceVariant, onSurfaceVariant = MintDarkOnSurfaceVariant,
-    surfaceContainer = MintDarkSurfaceContainer, surfaceContainerHigh = MintDarkSurfaceContainerHigh, surfaceContainerHighest = MintDarkSurfaceContainerHighest,
-    outline = MintDarkOutline, outlineVariant = MintDarkOutlineVariant,
-    inverseSurface = MintDarkInverseSurface, inverseOnSurface = MintDarkInverseOnSurface, inversePrimary = MintDarkInversePrimary,
-    surfaceTint = MintDarkSurfaceTint, scrim = MintDarkScrim
-)
-
-// ============================================================
-// Sunset Glow Color Schemes
-// ============================================================
-
-private val SunsetLightColorScheme = lightColorScheme(
-    primary = SunsetLightPrimary, onPrimary = SunsetLightOnPrimary, primaryContainer = SunsetLightPrimaryContainer, onPrimaryContainer = SunsetLightOnPrimaryContainer,
-    secondary = SunsetLightSecondary, onSecondary = SunsetLightOnSecondary, secondaryContainer = SunsetLightSecondaryContainer, onSecondaryContainer = SunsetLightOnSecondaryContainer,
-    tertiary = SunsetLightTertiary, onTertiary = SunsetLightOnTertiary, tertiaryContainer = SunsetLightTertiaryContainer, onTertiaryContainer = SunsetLightOnTertiaryContainer,
-    error = SunsetLightError, onError = SunsetLightOnError, errorContainer = SunsetLightErrorContainer, onErrorContainer = SunsetLightOnErrorContainer,
-    background = SunsetLightBackground, onBackground = SunsetLightOnBackground, surface = SunsetLightSurface, onSurface = SunsetLightOnSurface,
-    surfaceVariant = SunsetLightSurfaceVariant, onSurfaceVariant = SunsetLightOnSurfaceVariant,
-    surfaceContainer = SunsetLightSurfaceContainer, surfaceContainerHigh = SunsetLightSurfaceContainerHigh, surfaceContainerHighest = SunsetLightSurfaceContainerHighest,
-    outline = SunsetLightOutline, outlineVariant = SunsetLightOutlineVariant,
-    inverseSurface = SunsetLightInverseSurface, inverseOnSurface = SunsetLightInverseOnSurface, inversePrimary = SunsetLightInversePrimary,
-    surfaceTint = SunsetLightSurfaceTint, scrim = SunsetLightScrim
-)
-
-private val SunsetDarkColorScheme = darkColorScheme(
-    primary = SunsetDarkPrimary, onPrimary = SunsetDarkOnPrimary, primaryContainer = SunsetDarkPrimaryContainer, onPrimaryContainer = SunsetDarkOnPrimaryContainer,
-    secondary = SunsetDarkSecondary, onSecondary = SunsetDarkOnSecondary, secondaryContainer = SunsetDarkSecondaryContainer, onSecondaryContainer = SunsetDarkOnSecondaryContainer,
-    tertiary = SunsetDarkTertiary, onTertiary = SunsetDarkOnTertiary, tertiaryContainer = SunsetDarkTertiaryContainer, onTertiaryContainer = SunsetDarkOnTertiaryContainer,
-    error = SunsetDarkError, onError = SunsetDarkOnError, errorContainer = SunsetDarkErrorContainer, onErrorContainer = SunsetDarkOnErrorContainer,
-    background = SunsetDarkBackground, onBackground = SunsetDarkOnBackground, surface = SunsetDarkSurface, onSurface = SunsetDarkOnSurface,
-    surfaceVariant = SunsetDarkSurfaceVariant, onSurfaceVariant = SunsetDarkOnSurfaceVariant,
-    surfaceContainer = SunsetDarkSurfaceContainer, surfaceContainerHigh = SunsetDarkSurfaceContainerHigh, surfaceContainerHighest = SunsetDarkSurfaceContainerHighest,
-    outline = SunsetDarkOutline, outlineVariant = SunsetDarkOutlineVariant,
-    inverseSurface = SunsetDarkInverseSurface, inverseOnSurface = SunsetDarkInverseOnSurface, inversePrimary = SunsetDarkInversePrimary,
-    surfaceTint = SunsetDarkSurfaceTint, scrim = SunsetDarkScrim
+private val MintMilkDarkColorScheme = darkColorScheme(
+    primary = MintMilkDarkPrimary, onPrimary = MintMilkDarkOnPrimary, primaryContainer = MintMilkDarkPrimaryContainer, onPrimaryContainer = MintMilkDarkOnPrimaryContainer,
+    secondary = MintMilkDarkSecondary, onSecondary = MintMilkDarkOnSecondary, secondaryContainer = MintMilkDarkSecondaryContainer, onSecondaryContainer = MintMilkDarkOnSecondaryContainer,
+    tertiary = MintMilkDarkTertiary, onTertiary = MintMilkDarkOnTertiary, tertiaryContainer = MintMilkDarkTertiaryContainer, onTertiaryContainer = MintMilkDarkOnTertiaryContainer,
+    error = MintMilkDarkError, onError = MintMilkDarkOnError, errorContainer = MintMilkDarkErrorContainer, onErrorContainer = MintMilkDarkOnErrorContainer,
+    background = MintMilkDarkBackground, onBackground = MintMilkDarkOnBackground, surface = MintMilkDarkSurface, onSurface = MintMilkDarkOnSurface,
+    surfaceVariant = MintMilkDarkSurfaceVariant, onSurfaceVariant = MintMilkDarkOnSurfaceVariant,
+    surfaceContainer = MintMilkDarkSurfaceContainer, surfaceContainerHigh = MintMilkDarkSurfaceContainerHigh, surfaceContainerHighest = MintMilkDarkSurfaceContainerHighest,
+    outline = MintMilkDarkOutline, outlineVariant = MintMilkDarkOutlineVariant,
+    inverseSurface = MintMilkDarkInverseSurface, inverseOnSurface = MintMilkDarkInverseOnSurface, inversePrimary = MintMilkDarkInversePrimary,
+    surfaceTint = MintMilkDarkSurfaceTint, scrim = MintMilkDarkScrim
 )
 
 // ============================================================
-// Midnight Neon Color Schemes
+// 薰衣草紫 Color Schemes (Lavender)
 // ============================================================
 
-private val NeonLightColorScheme = lightColorScheme(
-    primary = NeonLightPrimary, onPrimary = NeonLightOnPrimary, primaryContainer = NeonLightPrimaryContainer, onPrimaryContainer = NeonLightOnPrimaryContainer,
-    secondary = NeonLightSecondary, onSecondary = NeonLightOnSecondary, secondaryContainer = NeonLightSecondaryContainer, onSecondaryContainer = NeonLightOnSecondaryContainer,
-    tertiary = NeonLightTertiary, onTertiary = NeonLightOnTertiary, tertiaryContainer = NeonLightTertiaryContainer, onTertiaryContainer = NeonLightOnTertiaryContainer,
-    error = NeonLightError, onError = NeonLightOnError, errorContainer = NeonLightErrorContainer, onErrorContainer = NeonLightOnErrorContainer,
-    background = NeonLightBackground, onBackground = NeonLightOnBackground, surface = NeonLightSurface, onSurface = NeonLightOnSurface,
-    surfaceVariant = NeonLightSurfaceVariant, onSurfaceVariant = NeonLightOnSurfaceVariant,
-    surfaceContainer = NeonLightSurfaceContainer, surfaceContainerHigh = NeonLightSurfaceContainerHigh, surfaceContainerHighest = NeonLightSurfaceContainerHighest,
-    outline = NeonLightOutline, outlineVariant = NeonLightOutlineVariant,
-    inverseSurface = NeonLightInverseSurface, inverseOnSurface = NeonLightInverseOnSurface, inversePrimary = NeonLightInversePrimary,
-    surfaceTint = NeonLightSurfaceTint, scrim = NeonLightScrim
+private val LavenderLightColorScheme = lightColorScheme(
+    primary = LavenderLightPrimary, onPrimary = LavenderLightOnPrimary, primaryContainer = LavenderLightPrimaryContainer, onPrimaryContainer = LavenderLightOnPrimaryContainer,
+    secondary = LavenderLightSecondary, onSecondary = LavenderLightOnSecondary, secondaryContainer = LavenderLightSecondaryContainer, onSecondaryContainer = LavenderLightOnSecondaryContainer,
+    tertiary = LavenderLightTertiary, onTertiary = LavenderLightOnTertiary, tertiaryContainer = LavenderLightTertiaryContainer, onTertiaryContainer = LavenderLightOnTertiaryContainer,
+    error = LavenderLightError, onError = LavenderLightOnError, errorContainer = LavenderLightErrorContainer, onErrorContainer = LavenderLightOnErrorContainer,
+    background = LavenderLightBackground, onBackground = LavenderLightOnBackground, surface = LavenderLightSurface, onSurface = LavenderLightOnSurface,
+    surfaceVariant = LavenderLightSurfaceVariant, onSurfaceVariant = LavenderLightOnSurfaceVariant,
+    surfaceContainer = LavenderLightSurfaceContainer, surfaceContainerHigh = LavenderLightSurfaceContainerHigh, surfaceContainerHighest = LavenderLightSurfaceContainerHighest,
+    outline = LavenderLightOutline, outlineVariant = LavenderLightOutlineVariant,
+    inverseSurface = LavenderLightInverseSurface, inverseOnSurface = LavenderLightInverseOnSurface, inversePrimary = LavenderLightInversePrimary,
+    surfaceTint = LavenderLightSurfaceTint, scrim = LavenderLightScrim
 )
 
-private val NeonDarkColorScheme = darkColorScheme(
-    primary = NeonDarkPrimary, onPrimary = NeonDarkOnPrimary, primaryContainer = NeonDarkPrimaryContainer, onPrimaryContainer = NeonDarkOnPrimaryContainer,
-    secondary = NeonDarkSecondary, onSecondary = NeonDarkOnSecondary, secondaryContainer = NeonDarkSecondaryContainer, onSecondaryContainer = NeonDarkOnSecondaryContainer,
-    tertiary = NeonDarkTertiary, onTertiary = NeonDarkOnTertiary, tertiaryContainer = NeonDarkTertiaryContainer, onTertiaryContainer = NeonDarkOnTertiaryContainer,
-    error = NeonDarkError, onError = NeonDarkOnError, errorContainer = NeonDarkErrorContainer, onErrorContainer = NeonDarkOnErrorContainer,
-    background = NeonDarkBackground, onBackground = NeonDarkOnBackground, surface = NeonDarkSurface, onSurface = NeonDarkOnSurface,
-    surfaceVariant = NeonDarkSurfaceVariant, onSurfaceVariant = NeonDarkOnSurfaceVariant,
-    surfaceContainer = NeonDarkSurfaceContainer, surfaceContainerHigh = NeonDarkSurfaceContainerHigh, surfaceContainerHighest = NeonDarkSurfaceContainerHighest,
-    outline = NeonDarkOutline, outlineVariant = NeonDarkOutlineVariant,
-    inverseSurface = NeonDarkInverseSurface, inverseOnSurface = NeonDarkInverseOnSurface, inversePrimary = NeonDarkInversePrimary,
-    surfaceTint = NeonDarkSurfaceTint, scrim = NeonDarkScrim
+private val LavenderDarkColorScheme = darkColorScheme(
+    primary = LavenderDarkPrimary, onPrimary = LavenderDarkOnPrimary, primaryContainer = LavenderDarkPrimaryContainer, onPrimaryContainer = LavenderDarkOnPrimaryContainer,
+    secondary = LavenderDarkSecondary, onSecondary = LavenderDarkOnSecondary, secondaryContainer = LavenderDarkSecondaryContainer, onSecondaryContainer = LavenderDarkOnSecondaryContainer,
+    tertiary = LavenderDarkTertiary, onTertiary = LavenderDarkOnTertiary, tertiaryContainer = LavenderDarkTertiaryContainer, onTertiaryContainer = LavenderDarkOnTertiaryContainer,
+    error = LavenderDarkError, onError = LavenderDarkOnError, errorContainer = LavenderDarkErrorContainer, onErrorContainer = LavenderDarkOnErrorContainer,
+    background = LavenderDarkBackground, onBackground = LavenderDarkOnBackground, surface = LavenderDarkSurface, onSurface = LavenderDarkOnSurface,
+    surfaceVariant = LavenderDarkSurfaceVariant, onSurfaceVariant = LavenderDarkOnSurfaceVariant,
+    surfaceContainer = LavenderDarkSurfaceContainer, surfaceContainerHigh = LavenderDarkSurfaceContainerHigh, surfaceContainerHighest = LavenderDarkSurfaceContainerHighest,
+    outline = LavenderDarkOutline, outlineVariant = LavenderDarkOutlineVariant,
+    inverseSurface = LavenderDarkInverseSurface, inverseOnSurface = LavenderDarkInverseOnSurface, inversePrimary = LavenderDarkInversePrimary,
+    surfaceTint = LavenderDarkSurfaceTint, scrim = LavenderDarkScrim
 )
 
 // ============================================================
-// Theme Selection Helpers
+// 暖阳蜜桃 Color Schemes (WarmPeach)
+// ============================================================
+
+private val WarmPeachLightColorScheme = lightColorScheme(
+    primary = WarmPeachLightPrimary, onPrimary = WarmPeachLightOnPrimary, primaryContainer = WarmPeachLightPrimaryContainer, onPrimaryContainer = WarmPeachLightOnPrimaryContainer,
+    secondary = WarmPeachLightSecondary, onSecondary = WarmPeachLightOnSecondary, secondaryContainer = WarmPeachLightSecondaryContainer, onSecondaryContainer = WarmPeachLightOnSecondaryContainer,
+    tertiary = WarmPeachLightTertiary, onTertiary = WarmPeachLightOnTertiary, tertiaryContainer = WarmPeachLightTertiaryContainer, onTertiaryContainer = WarmPeachLightOnTertiaryContainer,
+    error = WarmPeachLightError, onError = WarmPeachLightOnError, errorContainer = WarmPeachLightErrorContainer, onErrorContainer = WarmPeachLightOnErrorContainer,
+    background = WarmPeachLightBackground, onBackground = WarmPeachLightOnBackground, surface = WarmPeachLightSurface, onSurface = WarmPeachLightOnSurface,
+    surfaceVariant = WarmPeachLightSurfaceVariant, onSurfaceVariant = WarmPeachLightOnSurfaceVariant,
+    surfaceContainer = WarmPeachLightSurfaceContainer, surfaceContainerHigh = WarmPeachLightSurfaceContainerHigh, surfaceContainerHighest = WarmPeachLightSurfaceContainerHighest,
+    outline = WarmPeachLightOutline, outlineVariant = WarmPeachLightOutlineVariant,
+    inverseSurface = WarmPeachLightInverseSurface, inverseOnSurface = WarmPeachLightInverseOnSurface, inversePrimary = WarmPeachLightInversePrimary,
+    surfaceTint = WarmPeachLightSurfaceTint, scrim = WarmPeachLightScrim
+)
+
+private val WarmPeachDarkColorScheme = darkColorScheme(
+    primary = WarmPeachDarkPrimary, onPrimary = WarmPeachDarkOnPrimary, primaryContainer = WarmPeachDarkPrimaryContainer, onPrimaryContainer = WarmPeachDarkOnPrimaryContainer,
+    secondary = WarmPeachDarkSecondary, onSecondary = WarmPeachDarkOnSecondary, secondaryContainer = WarmPeachDarkSecondaryContainer, onSecondaryContainer = WarmPeachDarkOnSecondaryContainer,
+    tertiary = WarmPeachDarkTertiary, onTertiary = WarmPeachDarkOnTertiary, tertiaryContainer = WarmPeachDarkTertiaryContainer, onTertiaryContainer = WarmPeachDarkOnTertiaryContainer,
+    error = WarmPeachDarkError, onError = WarmPeachDarkOnError, errorContainer = WarmPeachDarkErrorContainer, onErrorContainer = WarmPeachDarkOnErrorContainer,
+    background = WarmPeachDarkBackground, onBackground = WarmPeachDarkOnBackground, surface = WarmPeachDarkSurface, onSurface = WarmPeachDarkOnSurface,
+    surfaceVariant = WarmPeachDarkSurfaceVariant, onSurfaceVariant = WarmPeachDarkOnSurfaceVariant,
+    surfaceContainer = WarmPeachDarkSurfaceContainer, surfaceContainerHigh = WarmPeachDarkSurfaceContainerHigh, surfaceContainerHighest = WarmPeachDarkSurfaceContainerHighest,
+    outline = WarmPeachDarkOutline, outlineVariant = WarmPeachDarkOutlineVariant,
+    inverseSurface = WarmPeachDarkInverseSurface, inverseOnSurface = WarmPeachDarkInverseOnSurface, inversePrimary = WarmPeachDarkInversePrimary,
+    surfaceTint = WarmPeachDarkSurfaceTint, scrim = WarmPeachDarkScrim
+)
+
+// ============================================================
+// Theme Selection Helpers — 使用新的枚举值
 // ============================================================
 
 private fun selectColorScheme(themeStyle: ThemeStyle, darkTheme: Boolean): ColorScheme {
     return when (themeStyle) {
-        ThemeStyle.MINT_BREEZE -> if (darkTheme) MintDarkColorScheme else MintLightColorScheme
-        ThemeStyle.SUNSET_GLOW -> if (darkTheme) SunsetDarkColorScheme else SunsetLightColorScheme
-        ThemeStyle.MIDNIGHT_NEON -> if (darkTheme) NeonDarkColorScheme else NeonLightColorScheme
+        ThemeStyle.MINT_MILK -> if (darkTheme) MintMilkDarkColorScheme else MintMilkLightColorScheme
+        ThemeStyle.LAVENDER -> if (darkTheme) LavenderDarkColorScheme else LavenderLightColorScheme
+        ThemeStyle.WARM_PEACH -> if (darkTheme) WarmPeachDarkColorScheme else WarmPeachLightColorScheme
+        // 向后兼容：旧枚举值映射到新色系
+        ThemeStyle.MINT_BREEZE -> if (darkTheme) MintMilkDarkColorScheme else MintMilkLightColorScheme
+        ThemeStyle.SUNSET_GLOW -> if (darkTheme) LavenderDarkColorScheme else LavenderLightColorScheme
+        ThemeStyle.MIDNIGHT_NEON -> if (darkTheme) WarmPeachDarkColorScheme else WarmPeachLightColorScheme
     }
 }
 
 private fun selectExtendedColorScheme(themeStyle: ThemeStyle, darkTheme: Boolean): ExtendedColorScheme {
     return when (themeStyle) {
-        ThemeStyle.MINT_BREEZE -> if (darkTheme) MintDarkExtendedColorScheme else MintLightExtendedColorScheme
-        ThemeStyle.SUNSET_GLOW -> if (darkTheme) SunsetDarkExtendedColorScheme else SunsetLightExtendedColorScheme
-        ThemeStyle.MIDNIGHT_NEON -> if (darkTheme) NeonDarkExtendedColorScheme else NeonLightExtendedColorScheme
+        ThemeStyle.MINT_MILK -> if (darkTheme) MintMilkDarkExtendedColorScheme else MintMilkLightExtendedColorScheme
+        ThemeStyle.LAVENDER -> if (darkTheme) LavenderDarkExtendedColorScheme else LavenderLightExtendedColorScheme
+        ThemeStyle.WARM_PEACH -> if (darkTheme) WarmPeachDarkExtendedColorScheme else WarmPeachLightExtendedColorScheme
+        // 向后兼容：旧枚举值映射到新色系
+        ThemeStyle.MINT_BREEZE -> if (darkTheme) MintMilkDarkExtendedColorScheme else MintMilkLightExtendedColorScheme
+        ThemeStyle.SUNSET_GLOW -> if (darkTheme) LavenderDarkExtendedColorScheme else LavenderLightExtendedColorScheme
+        ThemeStyle.MIDNIGHT_NEON -> if (darkTheme) WarmPeachDarkExtendedColorScheme else WarmPeachLightExtendedColorScheme
     }
 }
 
 // ============================================================
-// Main Theme Composable
+// Main Theme Composable — 注入 Shape 和 AnimationSpecs
 // ============================================================
 
 @Composable
 fun HuaNaErTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
-    themeStyle: ThemeStyle = ThemeStyle.MINT_BREEZE,
+    themeStyle: ThemeStyle = ThemeStyle.MINT_MILK,
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
@@ -267,16 +292,15 @@ fun HuaNaErTheme(
 
     val extendedColorScheme = selectExtendedColorScheme(themeStyle, darkTheme)
 
-    CompositionLocalProvider(LocalExtendedColorScheme provides extendedColorScheme) {
+    CompositionLocalProvider(
+        LocalExtendedColorScheme provides extendedColorScheme,
+        LocalAppShapes provides AppShapes(),
+        LocalAnimationSpecs provides AnimationSpecs()
+    ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = AppTypography,
             content = content
         )
     }
-}
-
-@Composable
-fun extendedColorScheme(): ExtendedColorScheme {
-    return LocalExtendedColorScheme.current
 }

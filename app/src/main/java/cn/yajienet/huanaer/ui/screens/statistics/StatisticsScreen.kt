@@ -45,9 +45,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
 import cn.yajienet.huanaer.ui.components.EmptyState
 import cn.yajienet.huanaer.ui.components.LoadingState
-import cn.yajienet.huanaer.ui.components.neubru.AnimatedCounter
-import cn.yajienet.huanaer.ui.components.neubru.NeubruCard
-import cn.yajienet.huanaer.ui.components.neubru.PillChip
+import cn.yajienet.huanaer.ui.components.glassmorphism.AnimatedNumber
+import cn.yajienet.huanaer.ui.components.glassmorphism.GlowBackground
+import cn.yajienet.huanaer.ui.components.glassmorphism.NeumorphicCard
+import cn.yajienet.huanaer.ui.components.glassmorphism.PillFilter
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
 import cn.yajienet.huanaer.util.CurrencyFormat
 
@@ -76,6 +77,7 @@ fun StatisticsScreen(
                 .padding(horizontal = 16.dp)
         )
     } else {
+        GlowBackground(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -96,15 +98,8 @@ fun StatisticsScreen(
                         TimeRange.THIS_YEAR to "今年"
                     )
                     items(ranges, key = { it.first }) { (range, label) ->
-                        PillChip(
-                            text = {
-                                Text(
-                                    label,
-                                    color = if (uiState.selectedTimeRange == range)
-                                        MaterialTheme.colorScheme.onPrimary
-                                    else MaterialTheme.colorScheme.onSurface
-                                )
-                            },
+                        PillFilter(
+                            text = label,
                             selected = uiState.selectedTimeRange == range,
                             onClick = { statsViewModel.setTimeRange(range) },
                             selectedColor = MaterialTheme.colorScheme.primary
@@ -113,9 +108,9 @@ fun StatisticsScreen(
                 }
             }
 
-            // 收入支出汇总 — NeubruCard
+            // 收入支出汇总 — NeumorphicCard
             item {
-                NeubruCard(
+                NeumorphicCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -134,7 +129,7 @@ fun StatisticsScreen(
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            AnimatedCounter(
+                            AnimatedNumber(
                                 targetValue = uiState.totalIncome,
                                 style = MaterialTheme.typography.titleLarge,
                                 color = colors.income
@@ -155,7 +150,7 @@ fun StatisticsScreen(
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            AnimatedCounter(
+                            AnimatedNumber(
                                 targetValue = uiState.totalExpense,
                                 style = MaterialTheme.typography.titleLarge,
                                 color = colors.expense
@@ -168,7 +163,7 @@ fun StatisticsScreen(
             // 环形图
             if (uiState.expenseByCategory.isNotEmpty()) {
                 item {
-                    NeubruCard(
+                    NeumorphicCard(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(
@@ -203,9 +198,8 @@ fun StatisticsScreen(
                 }
 
                 items(uiState.expenseByCategory, key = { it.categoryId }) { stat ->
-                    NeubruCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        cornerRadius = 12.dp
+                    NeumorphicCard(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         CategoryStatRow(
                             stat = stat,
@@ -229,9 +223,8 @@ fun StatisticsScreen(
                 }
 
                 items(uiState.incomeByCategory, key = { it.categoryId }) { stat ->
-                    NeubruCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        cornerRadius = 12.dp
+                    NeumorphicCard(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         CategoryStatRow(
                             stat = stat,
@@ -242,6 +235,7 @@ fun StatisticsScreen(
                     }
                 }
             }
+        }
         }
     }
 }
@@ -273,7 +267,7 @@ fun DonutChart(
     }
 
     val strokeWidth = 24.dp
-    val backgroundColor = MaterialTheme.colorScheme.surfaceVariant
+    val backgroundColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.3f)
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
 
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
@@ -306,7 +300,7 @@ fun DonutChart(
                     size = Size(radius * 2,radius * 2),
                     style = Stroke(
                         width = strokePx,
-                        cap = StrokeCap.Butt
+                        cap = StrokeCap.Round
                     )
                 )
                 startAngle += sweepAngle + gapAngle
@@ -364,19 +358,19 @@ fun CategoryStatRow(
                 fontWeight = FontWeight.SemiBold
             )
             Spacer(Modifier.height(4.dp))
-            // 粗边框进度条
+            // 进度条 - 柔和风格
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .height(6.dp)
+                    .clip(RoundedCornerShape(3.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.3f))
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(stat.percentage.coerceIn(0f, 1f))
-                        .height(8.dp)
-                        .clip(RoundedCornerShape(4.dp))
+                        .height(6.dp)
+                        .clip(RoundedCornerShape(3.dp))
                         .background(progressColor)
                 )
             }
@@ -384,7 +378,7 @@ fun CategoryStatRow(
 
         Spacer(modifier = Modifier.width(10.dp))
 
-        AnimatedCounter(
+        AnimatedNumber(
             targetValue = stat.amount,
             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
             color = progressColor
