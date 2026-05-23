@@ -40,6 +40,7 @@ fun AmountInputField(
     modifier: Modifier = Modifier,
     label: String = "金额",
     focusRequester: FocusRequester = remember { FocusRequester() },
+    compact: Boolean = false,
     textStyle: TextStyle = MaterialTheme.typography.headlineMedium.copy(
         fontWeight = FontWeight.Bold
     )
@@ -52,15 +53,17 @@ fun AmountInputField(
     )
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(Modifier.height(4.dp))
+        if (!compact) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.height(4.dp))
+        }
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(if (compact) 12.dp else 16.dp),
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
             border = BorderStroke(
                 width = 1.dp,
@@ -71,7 +74,10 @@ fun AmountInputField(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                    .padding(
+                        horizontal = if (compact) 12.dp else 16.dp,
+                        vertical = if (compact) 8.dp else 12.dp
+                    ),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {

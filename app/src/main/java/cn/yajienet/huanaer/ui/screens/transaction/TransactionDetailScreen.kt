@@ -77,6 +77,7 @@ import cn.yajienet.huanaer.ui.components.AmountInputField
 import cn.yajienet.huanaer.ui.components.CategoryCircleIcon
 import cn.yajienet.huanaer.ui.components.glassmorphism.GlassCard
 import cn.yajienet.huanaer.ui.components.candy.CandyCard
+import cn.yajienet.huanaer.ui.components.candy.CategoryGridPicker
 import cn.yajienet.huanaer.util.CurrencyFormat
 import cn.yajienet.huanaer.util.DateUtils
 
@@ -230,36 +231,19 @@ fun TransactionDetailScreen(
                     )
                 )
 
-                // Category selection
                 Column {
                     Text(
-                        "选择分类",
+                        "分类",
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(Modifier.height(12.dp))
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        uiState.categories.forEach { category ->
-                            FilterChip(
-                                selected = uiState.selectedCategoryId == category.id,
-                                onClick = { viewModel.setCategory(category.id) },
-                                label = {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        CategoryCircleIcon(
-                                            name = category.name,
-                                            color = category.color,
-                                            size = 18.dp
-                                        )
-                                        Spacer(Modifier.width(6.dp))
-                                        Text(category.name)
-                                    }
-                                }
-                            )
-                        }
-                    }
+                    Spacer(Modifier.height(8.dp))
+                    CategoryGridPicker(
+                        categories = uiState.categories,
+                        selectedCategoryId = uiState.selectedCategoryId,
+                        onCategorySelected = viewModel::setCategory,
+                        compact = true
+                    )
                 }
 
                 // Date picker field

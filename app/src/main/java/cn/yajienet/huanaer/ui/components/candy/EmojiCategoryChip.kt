@@ -17,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cn.yajienet.huanaer.ui.theme.candyBounceSpring
@@ -28,22 +30,28 @@ fun EmojiCategoryChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     backgroundColor: Color = MaterialTheme.colorScheme.primaryContainer,
-    glowColor: Color = MaterialTheme.colorScheme.primary
+    glowColor: Color = MaterialTheme.colorScheme.primary,
+    normalSize: Dp = 52.dp,
+    selectedSize: Dp = 58.dp,
+    normalEmojiSize: TextUnit = 22.sp,
+    selectedEmojiSize: TextUnit = 26.sp,
+    selectedScale: Float = 1.1f
 ) {
     val scale by animateFloatAsState(
-        targetValue = if (selected) 1.15f else 0.9f,
+        targetValue = if (selected) selectedScale else 1f,
         animationSpec = candyBounceSpring(),
         label = "emoji_chip_scale"
     )
+    val chipSize = if (selected) selectedSize else normalSize
 
     Box(
         modifier = modifier
-            .size(if (selected) 64.dp else 52.dp)
+            .size(chipSize)
             .scale(scale)
             .clip(MaterialTheme.shapes.extraLarge)
             .background(backgroundColor.copy(alpha = if (selected) 1f else 0.6f))
             .then(
-                if (selected) Modifier.border(3.dp, glowColor.copy(alpha = 0.8f), MaterialTheme.shapes.extraLarge)
+                if (selected) Modifier.border(2.dp, glowColor.copy(alpha = 0.8f), MaterialTheme.shapes.extraLarge)
                 else Modifier
             )
             .clickable(
@@ -53,6 +61,6 @@ fun EmojiCategoryChip(
             ),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = emoji, fontSize = if (selected) 28.sp else 22.sp)
+        Text(text = emoji, fontSize = if (selected) selectedEmojiSize else normalEmojiSize)
     }
 }

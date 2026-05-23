@@ -11,9 +11,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,6 +38,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
@@ -52,7 +56,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalFocusManager
@@ -64,15 +67,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import cn.yajienet.huanaer.data.model.TransactionType
 import cn.yajienet.huanaer.ui.components.AmountInputField
 import cn.yajienet.huanaer.ui.components.candy.ConfettiBurst
-import cn.yajienet.huanaer.ui.components.candy.EmojiCategoryChip
+import cn.yajienet.huanaer.ui.components.candy.CategoryGridPicker
 import cn.yajienet.huanaer.ui.components.candy.SegmentedGummy
 import cn.yajienet.huanaer.ui.theme.LocalAppShapes
 import cn.yajienet.huanaer.ui.theme.extendedColorScheme
-import cn.yajienet.huanaer.util.CategoryEmoji
 import cn.yajienet.huanaer.util.CurrencyFormat
 import cn.yajienet.huanaer.util.DateUtils
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -202,141 +202,118 @@ fun AddTransactionContent(
         }
     }
 
+    val fieldSpacing = if (compact) 8.dp else 12.dp
+    val metaShape = RoundedCornerShape(if (compact) 12.dp else 16.dp)
+
     val formFields: @Composable () -> Unit = {
         SegmentedGummy(
-                options = listOf("支出", "收入"),
-                selectedIndex = if (uiState.type == TransactionType.EXPENSE) 0 else 1,
-                onSelected = { index ->
-                    viewModel.setType(if (index == 0) TransactionType.EXPENSE else TransactionType.INCOME)
-                },
-                selectedColor = amountColor
+            options = listOf("支出", "收入"),
+            selectedIndex = if (uiState.type == TransactionType.EXPENSE) 0 else 1,
+            onSelected = { index ->
+                viewModel.setType(if (index == 0) TransactionType.EXPENSE else TransactionType.INCOME)
+            },
+            selectedColor = amountColor
+        )
+
+        AmountInputField(
+            amount = uiState.amount,
+            onAmountChange = viewModel::setAmount,
+            accentColor = amountColor,
+            focusRequester = amountFocusRequester,
+            compact = compact,
+            textStyle = MaterialTheme.typography.headlineMedium.copy(
+                fontWeight = FontWeight.Bold,
+                fontSize = if (compact) 26.sp else 32.sp
             )
+        )
 
-            AmountInputField(
-                amount = uiState.amount,
-                onAmountChange = viewModel::setAmount,
-                accentColor = amountColor,
-                focusRequester = amountFocusRequester,
-                textStyle = MaterialTheme.typography.headlineMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = if (compact) 28.sp else 32.sp
-                )
-            )
+        CategoryGridPicker(
+            categories = uiState.categories,
+            selectedCategoryId = uiState.selectedCategoryId,
+            onCategorySelected = viewModel::setCategory,
+            compact = compact
+        )
 
-            Column {
-                Text(
-                    "分类",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(Modifier.height(8.dp))
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    items(uiState.categories, key = { it.id }) { category ->
-                        val selected = uiState.selectedCategoryId == category.id
-                        val bgColor = try {
-                            Color(category.color.removePrefix("#").toLong(16) or 0xFF000000)
-                        } catch (_: Exception) {
-                            MaterialTheme.colorScheme.primaryContainer
-                        }
-                        EmojiCategoryChip(
-                            emoji = CategoryEmoji.resolve(category.icon, category.name),
-                            selected = selected,
-                            onClick = { viewModel.setCategory(category.id) },
-                            backgroundColor = bgColor.copy(alpha = if (selected) 0.5f else 0.25f),
-                            glowColor = bgColor
-                        )
-                    }
-                }
-            }
-
-            Surface(
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = metaShape,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh
+        ) {
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .clickable { showDatePicker = true },
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh
+                    .padding(horizontal = 12.dp, vertical = if (compact) 8.dp else 10.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    modifier = Modifier
+                        .weight(0.95f)
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { showDatePicker = true }
+                        .padding(vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        DateUtils.formatDate(uiState.date),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
                     Icon(
                         Icons.Default.DateRange,
                         contentDescription = "选择日期",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp)
                     )
-                }
-            }
-
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                    Spacer(Modifier.width(6.dp))
                     Text(
-                        "备注",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    BasicTextField(
-                        value = uiState.note,
-                        onValueChange = viewModel::setNote,
-                        textStyle = MaterialTheme.typography.bodyLarge.copy(
-                            color = MaterialTheme.colorScheme.onSurface
-                        ),
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        decorationBox = { innerTextField ->
-                            Box {
-                                if (uiState.note.isEmpty()) {
-                                    Text(
-                                        "添加备注...",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                                    )
-                                }
-                                innerTextField()
-                            }
-                        }
+                        DateUtils.formatDate(uiState.date),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1
                     )
                 }
+                VerticalDivider(
+                    modifier = Modifier
+                        .height(20.dp)
+                        .padding(horizontal = 8.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                )
+                BasicTextField(
+                    value = uiState.note,
+                    onValueChange = viewModel::setNote,
+                    modifier = Modifier.weight(1.05f),
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurface
+                    ),
+                    singleLine = true,
+                    decorationBox = { innerTextField ->
+                        Box(contentAlignment = Alignment.CenterStart) {
+                            if (uiState.note.isEmpty()) {
+                                Text(
+                                    "备注",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                )
+                            }
+                            innerTextField()
+                        }
+                    }
+                )
             }
+        }
     }
 
     Box(modifier = modifier) {
         if (compact) {
             BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-                val sheetHeight = maxHeight * 0.88f
                 Column(
                     modifier = Modifier
-                        .height(sheetHeight)
                         .fillMaxWidth()
+                        .heightIn(max = maxHeight * 0.92f)
                         .navigationBarsPadding()
+                        .imePadding()
+                        .verticalScroll(scrollState)
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(fieldSpacing)
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                            .verticalScroll(scrollState)
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        formFields()
-                    }
+                    formFields()
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .imePadding()
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -353,7 +330,7 @@ fun AddTransactionContent(
                     .imePadding()
                     .navigationBarsPadding()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(fieldSpacing)
             ) {
                 formFields()
                 errorMessage()
